@@ -23,8 +23,8 @@ KEY = SearchKey(
 
 
 @pytest.fixture
-def conn() -> sqlite3.Connection:
-    return connect(":memory:")
+def conn(db: sqlite3.Connection) -> sqlite3.Connection:
+    return db
 
 
 def test_offers_round_trip_through_the_store(conn: sqlite3.Connection) -> None:
@@ -97,3 +97,4 @@ def test_reopening_does_not_rerun_migrations(tmp_path: Path) -> None:
     first.close()
     again = connect(path)
     assert repo.get_setting(again, "target_eur") == "5000"
+    again.close()

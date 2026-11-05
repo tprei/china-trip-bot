@@ -1,16 +1,16 @@
 import json
+import sqlite3
 from datetime import datetime
 
 import httpx
 import pytest
-from telegram_fakes import CHAT, FakeDeck, bot, message, sample_world
+from telegram_fakes import CHAT, FakeDeck, World, bot, message
 
 from tripbot.config import TripConfig
 from tripbot.domain.alerts import Alert
 from tripbot.domain.money import Money
 from tripbot.reference import Reference
 from tripbot.store import repo
-from tripbot.store.db import connect
 from tripbot.telegram.api import Button, TelegramApi, TelegramError
 from tripbot.telegram.bot import handle_update, maybe_send_summary
 from tripbot.telegram.commands import parse
@@ -27,8 +27,10 @@ def test_parse_commands_with_and_without_the_bot_name() -> None:
     assert parse("") is None
 
 
-def test_commands_only_answer_in_the_group(config: TripConfig, reference: Reference) -> None:
-    deps, messenger = bot(config, reference, connect(":memory:"), FakeDeck())
+def test_commands_only_answer_in_the_group(
+    config: TripConfig, reference: Reference, db: sqlite3.Connection
+) -> None:
+    deps, messenger = bot(config, reference, db, FakeDeck())
     handle_update(deps, message("/help", chat="-999"), None, NOW)
     assert messenger.sent == []
     handle_update(deps, message("/help"), None, NOW)
@@ -37,9 +39,9 @@ def test_commands_only_answer_in_the_group(config: TripConfig, reference: Refere
 
 
 def test_card_commands_send_photos_with_the_dashboard_button(
-    config: TripConfig, reference: Reference
+    config: TripConfig, reference: Reference, world: World
 ) -> None:
-    conn, _ = sample_world(config, reference)
+    conn, _ = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
     for text in ("/best a", "/route", "/other B no-shanghai", "/windows"):
@@ -52,23 +54,27 @@ def test_card_commands_send_photos_with_the_dashboard_button(
     assert messenger.sent[0].button == Button("Details", "https://trip.example/dash")
 
 
-def test_commands_without_data_say_so(config: TripConfig, reference: Reference) -> None:
-    deps, messenger = bot(config, reference, connect(":memory:"), FakeDeck())
+def test_commands_without_data_say_so(
+    config: TripConfig, reference: Reference, db: sqlite3.Connection
+) -> None:
+    deps, messenger = bot(config, reference, db, FakeDeck())
     handle_update(deps, message("/route"), None, NOW)
     assert "No complete combo yet" in str(messenger.sent[0].body)
 
 
 def test_a_crashing_command_answers_with_an_apology(
-    config: TripConfig, reference: Reference
+    config: TripConfig, reference: Reference, db: sqlite3.Connection
 ) -> None:
-    deps, messenger = bot(config, reference, connect(":memory:"), FakeDeck())
+    deps, messenger = bot(config, reference, db, FakeDeck())
     deps.conn.close()
     handle_update(deps, message("/best"), None, NOW)
     assert messenger.sent[0].body == "Something went wrong with that command."
 
 
-def test_weekly_summary_goes_out_once(config: TripConfig, reference: Reference) -> None:
-    conn, _ = sample_world(config, reference)
+def test_weekly_summary_goes_out_once(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, _ = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
     sunday = datetime(2026, 11, 8, 9, 30)
@@ -79,8 +85,10 @@ def test_weekly_summary_goes_out_once(config: TripConfig, reference: Reference) 
     assert summary is not None and set(summary[1]) == {"A", "B", "C"}
 
 
-def test_nightly_alerts_become_cards(config: TripConfig, reference: Reference) -> None:
-    conn, report = sample_world(config, reference)
+def test_nightly_alerts_become_cards(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, report = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
     report.failing_sources = ["tripcom"]

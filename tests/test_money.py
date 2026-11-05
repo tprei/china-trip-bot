@@ -14,7 +14,7 @@ def test_of_rounds_half_up_to_minor_units() -> None:
 
 
 def test_adding_different_currencies_fails() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="cannot combine EUR and GBP"):
         Money(100, "EUR") + Money(100, "GBP")
 
 

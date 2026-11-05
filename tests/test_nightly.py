@@ -12,7 +12,6 @@ from tripbot.pipeline.nightly import NightlyDeps, run_nightly
 from tripbot.reference import Reference
 from tripbot.sources.base import FlightSource, SearchShape
 from tripbot.store import repo
-from tripbot.store.db import connect
 
 NIGHT_ONE = datetime(2026, 11, 6, 3, 0)
 HOME = {"thiago": "DUB", "lon": "LHR", "sao": "GRU"}
@@ -49,8 +48,8 @@ class BrokenSource:
 
 
 @pytest.fixture
-def conn() -> sqlite3.Connection:
-    return connect(":memory:")
+def conn(db: sqlite3.Connection) -> sqlite3.Connection:
+    return db
 
 
 def nightly(

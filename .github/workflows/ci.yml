@@ -5,17 +5,68 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON: "3.12"
+
 jobs:
-  check:
+  lint:
+    name: Lint, types and rules
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.12"
+          fetch-depth: 0 # the PR size check diffs against the base branch
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
       - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy
-      - run: uv run pytest -q
+      - name: ruff check
+        run: uv run ruff check . --output-format=github
+      - name: ruff format
+        run: uv run ruff format --check .
+      - name: mypy --strict
+        run: uv run mypy
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+      - name: Config and reference data load
+        run: uv run tripbot check-config
+      - name: PR under 1,000 lines
+        if: github.event_name == 'pull_request'
+        run: scripts/check-pr-size.sh "origin/${{ github.base_ref }}"
+
+  test:
+    name: Tests and coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(uv run python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Chromium
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: uv run playwright install --with-deps --only-shell chromium
+      - name: Chromium system libraries
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: uv run playwright install-deps chromium
+      - name: pytest
+        env:
+          TRIPBOT_REQUIRE_CHROMIUM: "1"
+        run: uv run pytest --cov --cov-report=term

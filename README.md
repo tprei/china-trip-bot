@@ -67,7 +67,7 @@ Logs are in `var/logs/`. The database is `var/tripbot.sqlite3`; copy it to back 
 uv sync
 uv run ruff check . && uv run ruff format --check .
 uv run mypy
-uv run pytest
+uv run pytest --cov
 uv run tripbot check-config
 ```
 

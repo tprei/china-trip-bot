@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sqlite3
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -75,43 +76,43 @@ def check_config(settings: Settings) -> int:
 def nightly_command(settings: Settings, *, search: bool) -> int:
     config = load_config(settings.config_path)
     reference = load_reference(settings.data_dir)
-    conn = connect(settings.db_path)
-    currencies = {origin.currency for origin in config.origins.values()} | {"CNY", "USD"}
-    with httpx.Client(follow_redirects=True) as client:
-        sources: list[FlightSource] = []
-        if search:
-            sources.append(GoogleFlights())
-            if settings.serpapi_key:
-                sources.append(SerpApi(client, settings.serpapi_key))
-            sources.append(TripCom(client))
-        deps = NightlyDeps(
-            config=config,
-            reference=reference,
-            conn=conn,
-            sources=sources,
-            fetch_rates=(lambda: fetch_rates(client, currencies)) if search else None,
-        )
-        now = local_now(config)
-        report = run_nightly(deps, now)
-        print_report(report)
-        print(build_site(settings, config, reference, conn, report.rankings, now))
-        if settings.telegram_token and settings.telegram_chat_id:
-            bot = bot_deps(
-                settings, config, reference, conn, TelegramApi(client, settings.telegram_token)
+    with closing(connect(settings.db_path)) as conn:
+        currencies = {origin.currency for origin in config.origins.values()} | {"CNY", "USD"}
+        with httpx.Client(follow_redirects=True) as client:
+            sources: list[FlightSource] = []
+            if search:
+                sources.append(GoogleFlights())
+                if settings.serpapi_key:
+                    sources.append(SerpApi(client, settings.serpapi_key))
+                sources.append(TripCom(client))
+            deps = NightlyDeps(
+                config=config,
+                reference=reference,
+                conn=conn,
+                sources=sources,
+                fetch_rates=(lambda: fetch_rates(client, currencies)) if search else None,
             )
-            notify_nightly(bot.messenger, bot.chat_id, report, bot.context(now))
-        ping(client, settings.healthcheck_url, report.ok)
-    return 0 if report.ok else 1
+            now = local_now(config)
+            report = run_nightly(deps, now)
+            print_report(report)
+            print(build_site(settings, config, reference, conn, report.rankings, now))
+            if settings.telegram_token and settings.telegram_chat_id:
+                bot = bot_deps(
+                    settings, config, reference, conn, TelegramApi(client, settings.telegram_token)
+                )
+                notify_nightly(bot.messenger, bot.chat_id, report, bot.context(now))
+            ping(client, settings.healthcheck_url, report.ok)
+        return 0 if report.ok else 1
 
 
 def dashboard_command(settings: Settings) -> int:
     config = load_config(settings.config_path)
     reference = load_reference(settings.data_dir)
-    conn = connect(settings.db_path)
-    now = local_now(config)
-    rankings = load_rankings(conn, config, reference, now)
-    print(build_site(settings, config, reference, conn, rankings, now))
-    return 0
+    with closing(connect(settings.db_path)) as conn:
+        now = local_now(config)
+        rankings = load_rankings(conn, config, reference, now)
+        print(build_site(settings, config, reference, conn, rankings, now))
+        return 0
 
 
 def build_site(
@@ -155,11 +156,11 @@ def bot_command(settings: Settings) -> int:
         raise SystemExit("TELEGRAM_TOKEN is not set")
     config = load_config(settings.config_path)
     reference = load_reference(settings.data_dir)
-    conn = connect(settings.db_path)
-    with httpx.Client() as client:
-        api = TelegramApi(client, settings.telegram_token)
-        run_forever(bot_deps(settings, config, reference, conn, api), api)
-    return 0
+    with closing(connect(settings.db_path)) as conn:
+        with httpx.Client() as client:
+            api = TelegramApi(client, settings.telegram_token)
+            run_forever(bot_deps(settings, config, reference, conn, api), api)
+        return 0
 
 
 def print_report(report: NightlyReport) -> None:

@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from pathlib import Path
 
-from telegram_fakes import sample_world
+import pytest
+from telegram_fakes import World
 
 from tripbot.config import TripConfig
 from tripbot.dashboard.build import build_dashboard, publish
@@ -12,15 +13,14 @@ from tripbot.render.deck import Deck
 NOW = datetime(2026, 11, 8, 3, 10)
 
 
-def deck(config: TripConfig, reference: Reference) -> Deck:
-    conn, report = sample_world(config, reference)
+@pytest.fixture
+def deck(config: TripConfig, reference: Reference, world: World) -> Deck:
+    conn, report = world
     return Deck(config, reference, conn, report.rankings, date(2026, 11, 8), CardRenderer())
 
 
-def test_every_window_gets_a_panel_with_every_group(
-    config: TripConfig, reference: Reference
-) -> None:
-    view = build_dashboard(deck(config, reference), NOW)
+def test_every_window_gets_a_panel_with_every_group(config: TripConfig, deck: Deck) -> None:
+    view = build_dashboard(deck, NOW)
     assert [panel.id for panel in view.panels] == [w.id for w in config.windows]
     for panel in view.panels:
         assert panel.total is not None
@@ -32,20 +32,16 @@ def test_every_window_gets_a_panel_with_every_group(
     assert view.updated == "Sun 8 Nov · 03:10"
 
 
-def test_flights_are_cheapest_first_in_the_groups_currency(
-    config: TripConfig, reference: Reference
-) -> None:
-    view = build_dashboard(deck(config, reference), NOW)
+def test_flights_are_cheapest_first_in_the_groups_currency(config: TripConfig, deck: Deck) -> None:
+    view = build_dashboard(deck, NOW)
     lon = next(g for g in view.panels[0].groups if g.name == "Luísa + Gabi")
     prices = [int(item.price.strip("£").replace(",", "")) for item in lon.outbound]
     assert prices == sorted(prices)
     assert len(prices) <= 3
 
 
-def test_site_is_one_self_contained_page(
-    config: TripConfig, reference: Reference, tmp_path: Path
-) -> None:
-    path = publish(deck(config, reference), NOW, tmp_path / "site")
+def test_site_is_one_self_contained_page(config: TripConfig, deck: Deck, tmp_path: Path) -> None:
+    path = publish(deck, NOW, tmp_path / "site")
     html = path.read_text(encoding="utf-8")
     assert path.name == "index.html"
     assert 'id="tab-B"' in html and "checked" in html

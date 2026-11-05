@@ -207,6 +207,11 @@ def _summary(raw: dict[str, Any]) -> SummarySchedule:
 
 
 def _validate(config: TripConfig) -> None:
+    for check in (_check_groups, _check_windows, _check_route, _check_rates):
+        check(config)
+
+
+def _check_groups(config: TripConfig) -> None:
     group_ids = [group.id for group in config.groups]
     if len(set(group_ids)) != len(group_ids):
         raise ConfigError("group ids must be unique")
@@ -215,15 +220,24 @@ def _validate(config: TripConfig) -> None:
             raise ConfigError(f"group {group.id} uses unknown origin {group.origin}")
         if not group.people:
             raise ConfigError(f"group {group.id} has no people")
+
+
+def _check_windows(config: TripConfig) -> None:
     for window in config.windows:
         if window.end <= window.start:
             raise ConfigError(f"window {window.id} ends before it starts")
+
+
+def _check_route(config: TripConfig) -> None:
     for stop in config.route.stops:
         if stop not in config.route.nights:
             raise ConfigError(f"route stop {stop} has no nights")
     for alternative in config.route.alternatives:
         if alternative.drop not in config.route.stops:
             raise ConfigError(f"alternative {alternative.id} drops unknown stop {alternative.drop}")
+
+
+def _check_rates(config: TripConfig) -> None:
     currencies = {origin.currency for origin in config.origins.values()}
     missing = currencies - {"EUR"} - set(config.fallback_rates.per_eur)
     if missing:
