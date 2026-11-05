@@ -21,6 +21,8 @@ from tripbot.telegram.context import BotContext, CardDeck, DeckOpener
 CHAT = "-100123"
 FIRST_NIGHT = datetime(2026, 11, 7, 3, 0)
 
+World = tuple[sqlite3.Connection, NightlyReport]
+
 
 @dataclass
 class Sent:

@@ -68,18 +68,18 @@ def all_keys(source: SourcePlan, space: SearchSpace) -> list[SearchKey]:
             dates = _dates(space, direction)
             for china in _china_sides(source, space):
                 home = (origin.code,) if source.city_codes else origin.airports
-                for travel_date in dates:
-                    for home_side in _home_sides(source, home):
-                        keys.append(
-                            SearchKey(
-                                source=source.name,
-                                group_id=group.id,
-                                direction=direction,
-                                origins=home_side if direction == "outbound" else china,
-                                destinations=china if direction == "outbound" else home_side,
-                                travel_date=travel_date,
-                            )
-                        )
+                keys.extend(
+                    SearchKey(
+                        source=source.name,
+                        group_id=group.id,
+                        direction=direction,
+                        origins=home_side if direction == "outbound" else china,
+                        destinations=china if direction == "outbound" else home_side,
+                        travel_date=travel_date,
+                    )
+                    for travel_date in dates
+                    for home_side in _home_sides(source, home)
+                )
     return keys
 
 

@@ -20,6 +20,7 @@ tripbot = "tripbot.cli:main"
 dev = [
   "mypy>=1.13",
   "pytest>=8.3",
+  "pytest-cov>=7.1.0",
   "ruff>=0.8",
   "types-pyyaml>=6.0",
 ]
@@ -36,9 +37,24 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+select = [
+    "E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "C4", "C90", "PIE", "PGH", "PT", "RET",
+    "PERF", "FURB", "TID", "ISC", "LOG", "G", "T20", "ERA", "PLE", "PLW", "PLC",
+]
+# Several plain asserts in one test read better than one assert per test.
+ignore = ["PT018"]
 # Display text uses typographic dashes and the minus sign on purpose.
 allowed-confusables = ["–", "−", "×"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+# The command line prints its reports.
+"src/tripbot/cli.py" = ["T201"]
 
 [tool.mypy]
 strict = true
@@ -47,3 +63,17 @@ files = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+# A warning is a bug waiting to happen: unclosed connections, deprecations.
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["tripbot"]
+branch = true
+# Thin wiring around the network and long-running loops; their parts are tested.
+omit = ["src/tripbot/render/samples.py"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true

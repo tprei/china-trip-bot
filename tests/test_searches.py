@@ -47,5 +47,5 @@ def test_never_searched_keys_come_first(config: TripConfig, reference: Reference
     space = search_space(config, reference)
     keys = all_keys(SERPAPI, space)
     now = datetime(2026, 11, 6, 3, 0)
-    last = {key: now for key in keys[1:]}
+    last = dict.fromkeys(keys[1:], now)
     assert plan_tonight(SERPAPI, space, last, focus=set())[0] == keys[0]

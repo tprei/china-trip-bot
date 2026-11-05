@@ -1,32 +1,21 @@
-import sqlite3
-from dataclasses import replace
-from datetime import date, datetime, timedelta
+import os
+from datetime import date, datetime
 from itertools import pairwise
 
 import pytest
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import sync_playwright
+from telegram_fakes import World
 
-from tripbot.config import Budgets, TripConfig
-from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
+from tripbot.config import TripConfig
+from tripbot.pipeline.nightly import NightlyReport
 from tripbot.reference import Reference
 from tripbot.render import details, views
-from tripbot.render.cards import render_html
+from tripbot.render.cards import CardRenderer, render_html
+from tripbot.render.deck import Deck
 from tripbot.render.names import Names
-from tripbot.render.samples import SampleSource
-from tripbot.store.db import connect
 
 NIGHT = datetime(2026, 11, 7, 3, 0)
-
-
-@pytest.fixture
-def world(config: TripConfig, reference: Reference) -> tuple[sqlite3.Connection, NightlyReport]:
-    conn = connect(":memory:")
-    full = replace(config, budgets=Budgets(google=0, serpapi=1000, tripcom=0))
-    report = None
-    for night, discount in enumerate((0, 6)):
-        deps = NightlyDeps(full, reference, conn, [SampleSource(discount)], log=lambda _: None)
-        report = run_nightly(deps, NIGHT + timedelta(days=night))
-    assert report is not None
-    return conn, report
 
 
 def summary_inputs(
@@ -45,7 +34,7 @@ def summary_inputs(
 
 
 def test_summary_view_shows_every_group_and_currency(
-    config: TripConfig, reference: Reference, world: tuple[sqlite3.Connection, NightlyReport]
+    config: TripConfig, reference: Reference, world: World
 ) -> None:
     _, report = world
     view = views.build_summary(summary_inputs(config, reference, report, "B"))
@@ -61,7 +50,7 @@ def test_summary_view_shows_every_group_and_currency(
 
 
 def test_route_view_lists_stays_and_legs_in_order(
-    config: TripConfig, reference: Reference, world: tuple[sqlite3.Connection, NightlyReport]
+    config: TripConfig, reference: Reference, world: World
 ) -> None:
     _, report = world
     best = report.rankings.main["B"].best
@@ -74,7 +63,7 @@ def test_route_view_lists_stays_and_legs_in_order(
 
 
 def test_compare_alternatives_marks_the_main_plan(
-    config: TripConfig, reference: Reference, world: tuple[sqlite3.Connection, NightlyReport]
+    config: TripConfig, reference: Reference, world: World
 ) -> None:
     _, report = world
     alternatives = {
@@ -94,7 +83,7 @@ def test_compare_alternatives_marks_the_main_plan(
 
 
 def test_summary_html_carries_the_numbers(
-    config: TripConfig, reference: Reference, world: tuple[sqlite3.Connection, NightlyReport]
+    config: TripConfig, reference: Reference, world: World
 ) -> None:
     _, report = world
     view = views.build_summary(summary_inputs(config, reference, report, "B"))
@@ -105,17 +94,20 @@ def test_summary_html_carries_the_numbers(
     assert "data:font/woff2;base64," in html
 
 
-def test_cards_render_to_png_when_chromium_is_available(
-    config: TripConfig, reference: Reference, world: tuple[sqlite3.Connection, NightlyReport]
-) -> None:
-    playwright = pytest.importorskip("playwright.sync_api")
-    from tripbot.render.cards import CardRenderer
-    from tripbot.render.deck import Deck
-
+def chromium_available() -> bool:
     try:
-        with playwright.sync_playwright() as p:
+        with sync_playwright() as p:
             p.chromium.launch().close()
-    except Exception:
+    except PlaywrightError:
+        return False
+    return True
+
+
+def test_cards_render_to_png(config: TripConfig, reference: Reference, world: World) -> None:
+    # CI sets TRIPBOT_REQUIRE_CHROMIUM so a missing browser fails instead of skipping.
+    if not chromium_available():
+        if os.environ.get("TRIPBOT_REQUIRE_CHROMIUM"):
+            pytest.fail("Chromium is required but could not start")
         pytest.skip("Chromium is not installed here")
     conn, report = world
     with CardRenderer() as renderer:

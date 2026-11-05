@@ -42,6 +42,8 @@ Do not add a web server, a queue, a scheduler library, an ORM or a bot framework
 
 Write tests when they reduce real risk: the domain rules, adapter parsing against recorded fixtures, the store round trip, command parsing. Tests never touch the network.
 
+CI runs two parallel jobs and both must pass: lint (ruff, `ruff format --check`, `mypy --strict`, shellcheck, `tripbot check-config`, the PR size limit) and tests (pytest with warnings as errors, Chromium card rendering, coverage of at least 85%). `tests/test_code_rules.py` enforces the no-silencing rule and keeps `domain/` free of I/O and the clock.
+
 ## Pull requests
 
 - Never push directly to `main`. Every change goes through a PR. CI must pass.

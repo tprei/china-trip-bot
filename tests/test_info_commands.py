@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 from factories import eur
-from telegram_fakes import FakeDeck, FakeMessenger, bot, message, sample_world
+from telegram_fakes import FakeDeck, FakeMessenger, World, bot, message
 
 from tripbot.config import AlertRules, TripConfig
 from tripbot.domain.alerts import decide_alerts
@@ -16,8 +16,8 @@ NOW = datetime(2026, 11, 8, 10, 0)
 
 
 @pytest.fixture
-def chat(config: TripConfig, reference: Reference) -> tuple[BotDeps, FakeMessenger]:
-    conn, _ = sample_world(config, reference)
+def chat(config: TripConfig, reference: Reference, world: World) -> tuple[BotDeps, FakeMessenger]:
+    conn, _ = world
     return bot(config, reference, conn, FakeDeck())
 
 

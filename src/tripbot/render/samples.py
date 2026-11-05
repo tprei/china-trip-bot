@@ -6,6 +6,7 @@ pipeline (the second a little cheaper) and writes one PNG per card.
 
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
@@ -139,31 +140,33 @@ def _segments(
 
 
 def render_samples(config: TripConfig, reference: Reference, out_dir: Path) -> list[Path]:
-    conn = connect(":memory:")
-    config = replace(config, budgets=Budgets(google=0, serpapi=1000, tripcom=0))
-    first_night = datetime(2026, 11, 7, 3, 0)
-    for night, discount in enumerate((0, 6)):
-        deps = NightlyDeps(config, reference, conn, [SampleSource(discount)], log=lambda _: None)
-        report = run_nightly(deps, first_night + timedelta(days=night))
-    out_dir.mkdir(parents=True, exist_ok=True)
-    written: list[Path] = []
-    with CardRenderer() as renderer:
-        deck = Deck(config, reference, conn, report.rankings, date(2026, 11, 8), renderer)
-        window = deck.best_window() or config.windows[0].id
-        cards: dict[str, bytes | None] = {
-            "summary": deck.summary(window),
-            "alert": deck.alert(report.alerts[0]) if report.alerts else None,
-            "route": deck.route(window),
-            "route-no-shanghai": deck.route(window, "no-shanghai"),
-            "history": deck.history_card(window),
-            "windows": deck.windows(),
-            "other": deck.other(window),
-        }
-        for name, png in cards.items():
-            if png is None:
-                continue
-            path = out_dir / f"{name}.png"
-            path.write_bytes(png)
-            written.append(path)
-        written.append(publish(deck, datetime(2026, 11, 8, 3, 10), out_dir))
-    return written
+    with closing(connect(":memory:")) as conn:
+        config = replace(config, budgets=Budgets(google=0, serpapi=1000, tripcom=0))
+        first_night = datetime(2026, 11, 7, 3, 0)
+        for night, discount in enumerate((0, 6)):
+            deps = NightlyDeps(
+                config, reference, conn, [SampleSource(discount)], log=lambda _: None
+            )
+            report = run_nightly(deps, first_night + timedelta(days=night))
+        out_dir.mkdir(parents=True, exist_ok=True)
+        written: list[Path] = []
+        with CardRenderer() as renderer:
+            deck = Deck(config, reference, conn, report.rankings, date(2026, 11, 8), renderer)
+            window = deck.best_window() or config.windows[0].id
+            cards: dict[str, bytes | None] = {
+                "summary": deck.summary(window),
+                "alert": deck.alert(report.alerts[0]) if report.alerts else None,
+                "route": deck.route(window),
+                "route-no-shanghai": deck.route(window, "no-shanghai"),
+                "history": deck.history_card(window),
+                "windows": deck.windows(),
+                "other": deck.other(window),
+            }
+            for name, png in cards.items():
+                if png is None:
+                    continue
+                path = out_dir / f"{name}.png"
+                path.write_bytes(png)
+                written.append(path)
+            written.append(publish(deck, datetime(2026, 11, 8, 3, 10), out_dir))
+        return written

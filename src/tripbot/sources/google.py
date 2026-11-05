@@ -86,5 +86,5 @@ def _segment(single: SingleFlight, names: dict[str, str], fallback: list[str]) -
 
 def _datetime(value: SimpleDatetime) -> datetime:
     year, month, day = value.date
-    hour, minute = value.time if value.time else (0, 0)
+    hour, minute = value.time or (0, 0)
     return datetime(year, month, day) + timedelta(hours=hour, minutes=minute)

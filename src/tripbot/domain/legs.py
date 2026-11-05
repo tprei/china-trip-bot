@@ -54,7 +54,7 @@ class LegTable:
     def between(self, origin: str, destination: str) -> tuple[LegOption, ...]:
         """Listed options, or a generic domestic flight when nothing is listed."""
         listed = self.options.get((origin, destination), ())
-        return listed if listed else (self.fallback_flight,)
+        return listed or (self.fallback_flight,)
 
     def listed(self) -> list[tuple[str, str, LegOption]]:
         return [

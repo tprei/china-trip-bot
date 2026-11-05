@@ -73,7 +73,7 @@ def to_offer(item: dict[str, Any], key: SearchKey) -> Offer:
 
 def _segment(flight: dict[str, Any]) -> Segment:
     number = str(flight.get("flight_number", ""))
-    code = number.split(" ")[0] if number else ""
+    code = number.split(" ", maxsplit=1)[0] if number else ""
     return Segment(
         origin=flight["departure_airport"]["id"],
         destination=flight["arrival_airport"]["id"],
