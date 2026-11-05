@@ -5,14 +5,14 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 
-from tripbot.domain.filters import passing
 from tripbot.domain.flights import Offer, duration_label
 from tripbot.domain.legs import LegOption
 from tripbot.domain.money import Money
 from tripbot.domain.schedule import train_sale_dates
-from tripbot.domain.trip import Group, Window
+from tripbot.domain.trip import Group
 from tripbot.domain.weather import risk_label
 from tripbot.pipeline.nightly import TARGET_KEY
+from tripbot.pipeline.state import window_offers
 from tripbot.render.names import Names, day_label
 from tripbot.store import repo
 from tripbot.telegram.commands import NO_DATA, Reply, Request, command
@@ -61,9 +61,9 @@ def flights(context: BotContext, request: Request) -> Reply:
     window = context.config.window(window_id) if window_id else None
     if window is None:
         return Reply(text=NO_DATA)
-    offers = [o for o in context.rankings().offers if o.group_id == group.id]
-    outbound = _within(offers, "outbound", window, context)
-    inbound = _within(offers, "return", window, context)
+    rankings = context.rankings()
+    outbound = window_offers(context.config, rankings, group.id, "outbound", window)
+    inbound = window_offers(context.config, rankings, group.id, "return", window)
     currency = context.config.origin_of(group).currency
     return Reply(
         text=lines(
@@ -236,27 +236,6 @@ def _group_arg(context: BotContext, args: list[str]) -> Group | None:
             if wanted in (group.id, group.origin.lower(), *names):
                 return group
     return None
-
-
-def _within(
-    offers: list[Offer], direction: str, window: Window, context: BotContext
-) -> list[Offer]:
-    config = context.config
-    if direction == "outbound":
-        dates = set(window.outbound_dates(config.flex))
-        chosen = [
-            o
-            for o in offers
-            if o.direction == "outbound"
-            and o.depart.date() in dates
-            and o.arrive.date() <= window.start
-        ]
-    else:
-        dates = set(window.return_dates(config.flex))
-        chosen = [o for o in offers if o.direction == "return" and o.depart.date() in dates]
-    rates = context.rankings().rates
-    valid = passing(chosen, config.flights, config.china_airports)
-    return sorted(valid, key=lambda o: (rates.to_eur(o.price).minor, o.total_minutes))
 
 
 def _offer_line(offer: Offer, context: BotContext, currency: str) -> str:

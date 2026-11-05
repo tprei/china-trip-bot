@@ -92,13 +92,21 @@ MIGRATIONS: tuple[str, ...] = (
 )
 
 
+LOCK_TIMEOUT_S = 30
+
+
 def connect(path: Path | str) -> sqlite3.Connection:
-    """Open the database (":memory:" for tests) and apply pending migrations."""
+    """Open the database (":memory:" for tests) and apply pending migrations.
+
+    The bot and the nightly run share the file, so it runs in WAL mode and waits for locks.
+    """
     if isinstance(path, Path):
         path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path))
+    conn = sqlite3.connect(str(path), timeout=LOCK_TIMEOUT_S)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    if isinstance(path, Path):
+        conn.execute("PRAGMA journal_mode = WAL")
     migrate(conn)
     return conn
 

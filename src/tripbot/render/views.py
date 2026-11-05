@@ -141,7 +141,7 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
         exit_code=_airport_of(best, "exit"),
         exit_city=names.city(best.exit),
         windows=window_dots(inputs.rankings, inputs.reference_totals, inputs.window_id),
-        groups=tuple(group_row(choice, rates, names, inputs) for choice in best.choices),
+        groups=tuple(group_row(choice, rates, names) for choice in best.choices),
         timeline=timeline(best.route, names),
         spark=spark(inputs.history, inputs.window_id),
         sources=tuple(
@@ -161,10 +161,10 @@ def other_currencies(
     )
 
 
-def group_row(choice: GroupChoice, rates: Rates, names: Names, inputs: SummaryInputs) -> GroupRow:
-    origin = inputs.names.config.origin_of(choice.group)
+def group_row(choice: GroupChoice, rates: Rates, names: Names) -> GroupRow:
+    origin = names.config.origin_of(choice.group)
     local = rates.from_eur(choice.fare_eur, origin.currency)
-    cap = inputs.names.config.fairness.max_price_overshoot_pct
+    cap = names.config.fairness.max_price_overshoot_pct
     return GroupRow(
         name=choice.group.name,
         initials=tuple(initials(person) for person in choice.group.people),

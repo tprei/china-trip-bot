@@ -13,6 +13,7 @@ from tripbot.domain.money import Rates
 from tripbot.domain.ranking import WindowRanking, rank_window
 from tripbot.domain.routes import stops_without
 from tripbot.domain.searches import Focus, SearchSpace
+from tripbot.domain.trip import Window
 from tripbot.reference import Reference, ranking_inputs
 from tripbot.store import repo
 
@@ -89,3 +90,28 @@ def search_space(config: TripConfig, reference: Reference) -> SearchSpace:
         china_airports=config.china_airports,
         city_codes={city: info.tripcom for city, info in reference.cities.items() if info.tripcom},
     )
+
+
+def window_offers(
+    config: TripConfig, rankings: Rankings, group_id: str, direction: str, window: Window
+) -> list[Offer]:
+    """One group's offers for a window and direction, cheapest first."""
+    if direction == "outbound":
+        dates = set(window.outbound_dates(config.flex))
+        chosen = [
+            o
+            for o in rankings.offers
+            if o.group_id == group_id
+            and o.direction == "outbound"
+            and o.depart.date() in dates
+            and o.arrive.date() <= window.start
+        ]
+    else:
+        dates = set(window.return_dates(config.flex))
+        chosen = [
+            o
+            for o in rankings.offers
+            if o.group_id == group_id and o.direction == "return" and o.depart.date() in dates
+        ]
+    valid = passing(chosen, config.flights, config.china_airports)
+    return sorted(valid, key=lambda o: (rankings.rates.to_eur(o.price).minor, o.total_minutes))
