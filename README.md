@@ -43,7 +43,15 @@ To add someone from an existing origin, add their name to that group's `people`.
    ```
    `tripbot-nightly` runs daily at 03:00 (wakes the PC, catches up if it was off). `tripbot-bot` starts at boot and `scripts/run-bot.sh` restarts it after a crash. If WSL will not start from a task while nobody is logged in, open each task, choose "Run only when user is logged on", and turn on automatic sign-in for that Windows user.
 6. **Health check (optional).** Create a check on healthchecks.io with a 1-day period and a few hours of grace, and put its URL in `HEALTHCHECK_URL`. A missed or failed night then reaches you by email.
-7. **Dashboard (optional).** The nightly run writes `site/index.html`, the page behind the cards' Details button. To publish it, install Node in WSL, create a Cloudflare Pages project with an unguessable name, and set `CF_PAGES_PROJECT`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` and `DASHBOARD_URL` (the `*.pages.dev` address). `scripts/run-nightly.sh` uploads it after each run. Without these the Details button is left out.
+7. **Dashboard.** The nightly run writes `site/index.html`, the page behind the cards' Details button, and with `PUBLISH_PAGES=1` pushes it to the `gh-pages` branch, which GitHub Pages serves at https://tprei.github.io/china-trip-bot/. The page is public, like the repo. For the push, give the mini PC a deploy key:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/tripbot_deploy -N ""
+   cat ~/.ssh/tripbot_deploy.pub   # repo Settings → Deploy keys → Add, allow write access
+   printf 'Host github.com\n  IdentityFile ~/.ssh/tripbot_deploy\n' >> ~/.ssh/config
+   git remote set-url origin git@github.com:tprei/china-trip-bot.git
+   scripts/publish-site.sh
+   ```
+   Pages is set to deploy from the `gh-pages` branch (Settings → Pages). Leave `DASHBOARD_URL` empty to hide the Details button.
 
 Logs are in `var/logs/`. The database is `var/tripbot.sqlite3`; copy it to back it up.
 
