@@ -13,6 +13,7 @@ from tripbot.domain.trip import people_count
 from tripbot.pipeline.health import ping
 from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
 from tripbot.reference import load_reference
+from tripbot.render.samples import render_samples
 from tripbot.settings import Settings, load_settings
 from tripbot.sources.base import FlightSource
 from tripbot.sources.ecb import fetch_rates
@@ -29,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser("check-config", help="validate config/trip.yaml and print a summary")
     nightly = commands.add_parser("nightly", help="search, rank, snapshot and alert")
     nightly.add_argument("--no-search", action="store_true", help="rank stored offers only")
+    samples = commands.add_parser("render-samples", help="render every card from sample flights")
+    samples.add_argument("out", type=Path)
     args = parser.parse_args(argv)
 
     settings = load_settings(args.root.resolve())
@@ -36,6 +39,11 @@ def main(argv: list[str] | None = None) -> int:
         return check_config(settings)
     if args.command == "nightly":
         return nightly_command(settings, search=not args.no_search)
+    if args.command == "render-samples":
+        config = load_config(settings.config_path)
+        for path in render_samples(config, load_reference(settings.data_dir), args.out):
+            print(path)
+        return 0
     return 2
 
 

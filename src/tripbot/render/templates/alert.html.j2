@@ -1,0 +1,45 @@
+{% extends "_base.html.j2" %}
+{% from "_icons.html.j2" import icon, flag %}
+
+{% block card %}
+<div class="card" style="height:1080px">
+  <section style="position:relative;overflow:hidden;background:{{ '#3dd39b' if view.record else '#6fe0b5' }};color:#06231a;padding:56px 64px 52px;display:flex;flex-direction:column;gap:16px">
+    <svg viewBox="0 0 1080 200" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:1080px;height:200px">
+      <path d="M0,200 V130 C40,130 60,60 100,60 C140,60 150,140 190,140 C225,140 240,40 290,40 C340,40 350,150 390,150 C420,150 440,90 480,90 C520,90 530,150 570,150 C600,150 620,30 670,30 C720,30 730,140 770,140 C800,140 815,80 855,80 C895,80 905,150 945,150 C975,150 990,70 1030,70 C1060,70 1070,110 1080,110 V200 Z" fill="#06231a" fill-opacity="0.08"/>
+    </svg>
+    <div style="position:relative;display:flex;justify-content:space-between;align-items:center">
+      <div class="mono" style="font-size:28px;letter-spacing:0.16em;font-weight:700;text-transform:uppercase">{{ view.headline }}</div>
+      <div class="mono" style="font-size:24px">{{ view.date_label }}</div>
+    </div>
+    <div class="num" style="position:relative;font-size:230px;font-stretch:76%">{{ view.total }}</div>
+    <div style="position:relative;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;background:#06231a;color:#fff;font-size:34px;font-weight:800;padding:10px 22px 10px 14px;border-radius:999px">{{ icon("down", "#3dd39b", 30) }}{{ view.saving }} · {{ view.saving_pct }}</div>
+      <div style="font-size:28px;font-weight:600">{{ people }} people</div>
+    </div>
+    <div style="position:relative;display:flex;align-items:center;gap:28px;font-size:30px;font-weight:700">
+      {% for money in view.others %}<span style="display:inline-flex;align-items:center;gap:12px">{{ flag(money.flag) }}{{ money.text }}</span>{% endfor %}
+    </div>
+  </section>
+
+  <section style="padding:44px 64px 0;display:flex;flex-direction:column;gap:22px">
+    <div class="chips" style="margin-top:0">
+      <div class="chip mono" style="border-color:#3dd39b;color:#6fe0b5;font-size:24px">WINDOW {{ view.window_id }} · {{ view.window_dates }}</div>
+      <div class="chip">{{ icon("pin", "#ff8a73", 28) }}{{ view.entry_code }} → {{ view.exit_code }}</div>
+    </div>
+    <div class="label">Now</div>
+    {% for row in view.rows %}
+    <div class="panel row" style="padding:20px 30px;gap:22px">
+      <span class="mono" style="font-size:30px;font-weight:700;width:90px">{{ row.origin }}</span>
+      <span style="font-size:28px;font-weight:700">{{ row.name }}</span>
+      <span class="spacer"></span>
+      <span class="num" style="font-size:44px">{{ row.price }}</span>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section style="margin-top:auto;padding:0 64px 52px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:24px;color:var(--muted)">{{ view.previous }}</div>
+    <div class="button" style="margin:0;padding:18px 28px">Details →</div>
+  </section>
+</div>
+{% endblock %}
