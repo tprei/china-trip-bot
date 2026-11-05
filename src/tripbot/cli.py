@@ -6,14 +6,19 @@ import argparse
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 
 from tripbot.config import TripConfig, load_config
+from tripbot.dashboard.build import publish
 from tripbot.domain.trip import people_count
 from tripbot.pipeline.health import ping
 from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
+from tripbot.pipeline.state import Rankings, load_rankings
 from tripbot.reference import Reference, load_reference
+from tripbot.render.cards import CardRenderer
+from tripbot.render.deck import Deck
 from tripbot.render.samples import render_samples
 from tripbot.settings import Settings, load_settings
 from tripbot.sources.base import FlightSource
@@ -35,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     nightly = commands.add_parser("nightly", help="search, rank, snapshot and alert")
     nightly.add_argument("--no-search", action="store_true", help="rank stored offers only")
     commands.add_parser("bot", help="answer Telegram commands and send the weekly summary")
+    commands.add_parser("build-dashboard", help="write site/index.html from stored offers")
     samples = commands.add_parser("render-samples", help="render every card from sample flights")
     samples.add_argument("out", type=Path)
     args = parser.parse_args(argv)
@@ -46,6 +52,8 @@ def main(argv: list[str] | None = None) -> int:
         return nightly_command(settings, search=not args.no_search)
     if args.command == "bot":
         return bot_command(settings)
+    if args.command == "build-dashboard":
+        return dashboard_command(settings)
     if args.command == "render-samples":
         config = load_config(settings.config_path)
         for path in render_samples(config, load_reference(settings.data_dir), args.out):
@@ -83,9 +91,10 @@ def nightly_command(settings: Settings, *, search: bool) -> int:
             sources=sources,
             fetch_rates=(lambda: fetch_rates(client, currencies)) if search else None,
         )
-        now = datetime.now()
+        now = local_now(config)
         report = run_nightly(deps, now)
         print_report(report)
+        print(build_site(settings, config, reference, conn, report.rankings, now))
         if settings.telegram_token and settings.telegram_chat_id:
             bot = bot_deps(
                 settings, config, reference, conn, TelegramApi(client, settings.telegram_token)
@@ -93,6 +102,33 @@ def nightly_command(settings: Settings, *, search: bool) -> int:
             notify_nightly(bot.messenger, bot.chat_id, report, bot.context(now))
         ping(client, settings.healthcheck_url, report.ok)
     return 0 if report.ok else 1
+
+
+def dashboard_command(settings: Settings) -> int:
+    config = load_config(settings.config_path)
+    reference = load_reference(settings.data_dir)
+    conn = connect(settings.db_path)
+    now = local_now(config)
+    rankings = load_rankings(conn, config, reference, now)
+    print(build_site(settings, config, reference, conn, rankings, now))
+    return 0
+
+
+def build_site(
+    settings: Settings,
+    config: TripConfig,
+    reference: Reference,
+    conn: sqlite3.Connection,
+    rankings: Rankings,
+    now: datetime,
+) -> Path:
+    # The deck only supplies numbers here; its renderer never starts Chromium.
+    deck = Deck(config, reference, conn, rankings, now.date(), CardRenderer())
+    return publish(deck, now, settings.site_dir)
+
+
+def local_now(config: TripConfig) -> datetime:
+    return datetime.now(ZoneInfo(config.timezone)).replace(tzinfo=None)
 
 
 def bot_deps(

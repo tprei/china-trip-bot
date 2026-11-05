@@ -11,6 +11,7 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from tripbot.config import Budgets, TripConfig
+from tripbot.dashboard.build import publish
 from tripbot.domain.flights import Offer, Segment
 from tripbot.domain.money import Money
 from tripbot.domain.searches import SearchKey, SearchResult
@@ -164,4 +165,5 @@ def render_samples(config: TripConfig, reference: Reference, out_dir: Path) -> l
             path = out_dir / f"{name}.png"
             path.write_bytes(png)
             written.append(path)
+        written.append(publish(deck, datetime(2026, 11, 8, 3, 10), out_dir))
     return written
