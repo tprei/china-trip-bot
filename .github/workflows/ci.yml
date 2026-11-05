@@ -18,15 +18,16 @@ env:
 jobs:
   lint:
     name: Lint, types and rules
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Playwright's Chromium deps target 24.04; latest is moving to 26
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # the PR size check diffs against the base branch
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: lint # one cache per job, so both can save
       - run: uv sync --locked
       - name: ruff check
         run: uv run ruff check . --output-format=github
@@ -44,29 +45,33 @@ jobs:
 
   test:
     name: Tests and coverage
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04 # Playwright's Chromium deps target 24.04; latest is moving to 26
+    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: test
       - run: uv sync --locked
       - name: Playwright version
         id: playwright
         run: echo "version=$(uv run python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: browsers
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - name: Chromium
         if: steps.browsers.outputs.cache-hit != 'true'
+        timeout-minutes: 4
         run: uv run playwright install --with-deps --only-shell chromium
       - name: Chromium system libraries
         if: steps.browsers.outputs.cache-hit == 'true'
+        timeout-minutes: 4
         run: uv run playwright install-deps chromium
       - name: pytest
+        timeout-minutes: 4
         env:
           TRIPBOT_REQUIRE_CHROMIUM: "1"
         run: uv run pytest --cov --cov-report=term
