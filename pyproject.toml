@@ -66,6 +66,8 @@ testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 # A warning is a bug waiting to happen: unclosed connections, deprecations.
 filterwarnings = ["error"]
+# Print every thread's stack if one test hangs, so CI shows where.
+faulthandler_timeout = 60
 
 [tool.coverage.run]
 source = ["tripbot"]
