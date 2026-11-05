@@ -45,6 +45,7 @@ class RouteSettings:
     nights: dict[str, int]
     value_of_time_eur_per_hour: int
     weather_eur_per_risk_night: int
+    prefer_sleepers_eur: int
     alternatives: tuple[Alternative, ...]
 
     def alternative(self, alternative_id: str) -> Alternative | None:
@@ -141,6 +142,7 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
         nights={str(city): int(n) for city, n in route_raw["nights"].items()},
         value_of_time_eur_per_hour=int(route_raw["value_of_time_eur_per_hour"]),
         weather_eur_per_risk_night=int(route_raw["weather_eur_per_risk_night"]),
+        prefer_sleepers_eur=int(route_raw["prefer_sleepers_eur"]),
         alternatives=tuple(
             Alternative(id=str(alt["id"]), label=str(alt["label"]), drop=str(alt["drop"]))
             for alt in route_raw["alternatives"]

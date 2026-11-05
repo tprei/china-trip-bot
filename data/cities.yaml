@@ -1,0 +1,16 @@
+# Places the route can touch. `region` picks the climate row in weather.yaml;
+# `tripcom` is the city code Trip.com searches with.
+
+beijing: {name: Beijing, region: beijing, tripcom: BJS}
+shanghai: {name: Shanghai, region: shanghai, tripcom: SHA}
+zhangjiajie: {name: Zhangjiajie, region: zhangjiajie, tripcom: DYG}
+yangshuo: {name: Yangshuo, region: guilin}
+guilin: {name: Guilin, region: guilin, tripcom: KWL}
+guangzhou: {name: Guangzhou, region: guangzhou, tripcom: CAN}
+shenzhen: {name: Shenzhen, region: guangzhou, tripcom: SZX}
+changsha: {name: Changsha, region: zhangjiajie, tripcom: CSX}
+chengdu: {name: Chengdu, region: chengdu, tripcom: CTU}
+chongqing: {name: Chongqing, region: chengdu, tripcom: CKG}
+xian: {name: Xi'an, region: beijing, tripcom: SIA}
+hangzhou: {name: Hangzhou, region: shanghai, tripcom: HGH}
+wuhan: {name: Wuhan, region: zhangjiajie, tripcom: WUH}
