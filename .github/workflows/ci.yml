@@ -27,6 +27,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: lint # one cache per job, so both can save
       - run: uv sync --locked
       - name: ruff check
         run: uv run ruff check . --output-format=github
@@ -51,6 +52,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: test
       - run: uv sync --locked
       - name: Playwright version
         id: playwright
