@@ -1,0 +1,228 @@
+"""Load `config/trip.yaml` into typed, validated settings."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from tripbot.domain.money import Rates
+from tripbot.domain.trip import Flex, Group, Origin, Window
+
+
+class ConfigError(ValueError):
+    """The trip configuration is missing something or contradicts itself."""
+
+
+@dataclass(frozen=True)
+class FlightRules:
+    max_stops: int
+    max_layover_minutes: int
+    blocked_airports: frozenset[str]
+    allow_self_transfer: bool
+
+
+@dataclass(frozen=True)
+class Fairness:
+    max_price_overshoot_pct: int
+    max_time_overshoot_minutes: int
+
+
+@dataclass(frozen=True)
+class Alternative:
+    id: str
+    label: str
+    drop: str
+
+
+@dataclass(frozen=True)
+class RouteSettings:
+    stops: tuple[str, ...]
+    nights: dict[str, int]
+    value_of_time_eur_per_hour: int
+    weather_eur_per_risk_night: int
+    alternatives: tuple[Alternative, ...]
+
+    def alternative(self, alternative_id: str) -> Alternative | None:
+        return next((alt for alt in self.alternatives if alt.id == alternative_id), None)
+
+
+@dataclass(frozen=True)
+class AlertRules:
+    drop_pct: int
+    record_low: bool
+
+
+@dataclass(frozen=True)
+class SummarySchedule:
+    weekday: int  # Monday is 0
+    hour: int
+    minute: int
+
+
+@dataclass(frozen=True)
+class Budgets:
+    google: int
+    serpapi: int
+    tripcom: int
+
+
+@dataclass(frozen=True)
+class TripConfig:
+    timezone: str
+    home_currency: str
+    origins: dict[str, Origin]
+    groups: tuple[Group, ...]
+    windows: tuple[Window, ...]
+    flex: Flex
+    china_airports: dict[str, str]
+    flights: FlightRules
+    fairness: Fairness
+    route: RouteSettings
+    alerts: AlertRules
+    summary: SummarySchedule
+    budgets: Budgets
+    fallback_rates: Rates
+
+    def origin_of(self, group: Group) -> Origin:
+        return self.origins[group.origin]
+
+    def group(self, group_id: str) -> Group | None:
+        return next((group for group in self.groups if group.id == group_id), None)
+
+    def window(self, window_id: str) -> Window | None:
+        wanted = window_id.upper()
+        return next((window for window in self.windows if window.id == wanted), None)
+
+    def city_of(self, airport: str) -> str | None:
+        return self.china_airports.get(airport)
+
+
+WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
+
+def load_config(path: Path) -> TripConfig:
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{path} is not a mapping")
+    return parse_config(raw)
+
+
+def parse_config(raw: dict[str, Any]) -> TripConfig:
+    origins = {
+        code: Origin(
+            code=code,
+            city=str(spec["city"]),
+            airports=tuple(spec["airports"]),
+            currency=str(spec["currency"]),
+        )
+        for code, spec in raw["origins"].items()
+    }
+    groups = tuple(
+        Group(
+            id=str(spec["id"]),
+            name=str(spec["name"]),
+            origin=str(spec["origin"]),
+            people=tuple(str(person) for person in spec["people"]),
+        )
+        for spec in raw["groups"]
+    )
+    windows = tuple(
+        Window(id=str(spec["id"]), start=_date(spec["start"]), end=_date(spec["end"]))
+        for spec in raw["windows"]
+    )
+    route_raw = raw["route"]
+    route = RouteSettings(
+        stops=tuple(route_raw["stops"]),
+        nights={str(city): int(n) for city, n in route_raw["nights"].items()},
+        value_of_time_eur_per_hour=int(route_raw["value_of_time_eur_per_hour"]),
+        weather_eur_per_risk_night=int(route_raw["weather_eur_per_risk_night"]),
+        alternatives=tuple(
+            Alternative(id=str(alt["id"]), label=str(alt["label"]), drop=str(alt["drop"]))
+            for alt in route_raw["alternatives"]
+        ),
+    )
+    flights_raw = raw["flights"]
+    config = TripConfig(
+        timezone=str(raw["timezone"]),
+        home_currency=str(raw["home_currency"]),
+        origins=origins,
+        groups=groups,
+        windows=windows,
+        flex=Flex(
+            outbound_days_before=int(raw["flex"]["outbound_days_before"]),
+            return_days_after=int(raw["flex"]["return_days_after"]),
+        ),
+        china_airports={str(code): str(city) for code, city in raw["china_airports"].items()},
+        flights=FlightRules(
+            max_stops=int(flights_raw["max_stops"]),
+            max_layover_minutes=int(flights_raw["max_layover_hours"]) * 60,
+            blocked_airports=frozenset(flights_raw["blocked_airports"]),
+            allow_self_transfer=bool(flights_raw["allow_self_transfer"]),
+        ),
+        fairness=Fairness(
+            max_price_overshoot_pct=int(raw["fairness"]["max_price_overshoot_pct"]),
+            max_time_overshoot_minutes=int(raw["fairness"]["max_time_overshoot_hours"]) * 60,
+        ),
+        route=route,
+        alerts=AlertRules(
+            drop_pct=int(raw["alerts"]["drop_pct"]),
+            record_low=bool(raw["alerts"]["record_low"]),
+        ),
+        summary=_summary(raw["summary"]),
+        budgets=Budgets(
+            google=int(raw["budgets"]["google"]),
+            serpapi=int(raw["budgets"]["serpapi"]),
+            tripcom=int(raw["budgets"]["tripcom"]),
+        ),
+        fallback_rates=Rates(
+            per_eur={
+                code: Decimal(str(rate)) for code, rate in raw["fallback_rates_per_eur"].items()
+            },
+            as_of=date(2026, 11, 5),
+        ),
+    )
+    _validate(config)
+    return config
+
+
+def _date(value: object) -> date:
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value))
+
+
+def _summary(raw: dict[str, Any]) -> SummarySchedule:
+    weekday = str(raw["weekday"]).lower()
+    if weekday not in WEEKDAYS:
+        raise ConfigError(f"summary.weekday must be one of {', '.join(WEEKDAYS)}")
+    hour, minute = (int(part) for part in str(raw["time"]).split(":"))
+    return SummarySchedule(weekday=WEEKDAYS.index(weekday), hour=hour, minute=minute)
+
+
+def _validate(config: TripConfig) -> None:
+    group_ids = [group.id for group in config.groups]
+    if len(set(group_ids)) != len(group_ids):
+        raise ConfigError("group ids must be unique")
+    for group in config.groups:
+        if group.origin not in config.origins:
+            raise ConfigError(f"group {group.id} uses unknown origin {group.origin}")
+        if not group.people:
+            raise ConfigError(f"group {group.id} has no people")
+    for window in config.windows:
+        if window.end <= window.start:
+            raise ConfigError(f"window {window.id} ends before it starts")
+    for stop in config.route.stops:
+        if stop not in config.route.nights:
+            raise ConfigError(f"route stop {stop} has no nights")
+    for alternative in config.route.alternatives:
+        if alternative.drop not in config.route.stops:
+            raise ConfigError(f"alternative {alternative.id} drops unknown stop {alternative.drop}")
+    currencies = {origin.currency for origin in config.origins.values()}
+    missing = currencies - {"EUR"} - set(config.fallback_rates.per_eur)
+    if missing:
+        raise ConfigError(f"fallback rates missing for {', '.join(sorted(missing))}")
