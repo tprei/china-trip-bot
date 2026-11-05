@@ -1,0 +1,47 @@
+from pathlib import Path
+from typing import Any
+
+import pytest
+import yaml
+
+from tripbot.config import ConfigError, TripConfig, parse_config
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def raw_config() -> dict[str, Any]:
+    raw = yaml.safe_load((ROOT / "config" / "trip.yaml").read_text(encoding="utf-8"))
+    assert isinstance(raw, dict)
+    return raw
+
+
+def test_repo_config_loads(config: TripConfig) -> None:
+    assert [group.id for group in config.groups] == ["thiago", "lon", "sao"]
+    assert sum(group.headcount for group in config.groups) == 5
+    assert [window.id for window in config.windows] == ["C", "A", "B"]
+    assert config.origin_of(config.groups[1]).airports == ("LHR", "LGW")
+    assert config.flights.max_layover_minutes == 480
+    assert config.summary.weekday == 6
+    assert config.city_of("PKX") == "beijing"
+    assert config.window("b") == config.windows[2]
+
+
+def test_unknown_origin_is_rejected() -> None:
+    raw = raw_config()
+    raw["groups"][0]["origin"] = "XXX"
+    with pytest.raises(ConfigError, match="unknown origin"):
+        parse_config(raw)
+
+
+def test_alternative_must_drop_a_known_stop() -> None:
+    raw = raw_config()
+    raw["route"]["alternatives"][0]["drop"] = "chengdu"
+    with pytest.raises(ConfigError, match="unknown stop"):
+        parse_config(raw)
+
+
+def test_every_origin_currency_needs_a_fallback_rate() -> None:
+    raw = raw_config()
+    del raw["fallback_rates_per_eur"]["BRL"]
+    with pytest.raises(ConfigError, match="BRL"):
+        parse_config(raw)
