@@ -52,8 +52,9 @@ fairness:
 route:
   stops: [beijing, shanghai, zhangjiajie, yangshuo]   # the main plan
   nights: {beijing: 3, shanghai: 2, zhangjiajie: 2, yangshuo: 3}
-  value_of_time_eur_per_hour: 12      # daytime hours spent moving
+  value_of_time_eur_per_hour: 20      # daytime hours spent moving
   weather_eur_per_risk_night: 15      # per person-night at full risk
+  prefer_sleepers_eur: 40             # comfort: a sleeper beats a similar day leg
   alternatives:                       # only for /other
     - {id: no-zhangjiajie, label: Without Zhangjiajie, drop: zhangjiajie}
     - {id: no-shanghai, label: Without Shanghai, drop: shanghai}

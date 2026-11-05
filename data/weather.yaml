@@ -1,0 +1,25 @@
+# Monthly climate normals per region, used to weigh nights at each stop.
+# risk = rain_mm / 250 + typhoon bonus (low 0, moderate 0.15, high 0.3), capped at 1.
+#
+# Sources: Guilin and Zhangjiajie from statsclimat.com and climate-data.org
+# (1991–2020 normals, checked 2026-11-05); Beijing and Shanghai are approximate
+# normals and should be checked. Typhoon levels from weather.com.cn (Aug 2026)
+# and the 2026 Li River closure after typhoon rain (6–29 Jul 2026).
+
+regions:
+  beijing:
+    7: {rain_mm: 160, typhoon: low}
+    8: {rain_mm: 130, typhoon: low}
+    9: {rain_mm: 50, typhoon: low}
+  shanghai:
+    7: {rain_mm: 150, typhoon: moderate}
+    8: {rain_mm: 210, typhoon: moderate}
+    9: {rain_mm: 125, typhoon: moderate}
+  guilin:
+    7: {rain_mm: 220, typhoon: moderate}
+    8: {rain_mm: 150, typhoon: moderate}
+    9: {rain_mm: 75, typhoon: low}
+  zhangjiajie:
+    7: {rain_mm: 200, typhoon: low}
+    8: {rain_mm: 148, typhoon: low}
+    9: {rain_mm: 97, typhoon: low}
