@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Runtime state lives outside git
+.env
+var/
+site/
+*.sqlite3
+*.sqlite3-*
