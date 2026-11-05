@@ -19,6 +19,7 @@ from tripbot.store import repo
 from tripbot.telegram.api import Messenger, TelegramApi, TelegramError
 from tripbot.telegram.commands import REGISTRY, Reply, Request, details_button, dispatch, parse
 from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
+from tripbot.telegram.info import register_info_commands, seed_todos
 
 OFFSET_KEY = "telegram_offset"
 RETRY_SECONDS = 30
@@ -34,6 +35,9 @@ class BotDeps:
     dashboard_url: str | None = None
     open_deck: DeckOpener = chromium_deck
     log: Callable[[str], None] = field(default=print)
+
+    def __post_init__(self) -> None:
+        register_info_commands()
 
     def context(self, now: datetime) -> BotContext:
         return BotContext(
@@ -94,6 +98,7 @@ def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
 
 def run_forever(deps: BotDeps, api: TelegramApi) -> None:
     username = api.username()
+    seed_todos(deps.context(deps.local_now()))
     api.set_my_commands([(spec.name, spec.help) for spec in REGISTRY.values()])
     deps.log(f"polling as @{username}")
     while True:

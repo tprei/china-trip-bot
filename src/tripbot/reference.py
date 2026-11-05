@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from tripbot.domain.legs import LegOption, LegTable, Mode
 from tripbot.domain.money import Money, Rates
 from tripbot.domain.ranking import RankingInputs
 from tripbot.domain.routes import City, PlannerInputs
+from tripbot.domain.visa import VisaInfo
 from tripbot.domain.weather import Climate, MonthClimate, Typhoon
 
 WEEKDAY_CODES = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
@@ -25,6 +27,8 @@ class Reference:
     cities: dict[str, City]
     legs: LegTable
     climate: Climate
+    visa: VisaInfo
+    todo_seed: tuple[str, ...]
 
 
 def load_reference(data_dir: Path) -> Reference:
@@ -32,6 +36,22 @@ def load_reference(data_dir: Path) -> Reference:
         cities=load_cities(data_dir / "cities.yaml"),
         legs=load_legs(data_dir / "legs.yaml"),
         climate=load_climate(data_dir / "weather.yaml"),
+        visa=load_visa(data_dir / "visa.yaml"),
+        todo_seed=tuple(str(item) for item in _read(data_dir / "todo.yaml")),
+    )
+
+
+def load_visa(path: Path) -> VisaInfo:
+    raw = _read(path)
+    return VisaInfo(
+        as_of=_date(raw["as_of"]),
+        passport=str(raw["passport"]),
+        status=str(raw["status"]),
+        visa_free_until=_date(raw["visa_free_until"]),
+        decide_by=_date(raw["decide_by"]),
+        facts=tuple(str(fact) for fact in raw["facts"]),
+        steps=tuple(str(step) for step in raw["steps"]),
+        sources=tuple(str(source) for source in raw["sources"]),
     )
 
 
@@ -61,6 +81,10 @@ def ranking_inputs(config: TripConfig, reference: Reference, rates: Rates) -> Ra
 
 def _read(path: Path) -> Any:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _date(value: object) -> date:
+    return value if isinstance(value, date) else date.fromisoformat(str(value))
 
 
 def load_cities(path: Path) -> dict[str, City]:
