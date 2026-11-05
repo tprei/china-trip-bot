@@ -1,0 +1,64 @@
+{
+  "search_metadata": {"status": "Success"},
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {"name": "Heathrow Airport", "id": "LHR", "time": "2027-08-28 21:00"},
+          "arrival_airport": {"name": "Guangzhou Baiyun International Airport", "id": "CAN", "time": "2027-08-29 16:15"},
+          "duration": 735,
+          "airplane": "Airbus A350",
+          "airline": "China Southern",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png",
+          "travel_class": "Economy",
+          "flight_number": "CZ 304",
+          "extensions": ["Average legroom (31 in)", "Checked baggage for a fee"]
+        }
+      ],
+      "total_duration": 735,
+      "price": 598,
+      "type": "One way",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png"
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {"name": "Gatwick Airport", "id": "LGW", "time": "2027-08-28 20:20"},
+          "arrival_airport": {"name": "Beijing Capital International Airport", "id": "PEK", "time": "2027-08-29 14:10"},
+          "duration": 650,
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "flight_number": "CA 632"
+        }
+      ],
+      "total_duration": 650,
+      "price": 641
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {"name": "Heathrow Airport", "id": "LHR", "time": "2027-08-28 09:30"},
+          "arrival_airport": {"name": "Helsinki Airport", "id": "HEL", "time": "2027-08-28 14:20"},
+          "duration": 170,
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "flight_number": "AY 1332"
+        },
+        {
+          "departure_airport": {"name": "Helsinki Airport", "id": "HEL", "time": "2027-08-28 17:25"},
+          "arrival_airport": {"name": "Shanghai Pudong International Airport", "id": "PVG", "time": "2027-08-29 08:30"},
+          "duration": 545,
+          "airline": "Juneyao Airlines",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/HO.png",
+          "flight_number": "HO 1600",
+          "extensions": ["Self transfer"]
+        }
+      ],
+      "layovers": [{"duration": 185, "name": "Helsinki Airport", "id": "HEL"}],
+      "total_duration": 900,
+      "price": 512
+    }
+  ]
+}
