@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family: "Archivo"; src: url("{{ fonts.archivo }}") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: "JetBrains Mono"; src: url("{{ fonts.mono_400 }}") format("woff2"); font-weight: 400; }
+@font-face { font-family: "JetBrains Mono"; src: url("{{ fonts.mono_700 }}") format("woff2"); font-weight: 700; }
+{% include "_style.css" %}
+</style>
+</head>
+<body>
+{% block card %}{% endblock %}
+</body>
+</html>

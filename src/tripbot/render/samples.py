@@ -1,14 +1,25 @@
-"""Realistic sample flights for tests, reviews and screenshots."""
+"""Render every card from realistic sample flights, for review and screenshots.
+
+`tripbot render-samples OUT_DIR` runs two sample nights through the real
+pipeline (the second a little cheaper) and writes one PNG per card.
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, time, timedelta
+from dataclasses import dataclass, replace
+from datetime import date, datetime, time, timedelta
+from pathlib import Path
 
+from tripbot.config import Budgets, TripConfig
 from tripbot.domain.flights import Offer, Segment
 from tripbot.domain.money import Money
 from tripbot.domain.searches import SearchKey, SearchResult
+from tripbot.pipeline.nightly import NightlyDeps, run_nightly
+from tripbot.reference import Reference
+from tripbot.render.cards import CardRenderer
+from tripbot.render.deck import Deck
 from tripbot.sources.base import SearchShape, logo_for
+from tripbot.store.db import connect
 
 UTC_OFFSET = {"DUB": 1, "LHR": 1, "LGW": 1, "GRU": -3}  # summer; China is +8
 
@@ -124,3 +135,28 @@ def _segments(
             logo_for(route.airline),
         ),
     )
+
+
+def render_samples(config: TripConfig, reference: Reference, out_dir: Path) -> list[Path]:
+    conn = connect(":memory:")
+    config = replace(config, budgets=Budgets(google=0, serpapi=1000, tripcom=0))
+    first_night = datetime(2026, 11, 7, 3, 0)
+    for night, discount in enumerate((0, 6)):
+        deps = NightlyDeps(config, reference, conn, [SampleSource(discount)], log=lambda _: None)
+        report = run_nightly(deps, first_night + timedelta(days=night))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    with CardRenderer() as renderer:
+        deck = Deck(config, reference, conn, report.rankings, date(2026, 11, 8), renderer)
+        window = deck.best_window() or config.windows[0].id
+        cards: dict[str, bytes | None] = {
+            "summary": deck.summary(window),
+            "alert": deck.alert(report.alerts[0]) if report.alerts else None,
+        }
+        for name, png in cards.items():
+            if png is None:
+                continue
+            path = out_dir / f"{name}.png"
+            path.write_bytes(png)
+            written.append(path)
+    return written
