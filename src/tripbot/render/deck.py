@@ -11,7 +11,7 @@ from tripbot.domain.alerts import Alert
 from tripbot.domain.money import Money
 from tripbot.pipeline.state import MAIN, Rankings
 from tripbot.reference import Reference
-from tripbot.render import views
+from tripbot.render import details, views
 from tripbot.render.cards import CardRenderer, render_html
 from tripbot.render.names import Names
 from tripbot.store import repo
@@ -95,3 +95,37 @@ class Deck:
             alert, combo, self.rankings.rates, self.names, self.currencies(), self.today
         )
         return self.renderer.png(render_html("alert.html.j2", view=view, people=self.people))
+
+    def route(self, window_id: str, alternative_id: str | None = None) -> bytes | None:
+        if alternative_id is None:
+            ranking, label = self.rankings.main.get(window_id), "Main plan"
+        else:
+            alternative = self.config.route.alternative(alternative_id)
+            ranking = self.rankings.alternatives.get(window_id, {}).get(alternative_id)
+            label = alternative.label if alternative else alternative_id
+        if ranking is None or ranking.best is None:
+            return None
+        view = details.build_route(ranking.best, self.names, label)
+        return self.renderer.png(render_html("route.html.j2", view=view))
+
+    def history_card(self, window_id: str) -> bytes | None:
+        view = details.build_history(self.history(), window_id)
+        if view is None:
+            return None
+        return self.renderer.png(render_html("history.html.j2", view=view))
+
+    def windows(self) -> bytes:
+        view = details.compare_windows(self.rankings.main)
+        return self.renderer.png(render_html("compare.html.j2", view=view))
+
+    def other(self, window_id: str) -> bytes | None:
+        main = self.rankings.main.get(window_id)
+        if main is None:
+            return None
+        alternatives = {
+            alt.id: (alt.label, self.rankings.alternatives[window_id][alt.id])
+            for alt in self.config.route.alternatives
+            if alt.id in self.rankings.alternatives.get(window_id, {})
+        }
+        view = details.compare_alternatives(main, alternatives, self.names)
+        return self.renderer.png(render_html("compare.html.j2", view=view))

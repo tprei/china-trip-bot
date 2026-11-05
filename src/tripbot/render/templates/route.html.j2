@@ -1,0 +1,34 @@
+{% extends "_base.html.j2" %}
+{% from "_icons.html.j2" import icon %}
+
+{% block card %}
+<div class="card" style="padding:56px 64px 56px;gap:28px">
+  <div class="row">
+    <div><div class="kicker">ROUTE · WINDOW {{ view.window_id }}</div><div class="title">{{ view.plan_label }}</div></div>
+    <div class="spacer"></div>
+    <div class="dateline">{{ icon("calendar", "#b7c4d1", 30) }}<span>{{ view.dates }}</span></div>
+  </div>
+  <div class="panel" style="padding:20px 0">
+    {% for step in view.steps %}
+    <div style="display:grid;grid-template-columns:200px 64px minmax(0,1fr);align-items:center;padding:14px 30px;{{ 'border-top:1px solid #22303f' if not loop.first }}">
+      <div class="mono" style="font-size:22px;color:var(--muted)">{{ step.day }}</div>
+      <div style="display:flex;justify-content:center">
+        {% if step.kind == "stay" %}
+        <div style="width:22px;height:22px;border-radius:50%;background:{{ '#ff6a4d' if loop.first or loop.last else '#eef2f5' }}"></div>
+        {% else %}
+        {{ icon("plane" if step.mode == "flight" else step.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[step.mode], 34) }}
+        {% endif %}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:{{ 32 if step.kind == 'stay' else 25 }}px;font-weight:{{ 800 if step.kind == 'stay' else 600 }}">{{ step.title }}</div>
+        <div style="font-size:21px;color:{{ '#f5b83d' if step.mode == 'sleeper' else 'var(--muted)' }}">{{ step.detail }}{% if step.estimate %} · estimate{% endif %}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="row" style="gap:40px;font-size:26px">
+    <span>Inside China <b>{{ view.internal }}</b> / person</span>
+    <span style="color:var(--warn)">{{ icon("sleeper", "#f5b83d", 26) }} {{ view.sleepers }} sleeper{{ "s" if view.sleepers != 1 }}</span>
+  </div>
+</div>
+{% endblock %}

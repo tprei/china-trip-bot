@@ -1,0 +1,32 @@
+{% extends "_base.html.j2" %}
+
+{% set colors = {"A": "#8fb3d9", "B": "#ff6a4d", "C": "#b7c4d1"} %}
+{% block card %}
+<div class="card" style="padding:56px 64px 56px;gap:28px">
+  <div><div class="kicker">HISTORY</div><div class="title">Group total over time</div></div>
+  <div class="panel" style="padding:30px">
+    <svg viewBox="0 0 950 380" role="img" aria-label="Group total per window over time" style="width:100%;height:auto">
+      <line x1="70" y1="330" x2="900" y2="330" stroke="#2a3a4c"/>
+      {% for y, label in view.y_labels %}
+      <line x1="70" y1="{{ y }}" x2="900" y2="{{ y }}" stroke="#22303f"/>
+      <text x="60" y="{{ y + 6 }}" text-anchor="end" font-family="JetBrains Mono" font-size="16" fill="#9fb0c2">{{ label }}</text>
+      {% endfor %}
+      {% for x, label in view.x_labels %}
+      <text x="{{ x }}" y="364" text-anchor="middle" font-family="JetBrains Mono" font-size="16" fill="#9fb0c2">{{ label }}</text>
+      {% endfor %}
+      {% for line in view.lines %}
+      <polyline points="{{ line.points }}" fill="none" stroke="{{ colors.get(line.window_id, '#b7c4d1') }}" stroke-width="{{ 5 if line.selected else 3 }}" {% if not line.selected %}stroke-dasharray="10 7"{% endif %} stroke-linejoin="round" stroke-linecap="round"/>
+      {% endfor %}
+    </svg>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat({{ view.lines|length }}, minmax(0,1fr));gap:20px">
+    {% for line in view.lines %}
+    <div class="panel" style="display:flex;flex-direction:column;gap:6px;{{ 'border:3px solid #ff6a4d' if line.selected }}">
+      <span class="mono" style="font-size:22px;color:{{ colors.get(line.window_id, '#b7c4d1') }};font-weight:700">━ WINDOW {{ line.window_id }}</span>
+      <span class="num" style="font-size:56px">{{ line.latest }}</span>
+      <span style="font-size:22px;color:var(--good)">low {{ line.low }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
