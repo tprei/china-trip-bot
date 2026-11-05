@@ -9,7 +9,7 @@ from typing import Literal
 from tripbot.config import AlertRules
 from tripbot.domain.money import Money
 
-AlertKind = Literal["record_low", "drop"]
+AlertKind = Literal["record_low", "drop", "target"]
 
 
 @dataclass(frozen=True)
@@ -34,8 +34,9 @@ def decide_alerts(
     summary_totals: Mapping[str, Money] | None,
     rules: AlertRules,
     alerted_today: set[str],
+    target: Money | None = None,
 ) -> list[Alert]:
-    """At most one alert per window per day; a new record low beats a plain drop.
+    """At most one alert per window per day: record low, then a drop, then the target.
 
     `totals` are tonight's best totals; `history` the earlier ones (not tonight's).
     """
@@ -50,7 +51,15 @@ def decide_alerts(
         reference = (summary_totals or {}).get(window_id)
         if reference is not None and _dropped(total, reference, rules.drop_pct):
             alerts.append(Alert("drop", window_id, total, reference))
+            continue
+        if target is not None and total <= target and _crossed(earlier, target):
+            alerts.append(Alert("target", window_id, total, target))
     return alerts
+
+
+def _crossed(earlier: Sequence[Money], target: Money) -> bool:
+    """Only the night the total first gets under the target, not every night after."""
+    return not earlier or earlier[-1] > target
 
 
 def _dropped(total: Money, reference: Money, drop_pct: int) -> bool:

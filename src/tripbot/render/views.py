@@ -329,12 +329,25 @@ class AlertView:
     date_label: str
 
 
+def _alert_headline(alert: Alert) -> str:
+    if alert.kind == "record_low":
+        return "New record low"
+    if alert.kind == "target":
+        return "Below your target"
+    return f"Down {alert.saving_pct:.0f}% this week"
+
+
+def _alert_previous(alert: Alert) -> str:
+    label = {"record_low": "Previous low", "target": "Target", "drop": "Last summary"}
+    return f"{label[alert.kind]} {alert.previous.whole()}"
+
+
 def build_alert(
     alert: Alert, combo: Combo, rates: Rates, names: Names, currencies: Sequence[str], today: date
 ) -> AlertView:
     record = alert.kind == "record_low"
     return AlertView(
-        headline="New record low" if record else f"Down {alert.saving_pct:.0f}% this week",
+        headline=_alert_headline(alert),
         record=record,
         total=alert.total.whole(),
         saving=alert.saving.whole(),
@@ -354,6 +367,6 @@ def build_alert(
             )
             for choice in combo.choices
         ),
-        previous=("Previous low " if record else "Last summary ") + alert.previous.whole(),
+        previous=_alert_previous(alert),
         date_label=f"{day_label(today)}",
     )

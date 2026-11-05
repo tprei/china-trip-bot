@@ -17,6 +17,7 @@ from tripbot.sources.base import FlightSource
 from tripbot.store import repo
 
 FAILED_RUNS_BEFORE_NOTICE = 2
+TARGET_KEY = "target_eur"
 
 
 @dataclass
@@ -108,8 +109,14 @@ def _alerts(deps: NightlyDeps, rankings: Rankings, now: datetime) -> list[Alert]
         if repo.alerted_on(deps.conn, window_id, now.date()):
             alerted.add(window_id)
     summary = repo.last_summary(deps.conn)
+    target = repo.get_setting(deps.conn, TARGET_KEY)
     alerts = decide_alerts(
-        totals, history, summary[1] if summary else None, deps.config.alerts, alerted
+        totals,
+        history,
+        summary[1] if summary else None,
+        deps.config.alerts,
+        alerted,
+        Money.of(target, "EUR") if target else None,
     )
     for alert in alerts:
         repo.record_alert(deps.conn, alert.kind, alert.window_id, alert.total, now)
