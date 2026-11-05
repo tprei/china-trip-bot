@@ -11,6 +11,7 @@ import yaml
 from tripbot.config import TripConfig
 from tripbot.domain.legs import LegOption, LegTable, Mode
 from tripbot.domain.money import Money, Rates
+from tripbot.domain.ranking import RankingInputs
 from tripbot.domain.routes import City, PlannerInputs
 from tripbot.domain.weather import Climate, MonthClimate, Typhoon
 
@@ -44,6 +45,17 @@ def planner_inputs(config: TripConfig, reference: Reference, rates: Rates) -> Pl
         value_of_time_eur_per_hour=config.route.value_of_time_eur_per_hour,
         weather_eur_per_risk_night=config.route.weather_eur_per_risk_night,
         prefer_sleepers_eur=config.route.prefer_sleepers_eur,
+    )
+
+
+def ranking_inputs(config: TripConfig, reference: Reference, rates: Rates) -> RankingInputs:
+    return RankingInputs(
+        groups=config.groups,
+        flex=config.flex,
+        fairness=config.fairness,
+        china_airports=config.china_airports,
+        planner=planner_inputs(config, reference, rates),
+        rates=rates,
     )
 
 
