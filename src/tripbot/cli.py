@@ -14,6 +14,7 @@ import httpx
 from tripbot.config import TripConfig, load_config
 from tripbot.dashboard.build import publish
 from tripbot.domain.trip import people_count
+from tripbot.pipeline.group_search import load_plan, run_groups
 from tripbot.pipeline.health import ping
 from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
 from tripbot.pipeline.state import Rankings, load_rankings
@@ -27,6 +28,8 @@ from tripbot.sources.ecb import fetch_rates
 from tripbot.sources.google import GoogleFlights
 from tripbot.sources.serpapi import SerpApi
 from tripbot.sources.tripcom import TripCom
+from tripbot.sources.tripcom_browser import TripComBrowserSource
+from tripbot.sources.tripcom_fallback import TripComFallback
 from tripbot.store.db import connect
 from tripbot.telegram.api import TelegramApi
 from tripbot.telegram.bot import BotDeps, run_forever
@@ -44,9 +47,19 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser("build-dashboard", help="write site/index.html from stored offers")
     samples = commands.add_parser("render-samples", help="render every card from sample flights")
     samples.add_argument("out", type=Path)
+    group_search = commands.add_parser("search-groups", help="isolated joint-fare comparison")
+    group_search.add_argument("plan", type=Path)
+    group_search.add_argument("output", type=Path)
+    group_search.add_argument("--window", default="B")
+    group_search.add_argument("--browser-fallback", action="store_true")
+    group_search.add_argument("--budget", type=int, default=3)
     args = parser.parse_args(argv)
 
     settings = load_settings(args.root.resolve())
+    if args.command == "search-groups":
+        return group_search_command(
+            settings, args.plan, args.output, args.window, args.browser_fallback, args.budget
+        )
     if args.command == "check-config":
         return check_config(settings)
     if args.command == "nightly":
@@ -61,6 +74,32 @@ def main(argv: list[str] | None = None) -> int:
             print(path)
         return 0
     return 2
+
+
+def group_search_command(
+    settings: Settings,
+    plan_path: Path,
+    output: Path,
+    window: str,
+    browser_enabled: bool,
+    budget: int,
+) -> int:
+    config = load_config(settings.config_path)
+    plan = load_plan(plan_path, config, window)
+    if not 0 <= budget <= config.budgets.tripcom:
+        raise ValueError("budget exceeds configured Trip.com limit")
+    if len(plan.requests) * 2 > config.budgets.google:
+        raise ValueError("plan exceeds configured Google budget")
+    if len(plan.requests) > budget:
+        raise ValueError("budget cannot cover plan")
+    browser = TripComBrowserSource(output / "browser") if browser_enabled else None
+    with httpx.Client(follow_redirects=True) as client:
+        provider = TripComFallback(TripCom(client), browser, budget=budget)
+        path = run_groups(
+            config, load_reference(settings.data_dir), plan, provider, GoogleFlights(), output
+        )
+    print(path)
+    return 0
 
 
 def check_config(settings: Settings) -> int:
