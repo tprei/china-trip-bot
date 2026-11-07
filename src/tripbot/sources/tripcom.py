@@ -3,8 +3,8 @@
 Searches by city code (LON, BJS, SHA, SAO) and sees Chinese carriers Google
 misses. The endpoint is undocumented and disallowed in robots.txt; we use it
 for a handful of personal searches a night, 4 s apart. The request body must
-stay exactly as written: HTTP 432 means `head` lost a field, HTTP 400 means
-`extension` lost sotpLocale or sotpCurrency.
+preserve its locale/currency fields. Nonstandard HTTP 430/432 can be gateway
+blocks; the status alone does not diagnose a malformed request.
 """
 
 from __future__ import annotations
@@ -45,9 +45,15 @@ class TripCom:
     def __init__(self, client: httpx.Client) -> None:
         self._client = client
         self._last_call = 0.0
+        self.api_failure: str | None = None
 
     def search(self, key: SearchKey) -> SearchResult:
-        return timed(lambda: self._search(key))
+        if self.api_failure is not None:
+            return SearchResult(status="error", error=f"API circuit open: {self.api_failure}")
+        result = timed(lambda: self._search(key))
+        if result.status == "error":
+            self.api_failure = result.error or "unknown API failure"
+        return result
 
     def _search(self, key: SearchKey) -> SearchResult:
         wait = self._last_call + SPACING_SECONDS - time.monotonic()
@@ -128,6 +134,8 @@ def last_frame(stream: str) -> dict[str, Any]:
 
 
 def parse(payload: dict[str, Any], key: SearchKey) -> SearchResult:
+    if "itineraryList" not in payload:
+        return SearchResult(status="error", error="API schema missing itineraryList")
     airlines = {a["code"]: a["name"] for a in payload.get("airlineList") or []}
     itineraries = payload.get("itineraryList") or []
     offers = tuple(to_offer(itinerary, key, airlines) for itinerary in itineraries)
