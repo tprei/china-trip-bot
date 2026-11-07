@@ -36,17 +36,18 @@ def test_anonymized_payload_survives_full_adapter(monkeypatch: pytest.MonkeyPatc
     assert len(calls) == 1
     assert calls[0].currency == "EUR"
     assert result.status == "ok"
-    assert len(result.offers) == 2
-    assert result.error == "google rejected 9/11 invalid itineraries (indices 0,1,2,3,5,6,7,8,9)"
-    first, second = result.offers
-    assert first.price.minor == 100000 and second.price.minor == 135400
-    assert first.segments[0].depart == datetime(2030, 3, 1, 16, 50)
-    assert first.segments[-1].arrive == datetime(2030, 3, 2, 15, 25)
-    assert first.origin == "LHR" and first.destination == "PEK"
-    assert [s.flight_number for s in first.segments] == ["EK30", "EK306"]
-    assert first.total_minutes == 935
-    assert second.segments[0].depart == datetime(2030, 3, 1, 9, 5)
-    assert second.segments[-1].arrive == datetime(2030, 3, 2, 4, 50)
+    assert len(result.offers) == 11
+    assert result.error is None
+    amman, cathay, emirates = result.offers[0], result.offers[1], result.offers[4]
+    assert amman.segments[0].arrive == datetime(2030, 3, 2, 0, 10)
+    assert cathay.price.minor == 77900
+    assert cathay.segments[0].depart == datetime(2030, 3, 1, 17, 0)
+    assert emirates.price.minor == 100000
+    assert emirates.segments[0].depart == datetime(2030, 3, 1, 16, 50)
+    assert emirates.segments[-1].arrive == datetime(2030, 3, 2, 15, 25)
+    assert emirates.origin == "LHR" and emirates.destination == "PEK"
+    assert [s.flight_number for s in emirates.segments] == ["EK30", "EK306"]
+    assert emirates.total_minutes == 935
     assert result.latency_ms is not None
 
 

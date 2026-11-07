@@ -123,8 +123,19 @@ def _datetime(value: SimpleDatetime) -> datetime:
     # 3.8.0 passes JSON through unchanged despite int tuple annotations.
     # Never default midnight, infer year/day rollover, or guess a timezone.
     year, month, day = _integers(value.date, 3)
-    hour, minute = _integers(value.time, 2)
+    hour, minute = _time(value.time)
     return datetime(year, month, day, hour, minute)
+
+
+def _time(value: object) -> tuple[int, int]:
+    if isinstance(value, (list, tuple)) and len(value) == 1:
+        (hour,) = _integers(value, 1)
+        return hour, 0
+    if isinstance(value, (list, tuple)) and len(value) == 2 and value[0] is None:
+        (minute,) = _integers(value[1:], 1)
+        return 0, minute
+    hour, minute = _integers(value, 2)
+    return hour, minute
 
 
 def _integers(value: object, length: int) -> list[int]:
