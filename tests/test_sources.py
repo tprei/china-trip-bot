@@ -3,6 +3,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import httpx
+import pytest
 from fast_flights.model import Airport, CarbonEmission, Flights, SimpleDatetime, SingleFlight
 
 from tripbot.domain.money import Money
@@ -112,14 +113,18 @@ def test_tripcom_request_keeps_the_head_contract() -> None:
     assert names["sotpLocale"] == "en-US" and names["sotpCurrency"] == "USD"
 
 
-def test_tripcom_http_errors_become_failed_searches() -> None:
+@pytest.mark.parametrize("status", [430, 432])
+def test_tripcom_http_errors_become_failed_searches(status: int) -> None:
     def answer(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(432)
+        return httpx.Response(
+            status, text="whaleguard block", headers={"x-gate-error-cause": "WafAntibotCheckFailed"}
+        )
 
     with httpx.Client(transport=httpx.MockTransport(answer)) as client:
         source = tripcom.TripCom(client)
         result = source.search(key("tripcom", ("LON",), ("BJS",)))
-    assert result.status == "error" and result.error == "HTTP 432"
+    assert result.status == "error" and result.error == f"HTTP {status}"
+    assert not result.offers
     assert result.latency_ms is not None
 
 

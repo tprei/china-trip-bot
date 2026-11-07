@@ -6,6 +6,7 @@ import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
+from functools import partial
 
 from tripbot.config import TripConfig
 from tripbot.domain.alerts import Alert, decide_alerts
@@ -13,7 +14,7 @@ from tripbot.domain.money import Money, Rates
 from tripbot.domain.searches import SourcePlan, plan_tonight
 from tripbot.pipeline.state import MAIN, Rankings, focus_of, load_rankings, search_space
 from tripbot.reference import Reference
-from tripbot.sources.base import FlightSource
+from tripbot.sources.base import FlightSource, timed
 from tripbot.store import repo
 
 FAILED_RUNS_BEFORE_NOTICE = 2
@@ -61,7 +62,7 @@ def run_nightly(deps: NightlyDeps, now: datetime) -> NightlyReport:
         keys = plan_tonight(plan, space, last, focus_of(before))
         deps.log(f"{source.name}: {len(keys)} searches")
         for key in keys:
-            result = source.search(key)
+            result = timed(partial(source.search, key))
             repo.record_search(deps.conn, run_id, key, result, now)
 
     rankings = load_rankings(deps.conn, deps.config, deps.reference, now)
