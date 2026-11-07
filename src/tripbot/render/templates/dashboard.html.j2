@@ -54,7 +54,7 @@ small { display: block; font-size: 12px; color: var(--muted); font-weight: 500; 
 .tabs label small { white-space: nowrap; }
 input[name=window] { position: absolute; opacity: 0; pointer-events: none; }
 .panel { display: none; }
-{% for panel in view.panels %}
+{% for panel in (view.panels if joint is not defined else []) %}
 #tab-{{ panel.id }}:checked ~ .tabs label[for=tab-{{ panel.id }}] { border-color: var(--accent); background: var(--hl); }
 #tab-{{ panel.id }}:checked ~ #panel-{{ panel.id }} { display: block; }
 {% endfor %}
@@ -103,8 +103,24 @@ li { margin: 4px 0; }
 <body>
 <main>
   <h1>China 2027</h1>
-  <div class="updated">Updated {{ view.updated }} · BRT</div>
+  <div class="updated">Updated {{ view.updated }} · {{ timezone|default("BRT") }}</div>
 
+  {% if joint is defined %}
+  <h2>Observed fare demo · not checkout</h2>
+  <div class="hero"><div class="num">{{ joint.total }}</div><div class="currencies">International round trips · {{ joint.groups|sum(attribute='adults') }} people · {{ joint.groups|length }} groups</div></div>
+  <div class="box" style="margin-top:18px"><b>Internal transport estimate: {{ joint.internal }}</b><small>Separate · not a live quote · timetable feasibility unverified</small></div>
+  <h2>Selected round trips</h2>
+  {% for group in joint.groups %}
+  <div class="box">
+    <header><b>{{ group.name }}</b><b>{{ group.total }} <small>{{ group.adults }} adult(s) · whole round trip</small></b></header>
+    <small>Displayed per person: {{ group.per_person }} · observed {{ group.observed }}</small>
+    {% for journey in group.journeys %}<div class="flight" style="display:block"><b>{{ journey.label }} · {{ journey.path }} · {{ journey.duration }}</b><small>{{ journey.times }} · airport-local</small>{% for line in journey.segments %}<small>{{ line }}</small>{% endfor %}<small>Connection: {{ journey.connections }}</small></div>{% endfor %}
+    {% for warning in group.warnings %}<div style="color:var(--warn)">{{ warning }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+  <h2>Scope & limits</h2>
+  <div class="box">1 sampled combo · no market-best or guaranteed-saving claim<br>Trip.com browser fare panels · final checkout / inventory unverified<br>Arrival-day hotel / internal connections require review<br>No one-way price splitting · no new search · no booking</div>
+  {% else %}
   {% for panel in view.panels %}
   <input type="radio" name="window" id="tab-{{ panel.id }}"{{ ' checked' if panel.id == view.selected }}>
   {% endfor %}
@@ -213,6 +229,7 @@ li { margin: 4px 0; }
   <div class="box">
     {% if view.todos %}<ol>{% for text in view.todos %}<li>{{ text }}</li>{% endfor %}</ol>{% else %}<small>Nothing left.</small>{% endif %}
   </div>
+  {% endif %}
 </main>
 </body>
 </html>
