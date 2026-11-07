@@ -106,3 +106,49 @@ def test_a_source_failing_two_nights_is_reported(
     assert report.health["tripcom"] == (0, 3)
     assert report.failing_sources == ["tripcom"]
     assert report.ok
+
+
+class RedundantSource(FakeSource):
+    def __init__(self, name: str, fails: bool) -> None:
+        super().__init__(PRICES)
+        self.name = name
+        self.fails = fails
+        self.shape = SearchShape(many_airports=False, city_codes=name == "tripcom")
+
+    def search(self, key: SearchKey) -> SearchResult:
+        if self.fails:
+            self.calls += 1
+            if self.name == "google":
+                raise ValueError("invalid upstream response")
+            return SearchResult(status="error", error="HTTP 430")
+        result = super().search(key)
+        return replace(result, offers=tuple(replace(o, source=self.name) for o in result.offers))
+
+
+@pytest.mark.parametrize(
+    ("google_fails", "tripcom_fails"), [(True, False), (False, True), (False, False), (True, True)]
+)
+def test_both_sources_are_always_collected_with_separate_budgets(
+    config: TripConfig,
+    reference: Reference,
+    conn: sqlite3.Connection,
+    google_fails: bool,
+    tripcom_fails: bool,
+) -> None:
+    google_source = RedundantSource("google", google_fails)
+    tripcom_source = RedundantSource("tripcom", tripcom_fails)
+    deps = nightly(config, reference, conn, google_source, tripcom_source)
+    deps.config = replace(config, budgets=Budgets(google=2, serpapi=0, tripcom=3))
+    report = run_nightly(deps, NIGHT_ONE)
+    assert (google_source.calls, tripcom_source.calls) == (2, 3)
+    assert report.health == {
+        "google": (0 if google_fails else 2, 2),
+        "tripcom": (0 if tripcom_fails else 3, 3),
+    }
+    assert report.ok == (not google_fails or not tripcom_fails)
+    rows = conn.execute("SELECT DISTINCT source FROM offers").fetchall()
+    assert {row[0] for row in rows} == {
+        name
+        for name, failed in (("google", google_fails), ("tripcom", tripcom_fails))
+        if not failed
+    }

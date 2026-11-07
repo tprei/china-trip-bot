@@ -7,16 +7,17 @@ blocking it, searches come back as errors and the bot says so.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from itertools import pairwise
 
-from fast_flights import FlightQuery, Passengers, create_query, get_flights
+from fast_flights import FlightQuery, Passengers, create_query
 from fast_flights.model import Flights, SimpleDatetime, SingleFlight
 
 from tripbot.domain.flights import Offer, Segment
 from tripbot.domain.money import Money
 from tripbot.domain.searches import SearchKey, SearchResult
 from tripbot.sources.base import SearchShape, logo_for, timed
+from tripbot.sources.google_payload import get_flights
 
 CURRENCY = "EUR"
 
@@ -48,16 +49,35 @@ class GoogleFlights:
         if diagnostics is not None and diagnostics.status in ("blocked", "http_error"):
             return SearchResult(status="error", error=f"google {diagnostics.status}")
         names = {airline.code: airline.name for airline in results.metadata.airlines}
-        offers = tuple(to_offer(flight, key, names) for flight in results if flight.flights)
-        return SearchResult(status="ok" if offers else "empty", offers=offers)
+        offers: list[Offer] = []
+        rejected: list[str] = []
+        for index, flight in enumerate(results):
+            try:
+                offers.append(to_offer(flight, key, names))
+            except (ValueError, TypeError, OverflowError, AttributeError):
+                # Upstream dataclasses do not validate JSON. Never log tokens.
+                rejected.append(str(index))
+        error = None
+        if rejected:
+            error = (
+                f"google rejected {len(rejected)}/{len(results)} invalid itineraries"
+                f" (indices {','.join(rejected[:10])})"
+            )
+        status = "ok" if offers else ("error" if rejected else "empty")
+        return SearchResult(status=status, offers=tuple(offers), error=error)
 
 
 def to_offer(flight: Flights, key: SearchKey, airline_names: dict[str, str]) -> Offer:
     segments = tuple(_segment(single, airline_names, flight.airlines) for single in flight.flights)
-    layover_minutes = sum(
-        int((after.depart - before.arrive).total_seconds() // 60)
-        for before, after in pairwise(segments)
-    )
+    if not segments or type(flight.price) is not int or flight.price <= 0:
+        raise ValueError("missing segments or invalid price")
+    if (
+        segments[0].origin not in key.origins
+        or segments[-1].destination not in key.destinations
+        or segments[0].depart.date() != key.travel_date
+    ):
+        raise ValueError("itinerary does not match search")
+    layover_minutes = sum(_layover(before, after) for before, after in pairwise(segments))
     return Offer(
         source="google",
         group_id=key.group_id,
@@ -69,6 +89,10 @@ def to_offer(flight: Flights, key: SearchKey, airline_names: dict[str, str]) -> 
 
 
 def _segment(single: SingleFlight, names: dict[str, str], fallback: list[str]) -> Segment:
+    if type(single.duration) is not int or single.duration <= 0:
+        raise ValueError("invalid segment duration")
+    if not single.from_airport.code or not single.to_airport.code:
+        raise ValueError("missing airport")
     code = single.airline_code
     name = names.get(code) or (fallback[0] if fallback else code)
     return Segment(
@@ -84,7 +108,31 @@ def _segment(single: SingleFlight, names: dict[str, str], fallback: list[str]) -
     )
 
 
+def _layover(before: Segment, after: Segment) -> int:
+    # Subtract local clocks only at the SAME airport. Segment elapsed time
+    # comes from the provider, never from naive cross-timezone subtraction.
+    if before.destination != after.origin:
+        raise ValueError("airport transfer has unknown elapsed time")
+    minutes = int((after.depart - before.arrive).total_seconds() // 60)
+    if minutes < 0:
+        raise ValueError("negative layover")
+    return minutes
+
+
 def _datetime(value: SimpleDatetime) -> datetime:
-    year, month, day = value.date
-    hour, minute = value.time or (0, 0)
-    return datetime(year, month, day) + timedelta(hours=hour, minutes=minute)
+    # 3.8.0 passes JSON through unchanged despite int tuple annotations.
+    # Never default midnight, infer year/day rollover, or guess a timezone.
+    year, month, day = _integers(value.date, 3)
+    hour, minute = _integers(value.time, 2)
+    return datetime(year, month, day, hour, minute)
+
+
+def _integers(value: object, length: int) -> list[int]:
+    if not isinstance(value, (list, tuple)) or len(value) != length:
+        raise ValueError("missing date/time components")
+    parts: list[int] = []
+    for item in value:
+        if not isinstance(item, int) or isinstance(item, bool):
+            raise ValueError("invalid date/time component")
+        parts.append(item)
+    return parts
