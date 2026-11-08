@@ -7,7 +7,6 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -40,7 +39,6 @@ class BotDeps:
     chat_id: str
     topic: int | None = None
     dashboard_url: str | None = None
-    banner_path: Path | None = None
     open_deck: DeckOpener = chromium_deck
     log: Callable[[str], None] = field(default=print)
 
@@ -57,7 +55,6 @@ class BotDeps:
             now=now,
             open_deck=self.open_deck,
             dashboard_url=self.dashboard_url,
-            banner_path=self.banner_path,
         )
 
     def local_now(self) -> datetime:

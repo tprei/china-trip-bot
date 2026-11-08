@@ -1,6 +1,8 @@
 {% macro icon(name, color="#eef2f5", size=30) -%}
 {%- if name == "plane" -%}
 <svg viewBox="0 0 24 24" aria-hidden="true" width="{{ size }}" height="{{ size }}" fill="{{ color }}"><g transform="rotate(90 12 12)"><path d="M12 2.5c.9 0 1.6.8 1.6 1.7v5.3l7.4 4.3v2.1l-7.4-2.3v4.6l2.3 1.7v1.6L12 20.4l-3.9 1.1v-1.6l2.3-1.7v-4.6L3 15.9v-2.1l7.4-4.3V4.2c0-.9.7-1.7 1.6-1.7z"/></g></svg>
+{%- elif name == "paper-plane" -%}
+<svg viewBox="0 0 24 24" aria-hidden="true" width="{{ size }}" height="{{ size }}" fill="none" stroke="{{ color }}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="m22 2-11 11"/></svg>
 {%- elif name == "train" -%}
 <svg viewBox="0 0 24 24" aria-hidden="true" width="{{ size }}" height="{{ size }}" fill="none" stroke="{{ color }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M8.5 17l-2 4M15.5 17l2 4"/><circle cx="9" cy="13.5" r="0.6" fill="{{ color }}"/><circle cx="15" cy="13.5" r="0.6" fill="{{ color }}"/></svg>
 {%- elif name == "sleeper" -%}
@@ -13,6 +15,8 @@
 <svg viewBox="0 0 24 24" role="img" aria-label="{{ _("ok") }}" width="{{ size }}" height="{{ size }}" fill="none" stroke="{{ color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>
 {%- elif name == "warning" -%}
 <svg viewBox="0 0 24 24" role="img" aria-label="{{ _("warning") }}" width="{{ size }}" height="{{ size }}" fill="none" stroke="{{ color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>
+{%- elif name == "arrow-down" -%}
+<svg viewBox="0 0 24 24" aria-hidden="true" width="{{ size }}" height="{{ size }}" fill="none" stroke="{{ color }}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m-6-6 6 6 6-6"/></svg>
 {%- elif name == "down" -%}
 <svg viewBox="0 0 24 24" aria-hidden="true" width="{{ size }}" height="{{ size }}" fill="{{ color }}"><path d="M4 7h16l-8 11z"/></svg>
 {%- elif name == "up" -%}

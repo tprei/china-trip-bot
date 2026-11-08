@@ -24,11 +24,24 @@ TYPHOON_LEVELS: dict[str, Typhoon] = {"low": "low", "moderate": "moderate", "hig
 
 
 @dataclass(frozen=True)
+class Photo:
+    """A city photo and the credit its license asks for: author, source and license."""
+
+    path: Path
+    author: str
+    license: str
+    license_url: str
+    source: str
+
+
+@dataclass(frozen=True)
 class CityGuide:
     """What a city is like and what to see there, in the group's language."""
 
     summary: str
+    highlight: str
     sights: tuple[str, ...]
+    photo: Photo
 
 
 @dataclass(frozen=True)
@@ -53,22 +66,36 @@ def load_reference(data_dir: Path) -> Reference:
         todo_seed=tuple(str(item) for item in _read(data_dir / "todo.yaml")),
         airports={str(code): str(name) for code, name in _read(data_dir / "airports.yaml").items()},
         speeds_kmh=load_speeds(data_dir / "legs.yaml"),
-        guide=load_guide(data_dir / "guide.yaml", cities),
+        guide=load_guide(data_dir / "guide.yaml", cities, data_dir / "photos"),
     )
 
 
-def load_guide(path: Path, cities: Mapping[str, City]) -> dict[str, CityGuide]:
-    """Every city the route can touch has a guide entry, so /about never comes up empty."""
+def load_guide(path: Path, cities: Mapping[str, City], photos: Path) -> dict[str, CityGuide]:
+    """Every city the route can touch has a guide entry and a photo, so /about and the
+    banner never come up empty."""
     raw = _read(path)
     missing = sorted(set(cities) - set(raw))
     if missing:
         raise ValueError(f"{path.name} has no entry for {', '.join(missing)}")
-    return {
+    guide = {
         str(city): CityGuide(
-            summary=str(spec["summary"]), sights=tuple(str(sight) for sight in spec["sights"])
+            summary=str(spec["summary"]),
+            highlight=str(spec["highlight"]),
+            sights=tuple(str(sight) for sight in spec["sights"]),
+            photo=Photo(
+                path=photos / str(spec["photo"]["file"]),
+                author=str(spec["photo"]["author"]),
+                license=str(spec["photo"]["license"]),
+                license_url=str(spec["photo"]["license_url"]),
+                source=str(spec["photo"]["source"]),
+            ),
         )
         for city, spec in raw.items()
     }
+    absent = sorted(city for city, entry in guide.items() if not entry.photo.path.is_file())
+    if absent:
+        raise ValueError(f"no photo file for {', '.join(absent)} in {photos}")
+    return guide
 
 
 def load_speeds(path: Path) -> dict[Mode, int]:

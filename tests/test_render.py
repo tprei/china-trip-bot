@@ -14,9 +14,11 @@ from tripbot.domain.money import Money
 from tripbot.pipeline.nightly import NightlyReport
 from tripbot.reference import Reference
 from tripbot.render import details, views
+from tripbot.render.banner import BannerStay, build_banner
 from tripbot.render.cards import CardRenderer, render_html
 from tripbot.render.deck import Deck
 from tripbot.render.names import Names
+from tripbot.telegram.commands import photo_credits
 
 NIGHT = datetime(2026, 11, 7, 3, 0)
 
@@ -118,6 +120,36 @@ def test_map_numbers_stays_in_order_and_joins_them_with_every_leg(
     assert (
         sum(stop.arrival for stop in view.stops) == sum(stop.departure for stop in view.stops) == 1
     )
+
+
+def test_banner_follows_the_route_and_credits_only_its_photos(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    _, report = world
+    names = Names(config, reference)
+    for ranking in report.rankings.main.values():
+        best = ranking.best
+        assert best is not None
+        view = build_banner(best, names, config.windows)
+        stays = [step for step in view.steps if isinstance(step, BannerStay)]
+        assert [stay.city for stay in stays] == [names.city(c) for c in best.route.order]
+        spans = [tuple(int(n) for n in s.days.removeprefix("Days ").split("–")) for s in stays]
+        assert spans[0][0] == (best.route.stays[0].arrive - best.window.start).days + 1
+        assert all(before[1] <= after[0] for before, after in pairwise(spans))
+        assert spans[-1][1] <= best.window.nights + 1
+        starts_with_leg = view.steps[0].kind == "leg"
+        assert starts_with_leg == (best.route.entry != best.route.stays[0].city)
+        shown = {reference.guide[city].photo.author for city in best.route.order}
+        others = {g.photo.author for g in reference.guide.values()} - shown
+        assert all(author in view.credits for author in shown)
+        assert not any(author in view.credits for author in others)
+        assert all(stay.photo.startswith("data:image/jpeg;base64,") for stay in stays)
+        caption = photo_credits(best, names)
+        for city in best.route.order:
+            photo = reference.guide[city].photo
+            assert f'<a href="{photo.source}">' in caption
+            assert f'<a href="{photo.license_url}">{photo.license}</a>' in caption
+        assert caption.count("<a href=") == 2 * len(set(best.route.order))
 
 
 def test_compare_alternatives_marks_the_main_plan(

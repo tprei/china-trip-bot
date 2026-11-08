@@ -251,3 +251,64 @@ body { margin: 0; background: var(--bg); }
 .map-card .map-mode-sample.map-route-sleeper { border-top: 7px double var(--mode-color); }
 .map-card .map-mode-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 24px; }
 .map-card .map-mode-copy b { color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; }
+
+/* The approved 1080px photo poster, with its height driven by travel steps. */
+.banner-card { display: block; padding: 36px 44px 26px; -webkit-font-smoothing: antialiased; }
+.banner-card .banner-masthead { position: relative; min-height: 174px; padding-right: 156px; }
+.banner-card .banner-eyebrow { margin: 0; color: var(--accent); font: 700 26px/32px "JetBrains Mono", monospace; letter-spacing: .14em; }
+.banner-card .banner-title { margin: 2px 0 4px; font-size: 86px; line-height: 92px; font-weight: 850; letter-spacing: -.05em; }
+.banner-card .banner-title span { color: var(--accent); }
+.banner-card .banner-summary { margin: 0; color: var(--soft); font-size: 31px; line-height: 38px; letter-spacing: -.01em; }
+.banner-card .banner-summary strong { color: var(--text); font-weight: 750; }
+.banner-card .banner-summary-dot { padding-inline: 12px; color: var(--accent); }
+.banner-card .banner-stamp { position: absolute; right: 3px; top: 9px; width: 134px; height: 134px; color: var(--accent); }
+.banner-card .banner-arrival { display: flex; align-items: center; gap: 18px; min-height: 82px; padding-bottom: 10px; color: var(--accent); }
+.banner-card svg { flex-shrink: 0; }
+.banner-card .banner-arrival-copy { min-width: 0; font-size: 27px; line-height: 32px; color: var(--text); overflow-wrap: anywhere; }
+.banner-card .banner-arrival-copy p { margin: 0; }
+.banner-card .banner-arrival-copy strong { font-weight: 750; }
+.banner-card .banner-train-cap { color: var(--soft); }
+.banner-card .banner-route { margin: 0; padding: 0; list-style: none; }
+.banner-card .banner-stay + .banner-stay { margin-top: 16px; }
+.banner-card .banner-stop { --stay-color: #ff9a83; position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; gap: 38px; min-height: 240px; margin: 0; padding: 17px 24px 18px; overflow: hidden; border-radius: 19px; background: var(--surface); }
+.banner-card .banner-tone-1 { --stay-color: #91d6ca; }
+.banner-card .banner-tone-2 { --stay-color: #f1ca7f; }
+.banner-card .banner-tone-3 { --stay-color: #c6b4ef; }
+.banner-card .banner-tone-4 { --stay-color: #9dd5ef; }
+.banner-card .banner-stop img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center var(--photo-focus); }
+.banner-card .banner-stop::after { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(5 12 19 / 12%) 0%, rgb(5 12 19 / 0%) 31%, rgb(5 12 19 / 65%) 57%, rgb(5 12 19 / 96%) 100%); content: ""; }
+.banner-card .banner-stop-meta { align-self: flex-start; max-width: 100%; margin: 0 0 0 -2px; padding: 6px 13px 6px 11px; border-left: 3px solid var(--stay-color); border-radius: 8px; background: rgb(10 20 30 / 94%); font-size: 27px; line-height: 32px; overflow-wrap: anywhere; }
+.banner-card .banner-stop-meta strong { font-weight: 700; }
+.banner-card .banner-stop-meta span { color: var(--soft); font-weight: 500; }
+.banner-card .banner-stop-caption { min-width: 0; }
+.banner-card .banner-stop-caption h2 { margin: 0 0 3px; font-size: 52px; line-height: 56px; letter-spacing: -.025em; font-weight: 800; overflow-wrap: anywhere; text-shadow: 0 2px 16px rgb(0 0 0 / 25%); }
+.banner-card .banner-stop-caption p { margin: 0; color: #f2f5f8; font-size: 27px; line-height: 34px; font-weight: 500; overflow-wrap: anywhere; }
+.banner-card .banner-leg { position: relative; display: flex; align-items: center; gap: 13px; min-height: 72px; padding: 12px 22px; color: var(--info); font-size: 27px; line-height: 34px; }
+.banner-card .banner-leg-copy { min-width: 0; margin: 0; color: var(--soft); overflow-wrap: anywhere; }
+.banner-card .banner-leg-copy strong { color: var(--text); font-weight: 700; white-space: nowrap; }
+.banner-card .banner-leg-dot { white-space: nowrap; }
+.banner-card .banner-leg-duration { flex-shrink: 0; margin-left: auto; font: 700 28px/34px "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.banner-card .banner-leg > svg:last-child { margin-left: 2px; }
+.banner-card .banner-leg-sleeper { color: var(--warn); }
+.banner-card .banner-leg-sleeper::before { position: absolute; left: 7px; top: 15px; bottom: 15px; border-left: 4px double var(--warn); content: ""; }
+.banner-card .banner-leg-sleeper .banner-leg-copy { color: #f6dba5; }
+.banner-card .banner-home { display: flex; align-items: center; gap: 15px; min-height: 56px; padding: 10px 22px; color: var(--accent); }
+.banner-card .banner-home p { min-width: 0; margin: 0; color: var(--soft); font-size: 27px; line-height: 34px; overflow-wrap: anywhere; }
+.banner-card .banner-footer { margin-top: 20px; }
+.banner-card .banner-dates { min-height: 116px; padding-bottom: 16px; }
+.banner-card .banner-dates-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 12px; }
+.banner-card .banner-dates-heading h2 { margin: 0; font: 700 26px/32px "JetBrains Mono", monospace; letter-spacing: .07em; text-transform: uppercase; }
+.banner-card .banner-dates-heading p { margin: 0; color: var(--soft); font-size: 26px; line-height: 32px; }
+.banner-card .banner-date-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.banner-card .banner-date { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 56px; padding: 6px 10px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); font-size: 29px; line-height: 34px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; overflow-wrap: anywhere; }
+.banner-card .banner-date-options-compact .banner-date { font-size: 25px; }
+.banner-card .banner-date-selected { border-color: var(--accent); color: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.banner-card .banner-estimate { display: grid; grid-template-columns: minmax(0, 405px) minmax(0, 1fr); gap: 24px; min-height: 170px; padding: 18px 24px; border-radius: 16px; background: #1d2936; }
+.banner-card .banner-estimate-price h2 { margin: 0; color: var(--accent); font: 700 26px/32px "JetBrains Mono", monospace; letter-spacing: .04em; }
+.banner-card .banner-amount { margin: 0; font-size: 66px; line-height: 70px; font-weight: 850; letter-spacing: -.035em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.banner-card .banner-approx { padding-right: 7px; color: var(--soft); font-size: 42px; font-weight: 500; vertical-align: 5px; }
+.banner-card .banner-per-person { margin: 0; color: var(--soft); font-size: 26px; line-height: 32px; }
+.banner-card .banner-estimate-details { align-self: center; min-width: 0; }
+.banner-card .banner-included { max-width: 440px; margin: 0; color: var(--soft); font-size: 27px; line-height: 33px; }
+.banner-card .banner-excluded { margin: 12px 0 0; color: #ff947f; font-size: 29px; line-height: 34px; font-weight: 750; }
+.banner-card .banner-credits { min-height: 64px; margin: 0; padding-top: 14px; color: #b7c4d1; font-size: 18px; line-height: 24px; overflow-wrap: anywhere; }

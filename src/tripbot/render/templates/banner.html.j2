@@ -1,0 +1,89 @@
+{% extends "_base.html.j2" %}
+{% from "_icons.html.j2" import icon %}
+
+{# Optical crops from the approved poster, keyed by the reference's display names.
+   Other photos use an upper-center crop that also keeps portrait landmarks visible. #}
+{% set photo_focus = {"Pequim": "50%", "Zhangjiajie": "67%", "Yangshuo": "64%", "Xangai": "53%"} %}
+
+{% block card %}
+<main class="card banner-card">
+  <header class="banner-masthead">
+    <p class="banner-eyebrow">{{ _("Our route") }}</p>
+    <h1 class="banner-title">{{ _("China") }} <span>{{ view.year }}</span></h1>
+    <p class="banner-summary"><strong>{{ view.trip_days }}</strong><span class="banner-summary-dot">·</span>{{ view.trip_nights }}<span class="banner-summary-dot">·</span>{{ view.stops }}</p>
+    <svg class="banner-stamp" viewBox="0 0 140 140" fill="none" aria-hidden="true">
+      <circle cx="70" cy="70" r="65" stroke="currentColor" opacity=".4"/>
+      <circle cx="70" cy="70" r="53" stroke="currentColor" opacity=".2"/>
+      <path d="M18 93 43 51l22 31 18-25 36 44" stroke="currentColor" stroke-width="2"/>
+      <circle cx="93" cy="36" r="11" fill="currentColor"/>
+      <path d="M31 109h77" stroke="currentColor" opacity=".5"/>
+    </svg>
+  </header>
+
+  <div class="banner-arrival">
+    {{ icon("paper-plane", "currentColor", 37) }}
+    <div class="banner-arrival-copy">
+      <p><strong>{{ view.arrival }}</strong></p>
+      <p class="banner-train-cap">{{ view.train_cap }}</p>
+    </div>
+  </div>
+
+  {# Keep the supplied travel order, including a transfer before the first stay.
+     Only photo panels have a minimum height; copy and the poster can grow. #}
+  <ol class="banner-route" aria-label="{{ _("Our route") }}">
+    {% for step in view.steps %}
+    {% if step.kind == "stay" %}
+    <li class="banner-stay">
+      <figure class="banner-stop banner-tone-{{ step.tone }}" style="--photo-focus: {{ photo_focus.get(step.city, '45%') }}">
+        <img src="{{ step.photo }}" alt="">
+        <p class="banner-stop-meta"><strong>{{ step.days }}</strong><span> · {{ step.nights }}</span></p>
+        <figcaption class="banner-stop-caption">
+          <h2>{{ step.city }}</h2>
+          <p>{{ step.highlight }}</p>
+        </figcaption>
+      </figure>
+    </li>
+    {% else %}
+    <li class="banner-leg banner-leg-{{ step.mode }}">
+      {{ icon("paper-plane" if step.mode == "flight" else step.mode, "currentColor", 32) }}
+      <p class="banner-leg-copy"><strong>{{ step.day }}</strong><span class="banner-leg-dot"> · </span><span>{{ step.text }}</span></p>
+      <span class="banner-leg-duration">{{ step.duration }}</span>
+      {{ icon("arrow-down", "currentColor", 22) }}
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ol>
+
+  <div class="banner-home">
+    {{ icon("paper-plane", "currentColor", 29) }}
+    <p>{{ view.home }}</p>
+  </div>
+
+  <footer class="banner-footer">
+    <section class="banner-dates" aria-labelledby="banner-dates-title">
+      <div class="banner-dates-heading">
+        <h2 id="banner-dates-title">{% trans year=view.year %}Dates · {{ year }}{% endtrans %}</h2>
+        <p>{{ _("Same cities; the order changes with the dates") }}</p>
+      </div>
+      <ul class="banner-date-options{% if view.windows|length == 4 %} banner-date-options-compact{% endif %}">
+        {% for window in view.windows %}
+        <li class="banner-date{% if window.selected %} banner-date-selected{% endif %}"{% if window.selected %} aria-current="true"{% endif %}>{{ window.dates }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="banner-estimate" aria-labelledby="banner-estimate-title">
+      <div class="banner-estimate-price">
+        <h2 id="banner-estimate-title">{{ _("Estimate today") }}</h2>
+        <p class="banner-amount"><span class="banner-approx">≈</span>{{ view.per_person }}</p>
+        <p class="banner-per-person">{{ _("per person, on average") }}</p>
+      </div>
+      <div class="banner-estimate-details">
+        <p class="banner-included">{{ _("International flights + transport inside China.") }}</p>
+        <p class="banner-excluded">{{ _("Hotels not included.") }}</p>
+      </div>
+    </section>
+    <p class="banner-credits">{{ view.credits }}</p>
+  </footer>
+</main>
+{% endblock %}
