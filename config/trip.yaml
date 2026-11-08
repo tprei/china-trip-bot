@@ -63,6 +63,7 @@ route:
 alerts:
   drop_pct: 5          # vs the total in the last weekly summary
   record_low: true
+  record_low_min_eur: 50   # a record low must beat the previous low by this much
 
 summary:
   weekday: sunday

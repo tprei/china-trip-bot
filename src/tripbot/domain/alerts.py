@@ -45,7 +45,7 @@ def decide_alerts(
         if window_id in alerted_today:
             continue
         earlier = history.get(window_id, ())
-        if rules.record_low and earlier and total < min(earlier):
+        if rules.record_low and earlier and _beats(total, min(earlier), rules.record_low_min_eur):
             alerts.append(Alert("record_low", window_id, total, min(earlier)))
             continue
         reference = (summary_totals or {}).get(window_id)
@@ -60,6 +60,10 @@ def decide_alerts(
 def _crossed(earlier: Sequence[Money], target: Money) -> bool:
     """Only the night the total first gets under the target, not every night after."""
     return not earlier or earlier[-1] > target
+
+
+def _beats(total: Money, record: Money, min_eur: int) -> bool:
+    return total <= record - Money.of(min_eur, record.currency)
 
 
 def _dropped(total: Money, reference: Money, drop_pct: int) -> bool:

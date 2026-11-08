@@ -91,12 +91,24 @@ def test_nightly_alerts_become_cards(
     conn, report = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
-    report.failing_sources = ["tripcom"]
+    report.newly_failing = ["tripcom"]
     report.alerts = [Alert("record_low", "B", Money(600000, "EUR"), Money(620000, "EUR"))]
     notify_nightly(messenger, CHAT, report, deps.context(NOW))
     assert deck.calls == ["alert B"]
     assert [sent.kind for sent in messenger.sent] == ["photo", "text"]
     assert "Trip.com" in str(messenger.sent[1].body)
+
+
+def test_a_source_still_down_stays_quiet(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, report = world
+    deps, messenger = bot(config, reference, conn, FakeDeck())
+    report.failing_sources = ["tripcom"]
+    report.newly_failing = []
+    report.alerts = []
+    notify_nightly(messenger, CHAT, report, deps.context(NOW))
+    assert messenger.sent == []
 
 
 def test_api_sends_html_messages_and_raises_on_errors() -> None:
