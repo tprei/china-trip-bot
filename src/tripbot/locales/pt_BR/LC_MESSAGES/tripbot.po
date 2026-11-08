@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 15:45+0000\n"
+"POT-Creation-Date: 2026-11-08 16:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -62,11 +62,113 @@ msgstr "%(people)s pessoas · %(groups)s grupos · ida e volta internacional"
 msgid "%(window)s %(latest)s · low %(low)s"
 msgstr "%(window)s %(latest)s · mínimo %(low)s"
 
+msgid "/alerts"
+msgstr "/alertas"
+
+msgid "/banner"
+msgstr "/banner"
+
+msgid "/best"
+msgstr "/melhor"
+
+msgid "/best [window]"
+msgstr "/melhor [janela]"
+
+msgid "/cities"
+msgstr "/cidades"
+
+msgid "/cities [window]"
+msgstr "/cidades [janela]"
+
+msgid "/dashboard"
+msgstr "/painel"
+
+msgid "/domestic"
+msgstr "/domesticos"
+
+msgid "/flights"
+msgstr "/voos"
+
+msgid "/flights <name or origin> [window]"
+msgstr "/voos <nome ou origem> [janela]"
+
+msgid "/help"
+msgstr "/ajuda"
+
+msgid "/history"
+msgstr "/historico"
+
+msgid "/history [window]"
+msgstr "/historico [janela]"
+
+msgid "/other"
+msgstr "/outras"
+
+msgid "/other [window]"
+msgstr "/outras [janela]"
+
+msgid "/people"
+msgstr "/pessoas"
+
+msgid "/reminders"
+msgstr "/lembretes"
+
+msgid "/reminders [window]"
+msgstr "/lembretes [janela]"
+
+msgid "/route"
+msgstr "/rota"
+
+msgid "/route [window]"
+msgstr "/rota [janela]"
+
+msgid "/sleepers"
+msgstr "/leitos"
+
+msgid "/sources"
+msgstr "/fontes"
+
+msgid "/summary"
+msgstr "/resumo"
+
+msgid "/target"
+msgstr "/meta"
+
+msgid "/target <€>"
+msgstr "/meta <€>"
+
+msgid "/todo"
+msgstr "/afazeres"
+
+msgid "/todo · /todo add <text> · /todo done <n>"
+msgstr "/afazeres · /afazeres novo <texto> · /afazeres feito <n>"
+
+msgid "/trains"
+msgstr "/trens"
+
+msgid "/trains [city] [city]"
+msgstr "/trens [cidade] [cidade]"
+
+msgid "/visa"
+msgstr "/visto"
+
+msgid "/weather"
+msgstr "/clima"
+
+msgid "/weather [window]"
+msgstr "/clima [janela]"
+
+msgid "/windows"
+msgstr "/janelas"
+
 msgid "1 sampled combo · no market-best or guaranteed-saving claim"
 msgstr "1 combinação amostrada · sem garantia de melhor preço ou de economia"
 
 msgid "Airport-local flight times · no separate one-way fares"
 msgstr "Horários locais dos aeroportos · sem tarifas de só ida separadas"
+
+msgid "Alerts"
+msgstr "Alertas"
 
 msgid "All four cities"
 msgstr "As quatro cidades"
@@ -79,6 +181,10 @@ msgstr "Média por pessoa"
 
 msgid "BEST"
 msgstr "MELHOR"
+
+msgctxt "flight direction"
+msgid "Back"
+msgstr "Volta"
 
 msgid "Below your target"
 msgstr "Abaixo da sua meta"
@@ -101,12 +207,25 @@ msgstr "VOLTA MAIS BARATA"
 msgid "CHEAPEST OUT"
 msgstr "IDA MAIS BARATA"
 
+#, python-brace-format
+msgid "Checked {date}"
+msgstr "Verificado em {date}"
+
+msgid "China 2027 bot"
+msgstr "Bot da China 2027"
+
 msgid "China trip"
 msgstr "Viagem à China"
 
 #, python-format
 msgid "Connection: %(connections)s"
 msgstr "Conexão: %(connections)s"
+
+msgid "Dashboard"
+msgstr "Painel"
+
+msgid "Dashboard not published yet."
+msgstr "O painel ainda não foi publicado."
 
 msgid "Details"
 msgstr "Detalhes"
@@ -119,12 +238,26 @@ msgstr "Mostrado por pessoa: %(per_person)s"
 msgid "Displayed per person: %(per_person)s · observed %(observed)s"
 msgstr "Mostrado por pessoa: %(per_person)s · visto em %(observed)s"
 
+msgid "Domestic flights"
+msgstr "Voos domésticos"
+
 #, python-brace-format
 msgid "Down {pct}% this week"
 msgstr "Caiu {pct}% esta semana"
 
+#, python-brace-format
+msgid "Down {percent}{suffix} since the last summary"
+msgstr "Caiu {percent}{suffix} desde o último resumo"
+
 msgid "Entry × exit"
 msgstr "Chegada × saída"
+
+#, python-brace-format
+msgid "Entry × exit · window {window}"
+msgstr "Chegada × saída · janela {window}"
+
+msgid "Fares are estimates."
+msgstr "As tarifas são estimativas."
 
 msgid "Flights"
 msgstr "Voos"
@@ -141,6 +274,9 @@ msgstr "HISTÓRICO"
 msgid "History"
 msgstr "Histórico"
 
+msgid "History starts after two nights of data."
+msgstr "O histórico começa depois de duas noites de dados."
+
 msgid "IN"
 msgstr "IDA"
 
@@ -155,6 +291,9 @@ msgstr "Estimativa de transporte interno: %(internal)s"
 #, python-format
 msgid "International round trips · %(people)s people · %(groups)s groups"
 msgstr "Voos internacionais de ida e volta · %(people)s pessoas · %(groups)s grupos"
+
+msgid "Last night"
+msgstr "Última execução"
 
 #, python-brace-format
 msgid "Last summary {total}"
@@ -176,17 +315,43 @@ msgstr "Várias reservas e bilhetes · proteção não verificada"
 msgid "New record low"
 msgstr "Novo menor preço"
 
+#, python-brace-format
+msgid "New record low by {amount}+"
+msgstr "Novo menor preço: pelo menos {amount} abaixo do anterior"
+
+#, python-brace-format
+msgid "New record low · window {window}"
+msgstr "Novo menor preço · janela {window}"
+
 msgid "Nights in China, with arrival and departure dates"
 msgstr "Noites na China, com datas de chegada e saída"
+
+msgid "No banner yet."
+msgstr "Ainda não há banner."
 
 msgid "No complete combo yet"
 msgstr "Ainda sem combinação completa"
 
+msgid "No complete combo yet: every group needs flights into the same city. Try after tonight's run."
+msgstr "Ainda não há uma combinação completa: todos precisam voar para a mesma cidade. Tente novamente após a busca de hoje à noite."
+
 msgid "No one-way price splitting · no new search · no booking"
 msgstr "Sem dividir preços de ida e volta · sem nova busca · sem reserva"
 
+msgid "No run yet."
+msgstr "Nenhuma execução ainda."
+
+msgid "No searches."
+msgstr "Nenhuma busca."
+
+msgid "No task with that number."
+msgstr "Não há afazer com esse número."
+
+msgid "No trains between those cities."
+msgstr "Não há trens entre essas cidades."
+
 msgid "Nothing left."
-msgstr "Nada pendente."
+msgstr "Nada por fazer."
 
 msgid "Now"
 msgstr "Agora"
@@ -210,6 +375,10 @@ msgstr "Outros planos"
 msgid "Other plans · window {window}"
 msgstr "Outros planos · janela {window}"
 
+msgctxt "flight direction"
+msgid "Out"
+msgstr "Ida"
+
 msgid "Outbound"
 msgstr "Ida"
 
@@ -220,12 +389,19 @@ msgstr "ESCOLHA"
 msgid "Previous low {total}"
 msgstr "Menor preço anterior {total}"
 
+#, python-brace-format
+msgid "Price drop · window {window}"
+msgstr "Queda de preço · janela {window}"
+
 msgid "ROUND-TRIP FARE DEMO"
 msgstr "DEMO DE TARIFA DE IDA E VOLTA"
 
 #, python-format
 msgid "ROUTE · WINDOW %(window)s"
 msgstr "ROTEIRO · JANELA %(window)s"
+
+msgid "Reminders"
+msgstr "Lembretes"
 
 msgid "Return"
 msgstr "Volta"
@@ -262,15 +438,42 @@ msgstr "Conexão curta: {airport} {wait}"
 msgid "Sleeper"
 msgstr "Trem-leito"
 
+msgid "Sleepers"
+msgstr "Trens-leito"
+
+msgid "Something went wrong with that command."
+msgstr "Algo deu errado com esse comando."
+
+#, python-brace-format
+msgid "Source down: {sources}; failing two runs in a row."
+msgstr "Fonte fora do ar: {sources}; houve falha em duas execuções seguidas."
+
 msgid "Sources"
 msgstr "Fontes"
 
 msgid "Starts after two nights of data."
 msgstr "Começa depois de duas noites de dados."
 
+msgid "Steps"
+msgstr "Etapas"
+
+#, python-brace-format
+msgid "Target set: {amount}"
+msgstr "Meta definida: {amount}"
+
+#, python-brace-format
+msgid "Target {goal}"
+msgstr "Meta {goal}"
+
 #, python-brace-format
 msgid "Target {total}"
 msgstr "Meta {total}"
+
+#, python-brace-format
+msgid "Tickets open {n} day ahead."
+msgid_plural "Tickets open {n} days ahead."
+msgstr[0] "As passagens ficam disponíveis {n} dia antes."
+msgstr[1] "As passagens ficam disponíveis {n} dias antes."
 
 msgid "Times local · vs own best"
 msgstr "Horários locais · vs. melhor do grupo"
@@ -280,6 +483,9 @@ msgstr "Afazeres"
 
 msgid "Train tickets open"
 msgstr "Abertura da venda de trens"
+
+msgid "Trains"
+msgstr "Trens"
 
 msgid "Trip.com browser fare panels · final checkout / inventory unverified"
 msgstr "Tarifas vistas no site da Trip.com · checkout final e disponibilidade não verificados"
@@ -291,9 +497,19 @@ msgstr "Cotação vista na Trip.com · preço final e disponibilidade não verif
 msgid "Updated %(when)s · %(zone)s"
 msgstr "Atualizado %(when)s · %(zone)s"
 
+msgid "Use /target 5000 (euros, whole group)."
+msgstr "Use /meta 5000 (euros, grupo inteiro)."
+
+msgid "Use /todo, /todo add <text> or /todo done <n>."
+msgstr "Use /afazeres, /afazeres novo <texto> ou /afazeres feito <n>."
+
 #, python-format
 msgid "Visa · %(passport)s passports"
 msgstr "Visto · passaporte %(passport)s"
+
+#, python-brace-format
+msgid "Visa-free ends {end_date} · decide by {decision_date}"
+msgstr "A isenção de visto termina em {end_date} · decida até {decision_date}"
 
 #, python-brace-format
 msgid "Visa-free ends {ends} · decide by {decide} · checked {checked}"
@@ -307,11 +523,19 @@ msgstr "JANELA %(window)s"
 msgid "WINDOW %(window)s · %(dates)s"
 msgstr "JANELA %(window)s · %(dates)s"
 
+#, python-brace-format
+msgid "Weather · window {window}"
+msgstr "Clima · janela {window}"
+
 msgid "Weekly summary"
 msgstr "Resumo semanal"
 
 msgid "Who flies how"
 msgstr "Quem voa como"
+
+#, python-brace-format
+msgid "Who? {names} (or DUB, LON, SAO)"
+msgstr "Quem? {names} (ou DUB, LON, SAO)"
 
 #, python-brace-format
 msgid "Window {window}"
@@ -320,14 +544,44 @@ msgstr "Janela {window}"
 msgid "Windows"
 msgstr "Janelas"
 
+msgctxt "todo"
+msgid "add"
+msgstr "novo"
+
 msgid "airport-local"
 msgstr "horário local do aeroporto"
+
+msgid "alert triggers"
+msgstr "gatilhos de alerta"
+
+msgid "alert when a window gets under this total"
+msgstr "avisa quando o total de uma janela fica abaixo desse valor"
+
+msgid "best and fairest plan for a window"
+msgstr "melhor plano e mais justo para uma janela"
+
+msgid "day by day: stays, trains, sleepers, flights"
+msgstr "dia a dia: hospedagens, trens, trens-leito e voos"
 
 msgid "direct"
 msgstr "direto"
 
+msgid "domestic flights"
+msgstr "voos domésticos"
+
+msgctxt "todo"
+msgid "done"
+msgstr "feito"
+
 msgid "each"
 msgstr "cada"
+
+msgid "entry × exit city comparison"
+msgstr "comparação de cidades de chegada × saída"
+
+msgctxt "fare estimate"
+msgid "est."
+msgstr "estim."
 
 msgid "estimate"
 msgstr "estimativa"
@@ -335,15 +589,30 @@ msgstr "estimativa"
 msgid "flight"
 msgstr "voo"
 
+msgctxt "weather risk"
+msgid "high"
+msgstr "alto"
+
 msgid "high-speed"
 msgstr "trem rápido"
 
 msgid "land"
 msgstr "chegada"
 
+msgid "last night's searches per source"
+msgstr "buscas da última noite por fonte"
+
+msgctxt "weather risk"
+msgid "low"
+msgstr "baixo"
+
 #, python-format
 msgid "low %(low)s"
 msgstr "mínimo %(low)s"
+
+msgctxt "weather risk"
+msgid "moderate"
+msgstr "moderado"
 
 msgid "no change"
 msgstr "sem mudança"
@@ -358,8 +627,26 @@ msgctxt "connection"
 msgid "none"
 msgstr "nenhuma"
 
+msgid "not set"
+msgstr "não definida"
+
 msgid "ok"
 msgstr "ok"
+
+msgid "open the full dashboard"
+msgstr "abrir o painel completo"
+
+msgid "out of rule"
+msgstr "fora da regra"
+
+msgid "overnight trains: times, days, cabins"
+msgstr "trens-leito: horários, dias e cabines"
+
+msgid "price chart"
+msgstr "gráfico de preços"
+
+msgid "rain and typhoon risk per stop"
+msgstr "risco de chuva e tufão por parada"
 
 msgid "rainier"
 msgstr "mais chuva"
@@ -370,22 +657,63 @@ msgstr "ida e volta"
 msgid "same plane"
 msgstr "mesmo avião"
 
+msgid "shared tasks"
+msgstr "afazeres do grupo"
+
 msgid "sleeper"
 msgstr "trem-leito"
 
+msgid "the command list"
+msgstr "lista de comandos"
+
+msgid "the plan without Zhangjiajie, Shanghai or Yangshuo"
+msgstr "plano sem Zhangjiajie, Xangai ou Yangshuo"
+
+msgid "the route poster to share"
+msgstr "pôster do roteiro para compartilhar"
+
+msgid "the three windows side by side"
+msgstr "as três janelas lado a lado"
+
+msgid "this week's card"
+msgstr "cartão desta semana"
+
+msgid "top flights for one group"
+msgstr "melhores voos para um grupo"
+
 msgid "total"
 msgstr "total"
+
+msgid "train sale dates and deadlines"
+msgstr "datas de abertura das vendas de trem e prazos"
+
+msgid "trains on the route"
+msgstr "trens no roteiro"
 
 #, python-brace-format
 msgid "via {airports}"
 msgstr "via {airports}"
 
+msgid "visa status and steps"
+msgstr "status do visto e etapas"
+
 msgid "warning"
 msgstr "aviso"
+
+msgid "who flies from where"
+msgstr "quem voa de onde"
 
 #, python-brace-format
 msgid "{dates} · rainier"
 msgstr "{dates} · mais chuva"
+
+#, python-brace-format
+msgid "{date} · visa decision"
+msgstr "{date} · decisão sobre o visto"
+
+#, python-brace-format
+msgid "{group} · window {window} · {dates}"
+msgstr "{group} · janela {window} · {dates}"
 
 #, python-brace-format
 msgid "{n} day"
@@ -398,6 +726,26 @@ msgid "{n} night"
 msgid_plural "{n} nights"
 msgstr[0] "{n} noite"
 msgstr[1] "{n} noites"
+
+#, python-brace-format
+msgid "{n} night in {month}"
+msgid_plural "{n} nights in {month}"
+msgstr[0] "{n} noite em {month}"
+msgstr[1] "{n} noites em {month}"
+
+#, python-brace-format
+msgid "{n} person"
+msgid_plural "{n} people"
+msgstr[0] "{n} pessoa"
+msgstr[1] "{n} pessoas"
+
+#, python-brace-format
+msgid "{opening_date} · tickets open: {leg} ({travel_date})"
+msgstr "Vendas abrem em {opening_date}: {leg} ({travel_date})"
+
+#, python-brace-format
+msgid "{status} · {passport} passports"
+msgstr "{status} · passaporte {passport}"
 
 #, python-brace-format
 msgid "{wait} wait"

@@ -6,8 +6,10 @@ import pytest
 from factories import eur
 from telegram_fakes import FakeDeck, FakeMessenger, World, bot, message
 
+from tripbot import i18n
 from tripbot.config import AlertRules, TripConfig
 from tripbot.domain.alerts import decide_alerts
+from tripbot.domain.schedule import train_sale_dates
 from tripbot.reference import Reference
 from tripbot.store import repo
 from tripbot.telegram.bot import BotDeps, handle_update
@@ -55,7 +57,7 @@ def test_trains_and_sleepers_come_from_the_reference_table(
     assert "est." in ask(chat, "/domestic")
 
 
-def test_visa_says_a_visa_is_needed(chat: tuple[BotDeps, FakeMessenger]) -> None:
+def test_visa_shows_its_dates_and_steps(chat: tuple[BotDeps, FakeMessenger]) -> None:
     reply = ask(chat, "/visa")
     assert reply.startswith("<b>Visto necessário")
     assert "Tue 1 Dec" in reply
@@ -67,6 +69,11 @@ def test_weather_and_reminders_follow_the_best_route(
     assert "nights in" in ask(chat, "/weather B")
     reminders = ask(chat, "/reminders B")
     assert "visa decision" in reminders and "tickets open" in reminders
+    deps, _ = chat
+    best = deps.context(NOW).rankings().main["B"].best
+    assert best is not None
+    opening_date = i18n.day(train_sale_dates(best.route)[0].opens)
+    assert opening_date in reminders
 
 
 def test_todo_is_seeded_once_then_edited(chat: tuple[BotDeps, FakeMessenger]) -> None:
@@ -76,7 +83,7 @@ def test_todo_is_seeded_once_then_edited(chat: tuple[BotDeps, FakeMessenger]) ->
     assert len(repo.todos(deps.conn)) == 3
     ask(chat, "/todo add Book the <D7> sleeper")
     listed = ask(chat, "/todo done 1")
-    assert "Check for a visa-free extension" not in listed
+    assert len(repo.todos(deps.conn)) == 3
     assert "Book the &lt;D7&gt; sleeper" in listed
     assert ask(chat, "/todo done 9") == "No task with that number."
 
