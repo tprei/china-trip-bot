@@ -104,6 +104,10 @@ class FakeDeck:
         self.calls.append(f"map {window_id}")
         return b"map"
 
+    def banner(self, window_id: str) -> bytes | None:
+        self.calls.append(f"banner {window_id}")
+        return b"banner"
+
     def history_card(self, window_id: str) -> bytes | None:
         self.calls.append(f"history {window_id}")
         return None

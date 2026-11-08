@@ -1,112 +1,140 @@
-# What each city is like and what to see there, for /about. Written in the
-# group's language, like the city names in cities.yaml. Every city the route
-# can touch has an entry, so a stop added from Telegram is covered too.
+# What each city is like and what to see there, for /about and the /banner
+# poster. Written in the group's language, like the city names in cities.yaml.
+# Every city the route can touch has an entry, so a stop added from Telegram is
+# covered too. Photos live in data/photos/, 1280 px wide, from Wikimedia Commons
+# under the license given; the poster credits the ones it shows.
 
 beijing:
   summary: Capital imperial por mais de seis séculos, com palácios, hutongs e o trecho mais famoso da Grande Muralha a 1h30 de carro.
+  highlight: Grande Muralha e Cidade Proibida.
   sights:
     - Grande Muralha em Mutianyu, com teleférico e tobogã na descida
     - Cidade Proibida e Praça da Paz Celestial
     - Templo do Céu, de manhã cedo com os moradores no parque
     - Palácio de Verão e o lago Kunming
     - Hutongs de Shichahai e pato laqueado no jantar
+  photo: {file: beijing.jpg, author: Severin.stalder, license: CC BY-SA 3.0, license_url: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:The_Great_Wall_of_China_at_Jinshanling-edit.jpg"}
 
 shanghai:
   summary: A maior cidade da China, onde o Bund dos anos 1920 fica de frente para os arranha-céus de Pudong.
+  highlight: O Bund e o skyline de Pudong à noite.
   sights:
     - O Bund à noite, com Pudong iluminado do outro lado do rio
     - Mirante da Shanghai Tower, o prédio mais alto da China
     - Jardim Yu e a cidade antiga
     - Ruas arborizadas da antiga Concessão Francesa
     - Xiaolongbao, o pastel de sopa de Xangai
+  photo: {file: shanghai.jpg, author: Daniel Case, license: CC BY-SA 3.0, license_url: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:Lujiazui_skyline_by_night_from_Bund,_fully_illuminated.jpg"}
 
 zhangjiajie:
   summary: Parque nacional de colunas de arenito que inspiraram as montanhas flutuantes de Avatar; pede dois dias de trilhas e teleféricos.
+  highlight: Montanhas de arenito que inspiraram o filme Avatar.
   sights:
     - Parque Florestal de Wulingyuan, Patrimônio da UNESCO
     - Elevador Bailong, 326 m colado no penhasco
     - Yuanjiajie e a Montanha Avatar Aleluia
     - Montanha Tianmen, com teleférico longo, Portão do Céu e passarela de vidro
     - Ponte de vidro do Grand Canyon de Zhangjiajie
+  photo: {file: zhangjiajie.jpg, author: "Kuruman from Tokyo, Japan", license: CC BY 2.0, license_url: "https://creativecommons.org/licenses/by/2.0/", source: "https://commons.wikimedia.org/wiki/File:Zhangjiajie_National_Forest_Park.jpg"}
 
 yangshuo:
   summary: Vilarejo entre morros de calcário à beira do rio Li; o lugar para pedalar, descer de balsa de bambu e ver o pôr do sol.
+  highlight: Rio Li, picos de calcário e balsas de bambu.
   sights:
     - Rio Li de barco entre Xingping e Yangshuo, a paisagem da nota de 20 yuan
     - Balsa de bambu no rio Yulong
     - Bicicleta pelos arrozais e vilarejos
     - Nascer do sol no mirante do Pico Xianggong
     - Show Impressão Liu Sanjie, montado no próprio rio
+  photo: {file: yangshuo.jpg, author: chensiyuan, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:1_li_jiang_guilin_yangshuo_2011.jpg"}
 
 guilin:
   summary: Porta de entrada do rio Li, com morros de calcário no meio da cidade e cavernas iluminadas.
+  highlight: Colina da Tromba do Elefante e o rio Li.
   sights:
     - Colina da Tromba do Elefante
     - Caverna da Flauta de Junco
     - Terraços de arroz de Longji, a 2h
     - Lagos do centro iluminados à noite
+  photo: {file: guilin.jpg, author: Sevgonlernassau, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Elephant_Trunk_Hill,_2018.jpg"}
 
 guangzhou:
   summary: A antiga Cantão, berço da culinária cantonesa e do dim sum; quente, moderna e fácil de cruzar de metrô.
+  highlight: Torre de Cantão e o dim sum mais famoso da China.
   sights:
     - Torre de Cantão e passeio noturno pelo rio das Pérolas
     - Ilha Shamian e os prédios coloniais
     - Casa Ancestral da Família Chen
     - Dim sum de manhã numa casa de chá cantonesa
+  photo: {file: guangzhou.jpg, author: Tim Wu, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Canton_Tower_at_Night_20230722.jpg"}
 
 shenzhen:
   summary: Vila de pescadores que virou metrópole de tecnologia em quatro décadas, colada em Hong Kong.
+  highlight: Arranha-céus e eletrônicos, colado em Hong Kong.
   sights:
     - Mercado de eletrônicos de Huaqiangbei
     - Mirante do Ping An Finance Centre
     - Galerias e cafés do OCT Loft
     - Parque Lianhuashan com vista do centro
+  photo: {file: shenzhen.jpg, author: Charlie fong, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:The_panorama_of_Futian_Shenzhen.jpg"}
 
 changsha:
   summary: Capital de Hunan, terra de Mao e de uma das cozinhas mais apimentadas da China; parada natural a caminho de Zhangjiajie.
+  highlight: Ilha das Laranjeiras e a comida mais apimentada.
   sights:
     - Ilha das Laranjeiras e a cabeça gigante do jovem Mao
     - Montanha Yuelu e a Academia Yuelu, com mil anos
     - Museu Provincial de Hunan e os tesouros de Mawangdui
     - Tofu fedido e petiscos na rua Pozi
+  photo: {file: changsha.jpg, author: 刻意, license: CC BY-SA 3.0, license_url: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:Mao_juzizhou_head.JPG"}
 
 chengdu:
   summary: Capital de Sichuan, de pandas, casas de chá e da pimenta que adormece a boca.
+  highlight: Pandas-gigantes, casas de chá e hot pot.
   sights:
     - Base de pesquisa dos pandas-gigantes, chegando cedo
     - Ruelas de Kuanzhai Xiangzi
     - Chá e massagem de ouvido no Parque do Povo
     - Buda Gigante de Leshan, a 1h de trem-bala
     - Hot pot sichuanês
+  photo: {file: chengdu.jpg, author: "CEphoto, Uwe Aranas", license: CC BY-SA 3.0, license_url: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:Chengdu_Sichuan_China_Panda-breeding-and-research-center-02.jpg"}
 
 chongqing:
   summary: Megacidade em morros sobre os rios Yangtzé e Jialing, com metrô atravessando prédio e noites de cara cyberpunk.
+  highlight: Hongyadong iluminado sobre o rio Jialing.
   sights:
     - Hongyadong iluminado à noite
     - Monotrilho que atravessa um prédio em Liziba
     - Teleférico sobre o Yangtzé
     - Cidade antiga de Ciqikou
     - Hot pot de Chongqing, ainda mais forte que o de Chengdu
+  photo: {file: chongqing.jpg, author: GeoffLeng, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:%E9%87%8D%E5%BA%86%E6%B4%AA%E5%B4%96%E6%B4%9E.jpg"}
 
 xian:
   summary: Ponto de partida da Rota da Seda e capital de mais de dez dinastias; o Exército de Terracota fica a 1h.
+  highlight: Exército de Terracota e a muralha da cidade.
   sights:
     - Exército de Terracota
     - Volta de bicicleta sobre a muralha da cidade, 14 km
     - Bairro muçulmano e a comida de rua
     - Pagode do Grande Ganso Selvagem
+  photo: {file: xian.jpg, author: "Gary Lee Todd, Ph.D.", license: CC0, license_url: "https://creativecommons.org/publicdomain/zero/1.0/", source: "https://commons.wikimedia.org/wiki/File:Qin_Terracotta_Warriors,_Pit_1_12.jpg"}
 
 hangzhou:
   summary: Jardins, templos e chá em volta do Lago Oeste, a uma hora de trem-bala de Xangai.
+  highlight: Lago Oeste, pagodes e plantações de chá.
   sights:
     - Lago Oeste de barco ou bicicleta pela Calçada Su
     - Plantações de chá Longjing
     - Templo Lingyin e as esculturas na rocha
     - Pagode Leifeng ao pôr do sol
+  photo: {file: hangzhou.jpg, author: DXR, license: CC BY-SA 3.0, license_url: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:West_Lake_Pavilion_and_Water_Lilies,_Hangzhou_120529_1.jpg"}
 
 wuhan:
   summary: Grande cidade às margens do Yangtzé e o principal entroncamento ferroviário do centro da China.
+  highlight: Torre do Grou Amarelo à beira do Yangtzé.
   sights:
     - Torre do Grou Amarelo
     - Lago Leste de bicicleta
     - Rua Hubu e o macarrão reganmian no café da manhã
+  photo: {file: wuhan.jpg, author: Windmemories, license: CC BY-SA 4.0, license_url: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:20240621_Yellow_Crane_Tower.jpg"}

@@ -6,7 +6,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from tripbot import i18n
+from tripbot.domain.ranking import Combo
 from tripbot.i18n import gettext_noop
+from tripbot.render.banner import shown_photos
+from tripbot.render.names import Names
 from tripbot.telegram.api import Button
 from tripbot.telegram.context import BotContext, CardDeck
 from tripbot.telegram.format import bold, esc
@@ -125,13 +128,29 @@ def summary_command(context: BotContext, request: Request) -> Reply:
 
 @command(
     gettext_noop("/banner"),
-    gettext_noop("/banner"),
+    gettext_noop("/banner [window]"),
     gettext_noop("the route poster to share"),
 )
 def banner_command(context: BotContext, request: Request) -> Reply:
-    if context.banner_path is None or not context.banner_path.is_file():
-        return Reply(text=i18n._("No banner yet."))
-    return Reply(photo=context.banner_path.read_bytes())
+    window = context.window_arg(request.args)
+    if window is None:
+        return Reply(text=i18n._(NO_DATA))
+    with context.open_deck(context) as deck:
+        png = deck.banner(window)
+    best = context.rankings().main[window].best
+    if png is None or best is None:
+        return Reply(text=i18n._(NO_DATA))
+    return Reply(photo=png, caption=photo_credits(best, Names(context.config, context.reference)))
+
+
+def photo_credits(best: Combo, names: Names) -> str:
+    """Each photo's source and license as links, as their licenses ask; the poster can't link."""
+    rows = [esc(i18n._("Photos, cropped, from Wikimedia Commons:"))]
+    for city, photo in shown_photos(best, names):
+        source = f'<a href="{esc(photo.source)}">{esc(city)}</a>'
+        license_link = f'<a href="{esc(photo.license_url)}">{esc(photo.license)}</a>'
+        rows.append(f"{source} · {esc(photo.author)} · {license_link}")
+    return "\n".join(rows)
 
 
 @command(

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 17:59+0000\n"
+"POT-Creation-Date: 2026-11-08 18:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -67,6 +67,9 @@ msgstr "/alertas"
 
 msgid "/banner"
 msgstr "/banner"
+
+msgid "/banner [window]"
+msgstr "/banner [janela]"
 
 msgid "/best"
 msgstr "/melhor"
@@ -293,6 +296,30 @@ msgstr "Painel"
 msgid "Dashboard not published yet."
 msgstr "O painel ainda não foi publicado."
 
+#, python-format
+msgid "Dates · %(year)s"
+msgstr "Datas · %(year)s"
+
+#, python-brace-format
+msgid "Day 1 · Arriving in {city}"
+msgstr "Dia 1 · Chegada em {city}"
+
+#, python-brace-format
+msgid "Day {n}"
+msgstr "Dia {n}"
+
+#, python-brace-format
+msgid "Day {n} · Flight home"
+msgstr "Dia {n} · Voo de volta"
+
+#, python-brace-format
+msgid "Day {n} · {trips}, then the flight home"
+msgstr "Dia {n} · {trips} e voo de volta"
+
+#, python-brace-format
+msgid "Days {first}–{last}"
+msgstr "Dias {first}–{last}"
+
 msgid "Details"
 msgstr "Detalhes"
 
@@ -322,11 +349,18 @@ msgstr "Chegada × saída"
 msgid "Entry × exit · window {window}"
 msgstr "Chegada × saída · janela {window}"
 
+msgid "Estimate today"
+msgstr "Estimativa hoje"
+
 msgid "FLIGHTS"
 msgstr "VOOS"
 
 msgid "Fares are estimates."
 msgstr "As tarifas são estimativas."
+
+#, python-brace-format
+msgid "Flight to {city}"
+msgstr "Voo para {city}"
 
 msgid "Flights"
 msgstr "Voos"
@@ -366,6 +400,9 @@ msgstr "Histórico"
 msgid "History starts after two nights of data."
 msgstr "O histórico começa depois de duas noites de dados."
 
+msgid "Hotels not included."
+msgstr "Hotéis não incluídos."
+
 msgid "How the total adds up"
 msgstr "Como chega no total"
 
@@ -382,6 +419,9 @@ msgstr "Dentro da China <b>%(internal)s</b> por pessoa"
 #, python-format
 msgid "Internal transport estimate: %(internal)s"
 msgstr "Estimativa de transporte interno: %(internal)s"
+
+msgid "International flights + transport inside China."
+msgstr "Voos internacionais + transporte dentro da China."
 
 #, python-format
 msgid "International round trips · %(people)s people · %(groups)s groups"
@@ -427,9 +467,6 @@ msgstr "Novo menor preço · janela {window}"
 msgid "Nights in China, with arrival and departure dates"
 msgstr "Noites na China, com datas de chegada e saída"
 
-msgid "No banner yet."
-msgstr "Ainda não há banner."
-
 msgid "No complete combo yet"
 msgstr "Ainda sem combinação completa"
 
@@ -455,6 +492,10 @@ msgstr "Nenhuma busca."
 
 msgid "No task with that number."
 msgstr "Não há afazer com esse número."
+
+#, python-brace-format
+msgid "No train over {hours}h"
+msgstr "Nenhum trem com mais de {hours}h"
 
 msgid "No trains between those cities."
 msgstr "Não há trens entre essas cidades."
@@ -494,6 +535,9 @@ msgstr "Outros planos"
 msgid "Other plans · window {window}"
 msgstr "Outros planos · janela {window}"
 
+msgid "Our route"
+msgstr "Nosso roteiro"
+
 msgctxt "flight direction"
 msgid "Out"
 msgstr "Ida"
@@ -503,6 +547,13 @@ msgstr "Ida"
 
 msgid "PICK"
 msgstr "ESCOLHA"
+
+#, python-brace-format
+msgid "Photos (cropped): {credits} · Wikimedia Commons"
+msgstr "Fotos (recortadas): {credits} · Wikimedia Commons"
+
+msgid "Photos, cropped, from Wikimedia Commons:"
+msgstr "Fotos recortadas, do Wikimedia Commons:"
 
 #, python-brace-format
 msgid "Previous low {total}"
@@ -548,6 +599,9 @@ msgstr "Roteiro · %(internal)s por pessoa dentro da China"
 msgid "Route · nights per city"
 msgstr "Roteiro · noites por cidade"
 
+msgid "Same cities; the order changes with the dates"
+msgstr "Mesmas cidades; a ordem muda conforme a data"
+
 msgid "Scope & limits"
 msgstr "Escopo e limites"
 
@@ -566,6 +620,10 @@ msgstr "Conexão curta: {airport} {wait}"
 
 msgid "Sleeper"
 msgstr "Trem-leito"
+
+#, python-brace-format
+msgid "Sleeper train to {city}"
+msgstr "Trem-leito para {city}"
 
 msgid "Sleepers"
 msgstr "Trens-leito"
@@ -649,6 +707,10 @@ msgstr "Afazeres"
 
 msgid "Train tickets open"
 msgstr "Abertura da venda de trens"
+
+#, python-brace-format
+msgid "Train to {city}"
+msgstr "Trem para {city}"
 
 msgid "Trains"
 msgstr "Trens"
@@ -883,6 +945,9 @@ msgstr "fora da regra"
 msgid "overnight trains: times, days, cabins"
 msgstr "trens-leito: horários, dias e cabines"
 
+msgid "per person, on average"
+msgstr "por pessoa, em média"
+
 msgid "price chart"
 msgstr "gráfico de preços"
 
@@ -1048,6 +1113,12 @@ msgid "{n} day"
 msgid_plural "{n} days"
 msgstr[0] "{n} dia"
 msgstr[1] "{n} dias"
+
+#, python-brace-format
+msgid "{n} destination"
+msgid_plural "{n} destinations"
+msgstr[0] "{n} destino"
+msgstr[1] "{n} destinos"
 
 #, python-brace-format
 msgid "{n} flight in China"

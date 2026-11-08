@@ -14,6 +14,7 @@ from tripbot.i18n import _
 from tripbot.pipeline.state import MAIN, Rankings
 from tripbot.reference import Reference
 from tripbot.render import details, views
+from tripbot.render.banner import build_banner
 from tripbot.render.cards import CardRenderer, render_html
 from tripbot.render.names import Names
 from tripbot.store import repo
@@ -122,6 +123,14 @@ class Deck:
             return None
         view = details.build_map(ranking.best, self.names)
         return self.renderer.png(render_html("map.html.j2", view=view))
+
+    def banner(self, window_id: str) -> bytes | None:
+        """The poster to share: the window's best plan with a photo of every stay."""
+        ranking = self.rankings.main.get(window_id)
+        if ranking is None or ranking.best is None:
+            return None
+        view = build_banner(ranking.best, self.names, self.config.windows)
+        return self.renderer.png(render_html("banner.html.j2", view=view))
 
     def history_card(self, window_id: str) -> bytes | None:
         view = details.build_history(self.history(), window_id)

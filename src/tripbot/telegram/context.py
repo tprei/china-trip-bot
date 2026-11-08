@@ -7,7 +7,6 @@ from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import Protocol
 
 from tripbot.config import TripConfig
@@ -24,6 +23,7 @@ class CardDeck(Protocol):
     def alert(self, alert: Alert) -> bytes | None: ...
     def route(self, window_id: str, alternative_id: str | None = None) -> bytes | None: ...
     def route_map(self, window_id: str) -> bytes | None: ...
+    def banner(self, window_id: str) -> bytes | None: ...
     def history_card(self, window_id: str) -> bytes | None: ...
     def windows(self) -> bytes: ...
     def other(self, window_id: str) -> bytes | None: ...
@@ -41,7 +41,6 @@ class BotContext:
     now: datetime
     open_deck: DeckOpener
     dashboard_url: str | None = None
-    banner_path: Path | None = None
     _rankings: Rankings | None = field(default=None, repr=False)
 
     def rankings(self) -> Rankings:

@@ -15,7 +15,6 @@ class Settings:
     config_path: Path
     data_dir: Path
     site_dir: Path
-    banner_path: Path
     serpapi_key: str | None
     telegram_token: str | None
     telegram_chat_id: str | None
@@ -55,7 +54,6 @@ def load_settings(root: Path, env: Mapping[str, str] | None = None) -> Settings:
         config_path=path("TRIPBOT_CONFIG", "config/trip.yaml"),
         data_dir=path("TRIPBOT_DATA", "data"),
         site_dir=path("TRIPBOT_SITE", "site"),
-        banner_path=path("TRIPBOT_BANNER", "var/banner.png"),
         serpapi_key=optional("SERPAPI_KEY"),
         telegram_token=optional("TELEGRAM_TOKEN"),
         telegram_chat_id=optional("TELEGRAM_CHAT_ID"),
