@@ -88,9 +88,9 @@ class FakeDeck:
     def best_window(self) -> str | None:
         return "B"
 
-    def summary(self, window_id: str | None = None) -> bytes | None:
+    def summary(self, window_id: str | None = None) -> tuple[bytes, ...] | None:
         self.calls.append(f"summary {window_id}")
-        return b"summary"
+        return (b"summary",)
 
     def alert(self, alert: Alert) -> bytes | None:
         self.calls.append(f"alert {alert.window_id}")

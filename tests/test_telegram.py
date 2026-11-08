@@ -44,7 +44,7 @@ def test_translated_commands_reach_their_handlers(
     deck = FakeDeck()
     deps, messenger = bot(config, reference, db, deck)
     handle_update(deps, message("/melhor b"), None, NOW)
-    assert deck.calls == ["summary B"]
+    assert deck.calls == ["summary B", "map B"]
 
     handle_update(deps, message("/afazeres novo comprar adaptador"), None, NOW)
     assert "comprar adaptador" in str(messenger.sent[-1].body)
@@ -86,14 +86,16 @@ def test_card_commands_send_photos_with_the_dashboard_button(
     conn, _ = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
-    for text in ("/best a", "/route", "/other B no-shanghai", "/windows"):
+    for text in ("/route", "/other B no-shanghai", "/windows"):
         handle_update(deps, message(text), None, NOW)
-    assert deck.calls[0] == "summary A"
-    assert deck.calls[1].startswith("route ")
-    assert deck.calls[2] == "route B no-shanghai"
-    assert deck.calls[3] == "windows"
+    assert deck.calls[0].startswith("route ")
+    assert deck.calls[1] == "route B no-shanghai"
+    assert deck.calls[2] == "windows"
     assert all(sent.kind == "photo" for sent in messenger.sent)
     assert messenger.sent[0].button == Button("Details", "https://trip.example/dash")
+    handle_update(deps, message("/best a"), None, NOW)
+    assert deck.calls[-2:] == ["summary A", "map A"]
+    assert messenger.sent[-1].kind == "album"
 
 
 def test_commands_without_data_say_so(

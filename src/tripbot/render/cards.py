@@ -84,3 +84,16 @@ class CardRenderer:
             return page.locator(".card").screenshot(type="png")
         finally:
             page.close()
+
+    def pngs(self, html: str) -> tuple[bytes, ...]:
+        """Every `.card` in the document, in order: one page load for a set of pages."""
+        if self._browser is None:
+            raise RuntimeError("use CardRenderer as a context manager")
+        page = self._browser.new_page(viewport={"width": CARD_WIDTH, "height": 800})
+        try:
+            page.set_content(html, wait_until="load", timeout=LOAD_TIMEOUT_MS)
+            page.evaluate("document.fonts.ready")
+            cards = page.locator(".card")
+            return tuple(cards.nth(i).screenshot(type="png") for i in range(cards.count()))
+        finally:
+            page.close()

@@ -1,4 +1,5 @@
 import os
+import struct
 from datetime import date, datetime
 from itertools import pairwise
 
@@ -205,7 +206,9 @@ def chromium_available() -> bool:
     return True
 
 
-def test_cards_render_to_png(config: TripConfig, reference: Reference, world: World) -> None:
+def test_summary_renders_as_three_full_resolution_4_by_5_pages(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
     # CI sets TRIPBOT_REQUIRE_CHROMIUM so a missing browser fails instead of skipping.
     if not chromium_available():
         if os.environ.get("TRIPBOT_REQUIRE_CHROMIUM"):
@@ -214,5 +217,8 @@ def test_cards_render_to_png(config: TripConfig, reference: Reference, world: Wo
     conn, report = world
     with CardRenderer() as renderer:
         deck = Deck(config, reference, conn, report.rankings, date(2026, 11, 8), renderer)
-        png = deck.summary("B")
-    assert png is not None and png[:8] == b"\x89PNG\r\n\x1a\n"
+        pages = deck.summary("B")
+    assert pages is not None and len(pages) == 3
+    for png in pages:
+        assert png[:8] == b"\x89PNG\r\n\x1a\n"
+        assert struct.unpack(">II", png[16:24]) == (1080, 1350)

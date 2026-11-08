@@ -75,7 +75,8 @@ class Deck:
         run_id = repo.last_run_id(self.conn)
         return repo.source_health(self.conn, run_id) if run_id is not None else {}
 
-    def summary(self, window_id: str | None = None) -> bytes | None:
+    def summary(self, window_id: str | None = None) -> tuple[bytes, ...] | None:
+        """The weekly summary as 4:5 pages, the shape Telegram shows largest."""
         chosen = window_id or self.best_window()
         if chosen is None or chosen not in self.rankings.main:
             return None
@@ -94,7 +95,7 @@ class Deck:
         if view is None:
             return None
         html = render_html("summary.html.j2", view=view, people=self.people, selected=chosen)
-        return self.renderer.png(html)
+        return self.renderer.pngs(html)
 
     def alert(self, alert: Alert) -> bytes | None:
         combo = self.rankings.main[alert.window_id].best
