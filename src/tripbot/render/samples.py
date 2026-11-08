@@ -157,6 +157,7 @@ def render_samples(config: TripConfig, reference: Reference, out_dir: Path) -> l
                 "summary": deck.summary(window),
                 "alert": deck.alert(report.alerts[0]) if report.alerts else None,
                 "route": deck.route(window),
+                "map": deck.route_map(window),
                 "route-no-shanghai": deck.route(window, "no-shanghai"),
                 "history": deck.history_card(window),
                 "windows": deck.windows(),

@@ -1,19 +1,21 @@
-"""View models for the on-demand cards: route, history and comparisons."""
+"""View models for the on-demand cards: route, map, history and comparisons."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from tripbot import i18n
 from tripbot.domain.flights import duration_label
+from tripbot.domain.legs import Mode
 from tripbot.domain.money import Money
 from tripbot.domain.ranking import Combo, WindowRanking
 from tripbot.domain.routes import PlannedLeg
 from tripbot.i18n import _, ngettext
+from tripbot.render.maps import china
 from tripbot.render.names import Names
-from tripbot.render.views import RAINIER_EUR_CENTS
+from tripbot.render.views import RAINIER_EUR_CENTS, LegendItem, legend
 
 CHART_LEFT, CHART_RIGHT, CHART_TOP, CHART_BOTTOM = 70, 900, 20, 330
 
@@ -36,6 +38,99 @@ class RouteView:
     steps: tuple[RouteStep, ...]
     internal: str
     sleepers: int
+
+
+@dataclass(frozen=True)
+class MapStop:
+    """A city on the map. `order` counts stays; an entry or exit city may have no stay."""
+
+    name: str
+    x: float
+    y: float
+    order: int | None
+    nights: str
+    dates: str
+    arrival: bool
+    departure: bool
+
+
+@dataclass(frozen=True)
+class MapLeg:
+    mode: Mode
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+    duration: str
+
+
+@dataclass(frozen=True)
+class MapView:
+    window_id: str
+    dates: str
+    days: str
+    width: int
+    height: int
+    outline: str
+    stops: tuple[MapStop, ...]
+    legs: tuple[MapLeg, ...]
+    legend: tuple[LegendItem, ...]
+
+
+def build_map(combo: Combo, names: Names) -> MapView:
+    """The route drawn on China: one point per city, a line per leg, in travel order."""
+    route = combo.route
+    outline = china()
+
+    def point(city_id: str) -> tuple[float, float]:
+        city = names.reference.cities[city_id]
+        return outline.point(city.latitude, city.longitude)
+
+    stays = {stay.city: (index, stay) for index, stay in enumerate(route.stays, start=1)}
+    cities = list(dict.fromkeys([route.entry, *route.order, route.exit]))
+    stops = []
+    for city_id in cities:
+        x, y = point(city_id)
+        order, stay = stays.get(city_id, (None, None))
+        nights = ""
+        dates = ""
+        if stay is not None:
+            nights = ngettext("{n} night", "{n} nights", stay.nights).format(n=stay.nights)
+            leave = stay.arrive + timedelta(days=stay.nights)
+            dates = f"{i18n.numeric_day(stay.arrive)}–{i18n.numeric_day(leave)}"
+        stops.append(
+            MapStop(
+                name=names.city(city_id),
+                x=x,
+                y=y,
+                order=order,
+                nights=nights,
+                dates=dates,
+                arrival=city_id == route.entry,
+                departure=city_id == route.exit,
+            )
+        )
+    legs = tuple(
+        MapLeg(
+            leg.option.mode,
+            *point(leg.origin),
+            *point(leg.destination),
+            duration_label(leg.option.minutes),
+        )
+        for leg in route.legs
+    )
+    days = combo.window.nights + 1
+    return MapView(
+        window_id=combo.window.id,
+        dates=i18n.date_range(combo.window.start, combo.window.end),
+        days=ngettext("{n} day", "{n} days", days).format(n=days),
+        width=outline.width,
+        height=outline.height,
+        outline=outline.path,
+        stops=tuple(stops),
+        legs=legs,
+        legend=legend(route, names),
+    )
 
 
 def build_route(combo: Combo, names: Names, plan_label: str) -> RouteView:

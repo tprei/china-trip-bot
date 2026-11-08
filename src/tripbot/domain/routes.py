@@ -20,6 +20,8 @@ class City:
     id: str
     name: str
     region: str
+    latitude: float
+    longitude: float
     tripcom: str | None = None
 
 

@@ -29,6 +29,8 @@ class Reference:
     climate: Climate
     visa: VisaInfo
     todo_seed: tuple[str, ...]
+    airports: dict[str, str]
+    speeds_kmh: dict[Mode, int]
 
 
 def load_reference(data_dir: Path) -> Reference:
@@ -38,7 +40,16 @@ def load_reference(data_dir: Path) -> Reference:
         climate=load_climate(data_dir / "weather.yaml"),
         visa=load_visa(data_dir / "visa.yaml"),
         todo_seed=tuple(str(item) for item in _read(data_dir / "todo.yaml")),
+        airports={str(code): str(name) for code, name in _read(data_dir / "airports.yaml").items()},
+        speeds_kmh=load_speeds(data_dir / "legs.yaml"),
     )
+
+
+def load_speeds(path: Path) -> dict[Mode, int]:
+    speeds = _read(path)["speeds_kmh"]
+    if set(speeds) != set(MODES):
+        raise ValueError(f"speeds_kmh needs exactly {', '.join(MODES)}")
+    return {MODES[mode]: int(kmh) for mode, kmh in speeds.items()}
 
 
 def load_visa(path: Path) -> VisaInfo:
@@ -95,6 +106,8 @@ def load_cities(path: Path) -> dict[str, City]:
             id=city_id,
             name=str(spec["name"]),
             region=str(spec["region"]),
+            latitude=float(spec["at"][0]),
+            longitude=float(spec["at"][1]),
             tripcom=str(spec["tripcom"]) if spec.get("tripcom") else None,
         )
         for city_id, spec in raw.items()

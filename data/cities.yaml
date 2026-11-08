@@ -1,16 +1,17 @@
 # Places the route can touch. `region` picks the climate row in weather.yaml;
-# `tripcom` is the city code Trip.com searches with.
+# `tripcom` is the city code Trip.com searches with; `at` is [latitude, longitude]
+# of the city centre, for the route map.
 
-beijing: {name: Pequim, region: beijing, tripcom: BJS}
-shanghai: {name: Xangai, region: shanghai, tripcom: SHA}
-zhangjiajie: {name: Zhangjiajie, region: zhangjiajie, tripcom: DYG}
-yangshuo: {name: Yangshuo, region: guilin}
-guilin: {name: Guilin, region: guilin, tripcom: KWL}
-guangzhou: {name: Guangzhou, region: guangzhou, tripcom: CAN}
-shenzhen: {name: Shenzhen, region: guangzhou, tripcom: SZX}
-changsha: {name: Changsha, region: zhangjiajie, tripcom: CSX}
-chengdu: {name: Chengdu, region: chengdu, tripcom: CTU}
-chongqing: {name: Chongqing, region: chengdu, tripcom: CKG}
-xian: {name: Xi'an, region: beijing, tripcom: SIA}
-hangzhou: {name: Hangzhou, region: shanghai, tripcom: HGH}
-wuhan: {name: Wuhan, region: zhangjiajie, tripcom: WUH}
+beijing: {name: Pequim, region: beijing, tripcom: BJS, at: [39.9042, 116.4074]}
+shanghai: {name: Xangai, region: shanghai, tripcom: SHA, at: [31.2304, 121.4737]}
+zhangjiajie: {name: Zhangjiajie, region: zhangjiajie, tripcom: DYG, at: [29.1171, 110.4792]}
+yangshuo: {name: Yangshuo, region: guilin, at: [24.7781, 110.4966]}
+guilin: {name: Guilin, region: guilin, tripcom: KWL, at: [25.2736, 110.2900]}
+guangzhou: {name: Guangzhou, region: guangzhou, tripcom: CAN, at: [23.1291, 113.2644]}
+shenzhen: {name: Shenzhen, region: guangzhou, tripcom: SZX, at: [22.5431, 114.0579]}
+changsha: {name: Changsha, region: zhangjiajie, tripcom: CSX, at: [28.2282, 112.9388]}
+chengdu: {name: Chengdu, region: chengdu, tripcom: CTU, at: [30.5728, 104.0668]}
+chongqing: {name: Chongqing, region: chengdu, tripcom: CKG, at: [29.5630, 106.5516]}
+xian: {name: Xi'an, region: beijing, tripcom: SIA, at: [34.3416, 108.9398]}
+hangzhou: {name: Hangzhou, region: shanghai, tripcom: HGH, at: [30.2741, 120.1551]}
+wuhan: {name: Wuhan, region: zhangjiajie, tripcom: WUH, at: [30.5928, 114.3055]}

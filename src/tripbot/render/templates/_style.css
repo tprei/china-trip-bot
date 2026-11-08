@@ -158,3 +158,52 @@ body { margin: 0; background: var(--bg); }
 .summary-card .day-date.first::before { left: 0; }
 .summary-card .day-date.final { right: 0; left: auto; transform: none; }
 .summary-card .day-date.final::before { right: 0; left: auto; }
+
+.map-card .header { height: 260px; flex-shrink: 0; }
+.map-card .china-header-art { position: absolute; inset: 0; width: 1080px; height: 260px; }
+.map-card .header .top { padding-top: 42px; }
+.map-card .kicker { text-transform: uppercase; }
+.map-card .title { font-size: 54px; font-stretch: 85%; }
+.map-card .mode-train { --mode-color: #9dc5e8; }
+.map-card .mode-sleeper { --mode-color: #f1ca7f; }
+.map-card .mode-flight { --mode-color: #ff9a83; }
+
+/* A static 4:5 companion to the summary; projected coordinates remain in the view. */
+.map-card { height: 1350px; }
+.map-card .header { height: 240px; }
+.map-card .header .top { padding-top: 34px; }
+.map-card .title { font-size: 62px; margin-top: 5px; }
+.map-card .map-window { display: flex; align-items: center; gap: 12px; margin-top: 16px; color: var(--soft); font-size: 28px; font-weight: 650; }
+.map-card .map-window b { margin-left: 8px; padding: 5px 13px; border-radius: 8px; background: #3d2925; color: #ffad98; font-size: 25px; }
+.map-card .map-body { display: flex; flex-direction: column; flex: 1; gap: 22px; padding: 18px 48px 36px; }
+.map-card .map-canvas { position: relative; width: 984px; height: 906px; flex-shrink: 0; overflow: hidden; border-radius: 24px; box-shadow: inset 0 0 0 1px var(--line); }
+.map-card .map-geography { display: block; width: 984px; height: 906px; }
+.map-card .map-land { fill: #213c47; stroke: #567683; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.map-card .map-leader { fill: none; stroke: #68818d; stroke-width: 1.5; opacity: .65; }
+.map-card .map-route-halo { fill: none; stroke: #10202c; stroke-width: 13; stroke-linecap: round; opacity: .9; }
+.map-card .map-route-line { fill: none; stroke: var(--mode-color); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.map-card .map-route-flight { stroke-dasharray: 3 11; }
+.map-card .map-route-train { stroke-dasharray: 13 8; }
+.map-card .map-route-sleeper { stroke-dasharray: 3 6 13 6; }
+.map-card .map-international-ring { fill: #0e1620; fill-opacity: .35; stroke: #ff9a83; stroke-width: 2; stroke-dasharray: 4 5; }
+.map-card .map-stop-number { fill: #0e1620; font-size: 24px; font-weight: 850; dominant-baseline: middle; text-anchor: middle; font-variant-numeric: tabular-nums; }
+.map-card .map-country-name { fill: var(--soft); font-family: "JetBrains Mono", monospace; font-size: 21px; font-weight: 700; text-anchor: middle; }
+.map-card .map-city-label { position: absolute; width: 238px; padding: 12px 14px 14px; border: 1px solid #3b5260; border-top: 3px solid var(--stop-color); border-radius: 14px; background: #142430; box-shadow: 0 6px 20px rgb(0 0 0 / 14%); }
+.map-card .map-label-left { left: 20px; }
+.map-card .map-label-right { right: 20px; }
+.map-card .map-city-heading { display: flex; align-items: center; gap: 9px; }
+.map-card .map-label-number { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--stop-color); color: #0e1620; font-family: "JetBrains Mono", monospace; font-size: 21px; font-weight: 700; }
+.map-card .map-city-name { min-width: 0; color: var(--stop-color); font-size: 30px; line-height: 1.08; font-stretch: 76%; font-weight: 800; overflow-wrap: anywhere; }
+.map-card .map-city-nights { margin-top: 10px; color: var(--text); font-size: 28px; font-weight: 750; line-height: 1.15; }
+.map-card .map-city-dates { margin-top: 6px; color: #c3d1dc; font-family: "JetBrains Mono", monospace; font-size: 22px; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.map-card .map-international { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 12px; }
+.map-card .map-international > span { display: inline-flex; align-items: center; gap: 6px; color: #ffb39f; font-family: "JetBrains Mono", monospace; font-size: 19px; font-weight: 700; }
+.map-card .map-arrival svg { transform: rotate(-35deg); }
+.map-card .map-departure svg { transform: rotate(35deg); }
+.map-card .map-legend { display: flex; justify-content: space-evenly; flex-wrap: wrap; gap: 22px; min-height: 92px; margin-top: auto; padding: 17px 12px; border-radius: 18px; background: var(--surface); }
+.map-card .map-legend > span { gap: 10px; color: var(--soft); }
+.map-card .map-mode-sample { display: inline-block; width: 35px; border-top: 4px dashed var(--mode-color); }
+.map-card .map-mode-sample.map-route-flight { border-top-style: dotted; }
+.map-card .map-mode-sample.map-route-sleeper { border-top: 7px double var(--mode-color); }
+.map-card .map-mode-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 24px; }
+.map-card .map-mode-copy b { color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; }

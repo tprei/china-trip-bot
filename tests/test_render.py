@@ -92,6 +92,24 @@ def test_route_view_lists_stays_and_legs_in_order(
     assert all(a != b for a, b in pairwise(kinds))
 
 
+def test_map_numbers_stays_in_order_and_joins_them_with_every_leg(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    _, report = world
+    best = report.rankings.main["B"].best
+    assert best is not None
+    view = details.build_map(best, Names(config, reference))
+    stays = [stop for stop in view.stops if stop.order is not None]
+    assert [stop.order for stop in stays] == list(range(1, len(best.route.stays) + 1))
+    points = {(stop.x, stop.y) for stop in view.stops}
+    assert len(view.legs) == len(best.route.legs)
+    assert all({(leg.x1, leg.y1), (leg.x2, leg.y2)} <= points for leg in view.legs)
+    assert all(0 <= stop.x <= view.width and 0 <= stop.y <= view.height for stop in view.stops)
+    assert (
+        sum(stop.arrival for stop in view.stops) == sum(stop.departure for stop in view.stops) == 1
+    )
+
+
 def test_compare_alternatives_marks_the_main_plan(
     config: TripConfig, reference: Reference, world: World
 ) -> None:
