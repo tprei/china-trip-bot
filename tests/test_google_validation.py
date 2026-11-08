@@ -34,7 +34,10 @@ def search(monkeypatch: pytest.MonkeyPatch, entries: list[list[Any]]) -> SearchR
     return google.GoogleFlights().search(key("google", ("LHR",), ("PEK",)))
 
 
-@pytest.mark.parametrize("bad_time", [[None, 0], None, [], [0, None], [24, 0], [12, 60]])
+@pytest.mark.parametrize(
+    "bad_time",
+    [None, [], [None], [None, None], [0, None], [24, 0], [12, 60], [24], [None, 60]],
+)
 def test_bad_time_does_not_destroy_valid_fare(
     monkeypatch: pytest.MonkeyPatch, bad_time: object
 ) -> None:
@@ -64,6 +67,17 @@ def test_true_empty_and_valid_results(monkeypatch: pytest.MonkeyPatch) -> None:
     result = search(monkeypatch, [entry(), entry()])
     assert result.status == "ok" and result.error is None
     assert len(result.offers) == 1  # upstream deduplication remains intact
+
+
+@pytest.mark.parametrize(
+    ("wire", "expected"), [([12], (12, 0)), ([None, 50], (0, 50)), ([5, 10], (5, 10))]
+)
+def test_google_elided_time_parts_are_zero(wire: list[Any], expected: tuple[int, int]) -> None:
+    item = entry()
+    item[0][2][0][8] = wire
+    flight = parse_payload(json.loads(json.dumps([None, None, None, [[item]]])))[0]
+    found = google.to_offer(flight, key("google", ("LHR",), ("PEK",)), {})
+    assert found.segments[0].depart == datetime(2027, 8, 28, *expected)
 
 
 def test_explicit_year_boundary_and_midnight() -> None:
