@@ -143,6 +143,20 @@ def test_each_summary_replaces_only_the_bots_own_pin(
     assert messenger.pins == [("pin", 1), ("pin", 3), ("unpin", 1)]
 
 
+def test_publish_posts_the_album_to_the_bots_topic_and_moves_the_pin(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, _ = world
+    deps, messenger = bot(config, reference, conn, FakeDeck())
+    deps.topic = 6
+    assert maybe_send_summary(deps, datetime(2026, 11, 8, 9, 30))
+    handle_update(deps, message("/publish", topic=3), None, datetime(2026, 11, 8, 15, 0))
+    album, done = messenger.sent[-2:]
+    assert (album.kind, album.body, album.topic) == ("album", (b"summary", b"map"), 6)
+    assert (done.kind, done.topic) == ("text", 3) and "pinned" in str(done.body)
+    assert messenger.pins == [("pin", 1), ("pin", 3), ("unpin", 1)]
+
+
 @pytest.mark.parametrize(
     "failure",
     [

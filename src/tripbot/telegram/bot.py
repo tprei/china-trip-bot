@@ -22,6 +22,7 @@ from tripbot.store.plans import effective_config
 from tripbot.telegram.api import Messenger, TelegramApi, TelegramError
 from tripbot.telegram.commands import REGISTRY, Reply, Request, dispatch, parse, summary_album
 from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
+from tripbot.telegram.format import esc
 from tripbot.telegram.info import register_info_commands, seed_todos
 from tripbot.telegram.plan import register_plan_commands
 
@@ -80,8 +81,17 @@ def handle_update(
     except Exception as error:  # one bad command must not kill the loop
         deps.log(f"/{name} failed: {type(error).__name__}: {error}")
         reply = Reply(text=i18n._("Something went wrong with that command."))
-    if reply is not None:
+    if reply is None:
+        return
+    if not reply.pin:
         send(deps.messenger, deps.chat_id, reply, topic)
+        return
+    message_id = send(deps.messenger, deps.chat_id, reply, deps.topic)
+    if message_id is not None:
+        pin_summary(deps, message_id)
+    if topic != deps.topic:
+        done = Reply(text=esc(i18n._("Summary posted and pinned in the bot's topic.")))
+        send(deps.messenger, deps.chat_id, done, topic)
 
 
 def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) -> int | None:
