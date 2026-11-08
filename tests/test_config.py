@@ -33,6 +33,17 @@ def test_unknown_origin_is_rejected() -> None:
         parse_config(raw)
 
 
+def test_a_person_belongs_to_one_group_and_window_ids_are_unique() -> None:
+    raw = raw_config()
+    raw["groups"][1]["people"] = ["Luísa", "thiago"]
+    with pytest.raises(ConfigError, match="only one group"):
+        parse_config(raw)
+    raw = raw_config()
+    raw["windows"][1]["id"] = raw["windows"][0]["id"]
+    with pytest.raises(ConfigError, match="window ids"):
+        parse_config(raw)
+
+
 def test_other_plans_drop_each_stop_in_turn(config: TripConfig) -> None:
     assert [alt.drop for alt in config.route.alternatives] == list(config.route.stops)
     raw = raw_config()

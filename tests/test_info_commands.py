@@ -1,5 +1,7 @@
+import re
 import sqlite3
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 from factories import eur
@@ -8,6 +10,7 @@ from telegram_fakes import FakeDeck, FakeMessenger, World, bot, message
 from tripbot import i18n
 from tripbot.config import AlertRules, TripConfig
 from tripbot.domain.alerts import decide_alerts
+from tripbot.domain.money import Money
 from tripbot.domain.schedule import train_sale_dates
 from tripbot.reference import Reference
 from tripbot.store import repo
@@ -73,10 +76,25 @@ def test_links_list_every_ticket_and_add_up_to_the_group_total(
     assert len(flights) == 2 * len(best.choices)
     assert all('<a href="https://www.google.com/travel/flights/search?tfs=' in f for f in flights)
     assert reply.count("TBD link not available yet") == len(best.route.legs)
-    running = [line.rsplit("→ ", 1)[1] for line in reply.splitlines() if " = " in line]
-    assert len(running) == len(best.choices) + 1
-    assert running[-1] == i18n.money(best.total_eur)
-    assert reply.endswith(f"<b>Group total: {i18n.money(best.total_eur)}</b>")
+    rows = [line for line in reply.splitlines() if " = " in line]
+    assert len(rows) == len(best.choices) + 1
+    running = Decimal(0)
+    for row in rows:
+        count, each, subtotal, total = re.findall(r"(\d+) × (.+?) = (.+?) → (.+)$", row)[0]
+        assert int(count) * euros(each) == euros(subtotal)
+        running += euros(subtotal)
+        assert euros(total) == running
+    assert running * 100 == best.total_eur.minor
+    assert reply.endswith(f"<b>Group total: {i18n.exact_money(best.total_eur)}</b>")
+
+
+def euros(text: str) -> Decimal:
+    return Decimal(text.replace("€", "").replace(",", ""))
+
+
+def test_exact_money_keeps_cents_only_when_there_are_any() -> None:
+    assert i18n.exact_money(Money(98250, "EUR")) == "€982.50"
+    assert i18n.exact_money(Money(98200, "EUR")) == "€982"
 
 
 def test_trains_and_sleepers_come_from_the_reference_table(

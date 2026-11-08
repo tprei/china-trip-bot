@@ -69,12 +69,15 @@ def _leg(leg: PlannedLeg, rates: Rates, names: Names) -> str:
 
 def _price(price: Money, rates: Rates) -> str:
     if price.currency == "EUR":
-        return i18n.money(price)
-    return f"{i18n.money(price)} ≈ {i18n.money(rates.to_eur(price))}"
+        return i18n.exact_money(price)
+    return f"{i18n.exact_money(price)} ≈ {i18n.exact_money(rates.to_eur(price))}"
 
 
 def _sum(best: Combo, people: int) -> list[str]:
-    """Each group's tickets, then everyone's legs inside China, adding up to the total."""
+    """Each group's tickets, then everyone's legs inside China, adding up to the total.
+
+    Amounts keep their cents, so every row's arithmetic holds as written.
+    """
     rows = [bold(i18n._("How the total adds up"))]
     running = Money.zero("EUR")
     for choice in best.choices:
@@ -83,16 +86,17 @@ def _sum(best: Combo, people: int) -> list[str]:
             _sum_row(
                 choice.group.name, choice.group.headcount, choice.fare_eur, choice.flights_total_eur
             )
-            + f" → {esc(i18n.money(running))}"
+            + f" → {esc(i18n.exact_money(running))}"
         )
     running += best.internal_eur
     rows.append(
         _sum_row(i18n._("Inside China"), people, best.route.fare_eur, best.internal_eur)
-        + f" → {esc(i18n.money(running))}"
+        + f" → {esc(i18n.exact_money(running))}"
     )
-    rows.append(bold(i18n._("Group total: {total}").format(total=i18n.money(best.total_eur))))
+    total = i18n.exact_money(best.total_eur)
+    rows.append(bold(i18n._("Group total: {total}").format(total=total)))
     return rows
 
 
 def _sum_row(label: str, count: int, each: Money, subtotal: Money) -> str:
-    return esc(f"{label}: {count} × {i18n.money(each)} = {i18n.money(subtotal)}")
+    return esc(f"{label}: {count} × {i18n.exact_money(each)} = {i18n.exact_money(subtotal)}")

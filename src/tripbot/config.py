@@ -241,9 +241,15 @@ def _check_groups(config: TripConfig) -> None:
             raise ConfigError(f"group {group.id} uses unknown origin {group.origin}")
         if not group.people:
             raise ConfigError(f"group {group.id} has no people")
+    people = [person.casefold() for group in config.groups for person in group.people]
+    if len(set(people)) != len(people):
+        raise ConfigError("each person can be in only one group")
 
 
 def _check_windows(config: TripConfig) -> None:
+    window_ids = [window.id for window in config.windows]
+    if len(set(window_ids)) != len(window_ids):
+        raise ConfigError("window ids must be unique")
     for window in config.windows:
         if window.end <= window.start:
             raise ConfigError(f"window {window.id} ends before it starts")
