@@ -24,6 +24,7 @@ from tripbot.telegram.api import Messenger, TelegramApi, TelegramError
 from tripbot.telegram.commands import REGISTRY, Reply, Request, dispatch, parse, summary_album
 from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
 from tripbot.telegram.info import register_info_commands, seed_todos
+from tripbot.telegram.plan import register_plan_commands
 
 OFFSET_KEY = "telegram_offset"
 PINNED_KEY = "pinned_summary"
@@ -45,6 +46,7 @@ class BotDeps:
 
     def __post_init__(self) -> None:
         register_info_commands()
+        register_plan_commands()
 
     def context(self, now: datetime) -> BotContext:
         return BotContext(

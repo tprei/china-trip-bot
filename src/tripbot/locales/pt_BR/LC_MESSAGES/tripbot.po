@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 17:32+0000\n"
+"POT-Creation-Date: 2026-11-08 17:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -83,6 +83,12 @@ msgstr "/cidades [janela]"
 msgid "/dashboard"
 msgstr "/painel"
 
+msgid "/destination"
+msgstr "/destino"
+
+msgid "/destination add <city> <nights> · remove <city> · nights <city> <n>"
+msgstr "/destino adicionar <cidade> <noites> · remover <cidade> · noites <cidade> <n>"
+
 msgid "/domestic"
 msgstr "/domesticos"
 
@@ -92,6 +98,12 @@ msgstr "/voos"
 msgid "/flights <name or origin> [window]"
 msgstr "/voos <nome ou origem> [janela]"
 
+msgid "/group"
+msgstr "/grupo"
+
+msgid "/group add <home> <names> · remove <group> · home <group> <home>"
+msgstr "/grupo adicionar <origem> <nomes> · remover <grupo> · origem <grupo> <origem>"
+
 msgid "/help"
 msgstr "/ajuda"
 
@@ -100,6 +112,12 @@ msgstr "/historico"
 
 msgid "/history [window]"
 msgstr "/historico [janela]"
+
+msgid "/home"
+msgstr "/origem"
+
+msgid "/home add <airports> <currency> <city>"
+msgstr "/origem adicionar <aeroportos> <moeda> <cidade>"
 
 msgid "/links"
 msgstr "/links"
@@ -121,6 +139,15 @@ msgstr "/outras [janela]"
 
 msgid "/people"
 msgstr "/pessoas"
+
+msgid "/person"
+msgstr "/pessoa"
+
+msgid "/person add <name> <group> · remove <name> · move <name> <group>"
+msgstr "/pessoa adicionar <nome> <grupo> · remover <nome> · mover <nome> <grupo>"
+
+msgid "/plan"
+msgstr "/plano"
 
 msgid "/reminders"
 msgstr "/lembretes"
@@ -161,6 +188,9 @@ msgstr "/trens"
 msgid "/trains [city] [city]"
 msgstr "/trens [cidade] [cidade]"
 
+msgid "/undo"
+msgstr "/desfazer"
+
 msgid "/visa"
 msgstr "/visto"
 
@@ -170,11 +200,32 @@ msgstr "/clima"
 msgid "/weather [window]"
 msgstr "/clima [janela]"
 
+msgid "/window"
+msgstr "/janela"
+
+msgid "/window add <letter> <dd/mm> <dd/mm> · change <letter> <dd/mm> <dd/mm> · remove <letter>"
+msgstr "/janela adicionar <letra> <dd/mm> <dd/mm> · mudar <letra> <dd/mm> <dd/mm> · remover <letra>"
+
 msgid "/windows"
 msgstr "/janelas"
 
 msgid "1 sampled combo · no market-best or guaranteed-saving claim"
 msgstr "1 combinação amostrada · sem garantia de melhor preço ou de economia"
+
+msgid "A city gets 1 to 10 nights."
+msgstr "Cada cidade fica de 1 a 10 noites."
+
+msgid "A home city name has 1 to 40 characters."
+msgstr "O nome da cidade de origem tem de 1 a 40 caracteres."
+
+msgid "A name is one word of letters, up to 20, like Ana."
+msgstr "Nome é uma palavra só, de letras, até 20, como Ana."
+
+msgid "A window is one letter, like D."
+msgstr "Janela é uma letra só, como D."
+
+msgid "A window runs 3 to 30 nights, first day before the last."
+msgstr "Uma janela tem de 3 a 30 noites, com o primeiro dia antes do último."
 
 msgid "Airport codes"
 msgstr "Aeroportos"
@@ -212,6 +263,9 @@ msgstr "VOLTA MAIS BARATA"
 
 msgid "CHEAPEST OUT"
 msgstr "IDA MAIS BARATA"
+
+msgid "Change it"
+msgstr "Para mudar"
 
 #, python-brace-format
 msgid "Checked {date}"
@@ -280,6 +334,10 @@ msgstr "Voos"
 msgid "Group total for everyone"
 msgstr "Total do grupo, para todos"
 
+#, python-brace-format
+msgid "Group total now: {totals}"
+msgstr "Total do grupo agora: {totals}"
+
 msgid "Group total over time"
 msgstr "Total do grupo ao longo do tempo"
 
@@ -295,6 +353,9 @@ msgstr[1] "Total do grupo · todas as %(count)s pessoas"
 #, python-brace-format
 msgid "Group total: {total}"
 msgstr "Total do grupo: {total}"
+
+msgid "Groups"
+msgstr "Grupos"
 
 msgid "HISTORY"
 msgstr "HISTÓRICO"
@@ -326,6 +387,9 @@ msgstr "Estimativa de transporte interno: %(internal)s"
 msgid "International round trips · %(people)s people · %(groups)s groups"
 msgstr "Voos internacionais de ida e volta · %(people)s pessoas · %(groups)s grupos"
 
+msgid "Last changes"
+msgstr "Últimas mudanças"
+
 msgid "Last night"
 msgstr "Última execução"
 
@@ -345,6 +409,9 @@ msgstr "Plano principal vs. tirar uma cidade"
 
 msgid "Multiple bookings / tickets · protection unverified"
 msgstr "Várias reservas e bilhetes · proteção não verificada"
+
+msgid "New flights get searched tonight."
+msgstr "Os voos novos entram na busca desta noite."
 
 msgid "New record low"
 msgstr "Novo menor preço"
@@ -370,6 +437,10 @@ msgid "No complete combo yet: every group needs flights into the same city. Try 
 msgstr "Ainda não há uma combinação completa: todos precisam voar para a mesma cidade. Tente novamente após a busca de hoje à noite."
 
 #, python-brace-format
+msgid "No group matches {subject}. Use the group code from /plan, its home or a name in it."
+msgstr "Nenhum grupo bate com {subject}. Use o código do grupo em /plano, a origem ou o nome de alguém dele."
+
+#, python-brace-format
 msgid "No guide for {city}. Try one of: {cities}"
 msgstr "Sem guia para {city}. Tente uma destas: {cities}"
 
@@ -388,8 +459,18 @@ msgstr "Não há afazer com esse número."
 msgid "No trains between those cities."
 msgstr "Não há trens entre essas cidades."
 
+#, python-brace-format
+msgid "Nobody called {subject} is on the trip."
+msgstr "Ninguém chamado {subject} está na viagem."
+
 msgid "Nothing left."
 msgstr "Nada por fazer."
+
+msgid "Nothing to change."
+msgstr "Nada para mudar."
+
+msgid "Nothing to undo."
+msgstr "Nada para desfazer."
 
 msgid "Now"
 msgstr "Agora"
@@ -464,6 +545,9 @@ msgstr "Mapa do roteiro"
 msgid "Route · %(internal)s / person inside China"
 msgstr "Roteiro · %(internal)s por pessoa dentro da China"
 
+msgid "Route · nights per city"
+msgstr "Roteiro · noites por cidade"
+
 msgid "Scope & limits"
 msgstr "Escopo e limites"
 
@@ -520,8 +604,36 @@ msgstr "Meta {goal}"
 msgid "Target {total}"
 msgstr "Meta {total}"
 
+#, python-brace-format
+msgid "The bot converts {currencies}; {subject} isn't one of them."
+msgstr "O bot converte {currencies}; {subject} não é uma delas."
+
+#, python-brace-format
+msgid "The bot has no trains or flights for {subject} yet. It knows: {cities}."
+msgstr "O bot ainda não tem trens nem voos para {subject}. Conhece: {cities}."
+
+msgid "The bot picks the order and stretches stays to fill each window."
+msgstr "O bot escolhe a ordem e estica as estadias para preencher cada janela."
+
+msgid "The plan needs at least one window."
+msgstr "O plano precisa de pelo menos uma janela."
+
+msgid "The route needs at least one city."
+msgstr "O roteiro precisa de pelo menos uma cidade."
+
+#, python-brace-format
+msgid "The route takes at most {subject} cities."
+msgstr "O roteiro aceita no máximo {subject} cidades."
+
 msgid "The total includes"
 msgstr "O total inclui"
+
+msgid "The trip needs at least one person."
+msgstr "A viagem precisa de pelo menos uma pessoa."
+
+#, python-brace-format
+msgid "There's no window {subject}."
+msgstr "Não existe a janela {subject}."
 
 #, python-brace-format
 msgid "Tickets open {n} day ahead."
@@ -557,6 +669,10 @@ msgstr "Use /meta 5000 (euros, grupo inteiro)."
 msgid "Use /todo, /todo add <text> or /todo done <n>."
 msgstr "Use /afazeres, /afazeres novo <texto> ou /afazeres feito <n>."
 
+#, python-brace-format
+msgid "Use {usage}"
+msgstr "Use {usage}"
+
 #, python-format
 msgid "Visa · %(passport)s passports"
 msgstr "Visto · passaporte %(passport)s"
@@ -588,8 +704,20 @@ msgid "Who flies how"
 msgstr "Quem voa como"
 
 #, python-brace-format
-msgid "Who? {names} (or DUB, LON, SAO)"
-msgstr "Quem? {names} (ou DUB, LON, SAO)"
+msgid "Who? {names} (or {homes})"
+msgstr "Quem? {names} (ou {homes})"
+
+#, python-brace-format
+msgid "Window {subject} already exists."
+msgstr "A janela {subject} já existe."
+
+#, python-brace-format
+msgid "Window {subject} is too short: every city on the route needs a night."
+msgstr "A janela {subject} é curta demais: cada cidade do roteiro precisa de uma noite."
+
+#, python-brace-format
+msgid "Window {subject} would start before tomorrow."
+msgstr "A janela {subject} começaria antes de amanhã."
 
 #, python-brace-format
 msgid "Window {window}"
@@ -605,9 +733,16 @@ msgstr "Janelas · total do grupo"
 msgid "Without {city}"
 msgstr "Sem {city}"
 
+msgctxt "plan edit"
+msgid "add"
+msgstr "adicionar"
+
 msgctxt "todo"
 msgid "add"
 msgstr "novo"
+
+msgid "add a home city"
+msgstr "adiciona uma cidade de origem"
 
 msgid "airport-local"
 msgstr "horário local do aeroporto"
@@ -624,6 +759,19 @@ msgstr "volta"
 
 msgid "best and fairest plan for a window"
 msgstr "melhor plano e mais justo para uma janela"
+
+msgctxt "plan edit"
+msgid "change"
+msgstr "mudar"
+
+msgid "change who travels"
+msgstr "muda quem viaja"
+
+msgid "cities on the route and nights in each"
+msgstr "cidades do roteiro e noites em cada"
+
+msgid "date windows in China"
+msgstr "janelas de datas na China"
 
 msgid "day by day: stays, trains, sleepers, flights"
 msgstr "dia a dia: hospedagens, trens, trens-leito e voos"
@@ -673,6 +821,10 @@ msgstr "alto"
 msgid "high-speed"
 msgstr "trem rápido"
 
+msgctxt "plan edit"
+msgid "home"
+msgstr "origem"
+
 msgid "land"
 msgstr "chegada"
 
@@ -690,6 +842,14 @@ msgstr "mínimo %(low)s"
 msgctxt "weather risk"
 msgid "moderate"
 msgstr "moderado"
+
+msgctxt "plan edit"
+msgid "move"
+msgstr "mover"
+
+msgctxt "plan edit"
+msgid "nights"
+msgstr "noites"
 
 msgid "no change"
 msgstr "sem mudança"
@@ -731,6 +891,10 @@ msgstr "risco de chuva e tufão por parada"
 
 msgid "rainier"
 msgstr "mais chuva"
+
+msgctxt "plan edit"
+msgid "remove"
+msgstr "remover"
 
 msgid "round trip"
 msgstr "ida e volta"
@@ -777,6 +941,12 @@ msgstr "datas de abertura das vendas de trem e prazos"
 msgid "trains on the route"
 msgstr "trens no roteiro"
 
+msgid "travel groups and their home"
+msgstr "grupos de viagem e de onde saem"
+
+msgid "undo a plan change"
+msgstr "desfaz uma mudança no plano"
+
 #, python-brace-format
 msgid "via {airports}"
 msgstr "via {airports}"
@@ -790,6 +960,13 @@ msgstr "aviso"
 msgid "who flies from where"
 msgstr "quem voa de onde"
 
+msgid "who, from where, when and which cities; how to change it"
+msgstr "quem, de onde, quando e quais cidades; como mudar"
+
+#, python-brace-format
+msgid "{command} to go back."
+msgstr "{command} para voltar."
+
 #, python-brace-format
 msgid "{dates} · rainier"
 msgstr "{dates} · mais chuva"
@@ -801,6 +978,70 @@ msgstr "{date} · decisão sobre o visto"
 #, python-brace-format
 msgid "{group} · window {window} · {dates}"
 msgstr "{group} · janela {window} · {dates}"
+
+#, python-brace-format
+msgid "{name} added window {window}: {dates}"
+msgstr "{name} adicionou a janela {window}: {dates}"
+
+#, python-brace-format
+msgid "{name} added {city} with {n} night."
+msgid_plural "{name} added {city} with {n} nights."
+msgstr[0] "{name} adicionou {city} com {n} noite."
+msgstr[1] "{name} adicionou {city} com {n} noites."
+
+#, python-brace-format
+msgid "{name} added {home} as a home."
+msgstr "{name} adicionou {home} como origem."
+
+#, python-brace-format
+msgid "{name} added {people}, flying from {home}."
+msgstr "{name} adicionou {people}, saindo de {home}."
+
+#, python-brace-format
+msgid "{name} added {person} to the group from {home}."
+msgstr "{name} adicionou {person} ao grupo de {home}."
+
+#, python-brace-format
+msgid "{name} changed where {people} fly from: {home}."
+msgstr "{name} mudou a origem de {people}: {home}."
+
+#, python-brace-format
+msgid "{name} moved window {window} to {dates}"
+msgstr "{name} mudou a janela {window} para {dates}"
+
+#, python-brace-format
+msgid "{name} moved {person} to the group from {home}."
+msgstr "{name} passou {person} para o grupo de {home}."
+
+#, python-brace-format
+msgid "{name} removed window {window}."
+msgstr "{name} removeu a janela {window}."
+
+#, python-brace-format
+msgid "{name} set {city} to {n} night."
+msgid_plural "{name} set {city} to {n} nights."
+msgstr[0] "{name} mudou {city} para {n} noite."
+msgstr[1] "{name} mudou {city} para {n} noites."
+
+#, python-brace-format
+msgid "{name} took {city} off the route."
+msgstr "{name} tirou {city} do roteiro."
+
+#, python-brace-format
+msgid "{name} took {people} off the trip."
+msgstr "{name} tirou {people} da viagem."
+
+#, python-brace-format
+msgid "{name} took {person} off the trip."
+msgstr "{name} tirou {person} da viagem."
+
+#, python-brace-format
+msgid "{name} undid a change."
+msgstr "{name} desfez uma mudança."
+
+#, python-brace-format
+msgid "{name} undid: {change}"
+msgstr "{name} desfez: {change}"
 
 #, python-brace-format
 msgid "{n} day"
@@ -853,6 +1094,38 @@ msgid "{status} · {passport} passports"
 msgstr "{status} · passaporte {passport}"
 
 #, python-brace-format
+msgid "{subject} is already a home airport."
+msgstr "{subject} já é um aeroporto de origem."
+
+#, python-brace-format
+msgid "{subject} is already on the route."
+msgstr "{subject} já está no roteiro."
+
+#, python-brace-format
+msgid "{subject} is already on the trip."
+msgstr "{subject} já está na viagem."
+
+#, python-brace-format
+msgid "{subject} is in China; a home is where people fly from."
+msgstr "{subject} fica na China; a origem é de onde o pessoal sai."
+
+#, python-brace-format
+msgid "{subject} isn't a home yet. Add it first: /home add {subject} EUR City"
+msgstr "{subject} ainda não é uma origem. Adicione antes: /origem adicionar {subject} EUR Cidade"
+
+#, python-brace-format
+msgid "{subject} isn't an airport code (three letters, like LIS)."
+msgstr "{subject} não é um código de aeroporto (três letras, como LIS)."
+
+#, python-brace-format
+msgid "{subject} isn't on the route."
+msgstr "{subject} não está no roteiro."
+
+#, python-brace-format
 msgid "{wait} wait"
 msgstr "{wait} de espera"
+
+#, python-brace-format
+msgid "{window} no complete combo"
+msgstr "{window} sem combinação completa"
 
