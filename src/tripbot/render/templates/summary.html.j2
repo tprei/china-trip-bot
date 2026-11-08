@@ -50,15 +50,26 @@
 </div>
 {%- endmacro %}
 
-{% block card %}
-<div class="card summary-card">
-  <header class="header">
-    {{ china_header() }}
-    <div class="top">
-      <div><div class="kicker">{{ _("China 2027") }}</div><div class="title">{{ _("Weekly summary") }}</div></div>
-      <div class="dateline">{{ icon("calendar", "#b7c4d1", 30) }}<span>{{ view.date_label }}</span></div>
+{% macro page_header(title, number, compact=false) -%}
+<header class="header {{ 'header-compact' if compact }}">
+  {% if not compact %}{{ china_header() }}{% endif %}
+  <div class="top">
+    <div class="heading">
+      <div class="kicker">{{ _("China 2027") }}</div>
+      <h1 class="title">{{ title }}</h1>
+      {% if compact %}<div class="page-window">{{ icon("calendar", "#ff8a73", 26) }}<span>{{ view.window_dates }}</span><span class="page-days">{{ view.window_days }}</span></div>{% endif %}
     </div>
-  </header>
+    <div class="page-meta">
+      <div class="dateline">{{ icon("calendar", "#b7c4d1", 24) }}<span>{{ view.date_label }}</span></div>
+      <span class="page-marker">{{ number }}/3</span>
+    </div>
+  </div>
+</header>
+{%- endmacro %}
+
+{% block card %}
+<div class="card summary-card summary-overview">
+  {{ page_header(_("Weekly summary"), 1) }}
 
   <section class="hero">
     <div class="label">{% trans count=people %}Group total · {{ count }} person{% pluralize %}Group total · all {{ count }} people{% endtrans %}</div>
@@ -106,8 +117,13 @@
     </div>
   </section>
 
-  <section class="section">
-    <div class="row"><div class="label">{{ _("Who flies how") }}</div><div class="spacer"></div><div class="flight-context">{{ _("Times local · vs own best") }}</div></div>
+</div>
+
+<div class="card summary-card summary-flights {{ 'summary-flights-dense' if view.groups|length > 3 }}">
+  {{ page_header(_("Who flies how"), 2, true) }}
+  <section class="section flights-content">
+    <div class="flight-context">{{ _("Times local · vs own best") }}</div>
+    <div class="ticket-list">
     {% for group in view.groups %}
     <div class="panel ticket group-tone-{{ loop.index0 % 3 }}">
       <div class="head">
@@ -120,6 +136,7 @@
       <div class="legs {{ 'legs-wide' if group.outbound.stops|length > 1 or group.inbound.stops|length > 1 else '' }}">{{ flight(group.outbound) }}{{ flight(group.inbound) }}</div>
     </div>
     {% endfor %}
+    </div>
     {% if view.airports %}
     <div class="airport-key">
       <div class="label">{{ _("Airport codes") }}</div>
@@ -132,8 +149,11 @@
     {% endif %}
   </section>
 
-  <section class="section">
-    <div class="label">{{ _("Route") }}</div>
+</div>
+
+<div class="card summary-card summary-route">
+  {{ page_header(_("Route"), 3, true) }}
+  <section class="section route-content">
     <div class="panel route-panel">
     <ol class="route-legs">
       {% for item in view.timeline %}
@@ -171,9 +191,9 @@
 
   <section class="footer">
     <div class="panel">
-      <div class="label" style="font-size:22px">{{ _("History") }}</div>
+      <div class="label">{{ _("History") }}</div>
       {% if view.spark %}
-      <svg viewBox="0 0 480 160" role="img" aria-label="{{ _("Group total over time") }}" style="width:100%;height:200px">
+      <svg class="history-spark" viewBox="0 0 480 160" role="img" aria-label="{{ _("Group total over time") }}">
         <line x1="20" y1="150" x2="460" y2="150" stroke="#2a3a4c"/>
         {% for window_id, points in view.spark.lines %}
         <polyline points="{{ points }}" fill="none" stroke="{{ {'A': '#8fb3d9', 'B': '#ff6a4d', 'C': '#b7c4d1'}.get(window_id, '#b7c4d1') }}" stroke-width="{{ 5 if window_id == selected else 3 }}" {% if window_id != selected %}stroke-dasharray="10 7"{% endif %} stroke-linejoin="round"/>
@@ -185,11 +205,11 @@
         <span style="color:var(--good)">○ {% trans low=view.spark.low_label %}low {{ low }}{% endtrans %}</span>
       </div>
       {% else %}
-      <div style="font-size:24px;color:var(--muted)">{{ _("Starts after two nights of data.") }}</div>
+      <div class="history-empty">{{ _("Starts after two nights of data.") }}</div>
       {% endif %}
     </div>
     <div class="panel">
-      <div class="label" style="font-size:22px">{{ _("Sources") }}</div>
+      <div class="label">{{ _("Sources") }}</div>
       {% for source in view.sources %}
       <div class="status">{{ icon("check" if source.ok else "warning", "#6fe0b5" if source.ok else "#f5b83d", 28) }}<span>{{ source.name }}</span>{% if not source.ok %}<small>{{ source.label }}</small>{% endif %}</div>
       {% endfor %}

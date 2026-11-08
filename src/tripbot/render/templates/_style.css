@@ -108,39 +108,61 @@ body { margin: 0; background: var(--bg); }
 .keys { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; font-size: 21px; }
 
 /* Summary-only detail: the other cards keep their compact shared components. */
+.summary-card { min-height: 1350px; }
+.summary-card > * { flex-shrink: 0; }
 .summary-card .header, .map-card .header { height: 260px; flex-shrink: 0; }
 .summary-card .china-header-art, .map-card .china-header-art { position: absolute; inset: 0; width: 1080px; height: 260px; }
 .summary-card .header .top, .map-card .header .top { padding-top: 42px; }
 .summary-card .kicker, .map-card .kicker { text-transform: uppercase; }
 .summary-card .title, .map-card .title { font-size: 54px; font-stretch: 85%; }
-.summary-card .dateline { align-self: flex-start; margin-top: 5px; margin-right: 42px; font-size: 23px; }
-.summary-card .hero { padding-top: 36px; gap: 24px; }
+.summary-card .title { margin: 8px 0 0; }
+.summary-card .heading { min-width: 0; }
+.summary-card .page-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 22px; padding-right: 40px; }
+.summary-card .dateline { font-size: 22px; white-space: nowrap; }
+.summary-card .page-marker { padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 8px; font-family: "JetBrains Mono", monospace; font-size: 22px; line-height: 1; color: var(--soft); background: var(--header); }
+.summary-card .header-compact { height: 200px; border-bottom: 1px solid var(--line); }
+.summary-card .header-compact .top { padding-top: 30px; }
+.summary-card .header-compact .page-meta { padding-right: 0; gap: 24px; }
+.summary-card .header-compact .title { font-size: 52px; }
+.summary-card .page-window { display: flex; align-items: center; gap: 12px; margin-top: 16px; color: var(--soft); font-size: 27px; font-weight: 650; }
+.summary-card .page-days { border-left: 1px solid var(--line-2); padding-left: 12px; color: var(--muted); font-size: 23px; white-space: nowrap; }
+.summary-overview .header { height: 244px; }
+.summary-card .hero { flex: 1; justify-content: center; padding-top: 30px; padding-bottom: 30px; gap: 26px; }
+.summary-card .hero > .label { letter-spacing: .08em; }
 .summary-card .total-overview { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: center; }
 .summary-card .total-price { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
-.summary-card .hero .total { font-size: 124px; white-space: nowrap; }
+.summary-card .hero .total { width: 100%; font-size: 124px; white-space: nowrap; }
 .summary-card .total-price .pill { font-size: 26px; padding: 7px 14px 7px 9px; }
 .summary-card .total-includes { margin: 0; padding: 2px 0 2px 24px; border-left: 3px solid var(--line-2); list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .summary-card .total-includes li { font-size: 25px; line-height: 1.2; color: var(--soft); }
 .summary-card .total-includes li:first-child { color: var(--accent-soft); font-weight: 750; }
-.summary-card .person-average { display: flex; flex-direction: column; gap: 18px; padding: 24px 28px 28px; border: 1px solid #42645d; border-radius: 20px; background: linear-gradient(115deg, #19372f, #172b2b 65%, #182730); }
-.summary-card .average-label { font-size: 27px; font-weight: 650; color: #bce7d5; }
+.summary-card .person-average { display: flex; flex-direction: column; gap: 20px; padding: 26px 28px 30px; border: 1px solid #42645d; border-radius: 20px; background: linear-gradient(115deg, #19372f, #172b2b 65%, #182730); }
+.summary-card .average-label { font-size: 28px; font-weight: 650; color: #bce7d5; }
 .summary-card .average-values { display: grid; grid-template-columns: 1.1fr 1.05fr .95fr; gap: 24px; align-items: end; }
-.summary-card .average-values .item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; white-space: nowrap; color: var(--text); }
-.summary-card .average-values .num { font-size: 56px; line-height: 1; }
+.summary-card .average-values .item { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-width: 0; white-space: nowrap; color: var(--text); }
+.summary-card .average-values .num { font-size: 58px; line-height: 1; }
 .summary-card .average-values .item:first-child { color: #a7f0d0; }
-.summary-card .average-values .item:first-child .num { font-size: 72px; }
-.summary-card .window-length { border-left: 2px solid rgb(26 15 12 / 30%); padding-left: 14px; font-family: "JetBrains Mono", monospace; font-size: 22px; white-space: nowrap; }
+.summary-card .average-values .item:first-child .num { font-size: 74px; }
+.summary-card .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; gap: 14px; }
+.summary-card .chip { padding: 12px 20px; }
+.summary-card .chip.solid { grid-column: 1 / -1; justify-content: center; font-size: 30px; }
+.summary-card .chip .stack { flex-direction: row; align-items: baseline; gap: 12px; min-width: 0; }
+.summary-card .chip .stack small { font-size: 23px; line-height: 1.2; overflow-wrap: anywhere; }
+.summary-card .window-length { border-left: 2px solid rgb(26 15 12 / 30%); padding-left: 14px; font-family: "JetBrains Mono", monospace; font-size: 23px; white-space: nowrap; }
+.summary-overview .section { padding-bottom: 44px; gap: 20px; }
 
-.summary-card .flight-context { font-size: 22px; color: var(--muted); }
-.summary-card .ticket { --group-color: #89cfeb; --group-bg: #264c5b; gap: 18px; padding: 24px; border-left: 5px solid var(--group-color); background: linear-gradient(110deg, #192a36, var(--surface) 70%); }
+.summary-card .flights-content { flex: 1; padding-top: 26px; padding-bottom: 40px; gap: 18px; }
+.summary-card .flight-context { font-size: 23px; color: var(--muted); }
+.summary-card .ticket-list { flex: 1; display: grid; grid-auto-rows: minmax(min-content, 1fr); gap: 16px; }
+.summary-card .ticket { --group-color: #89cfeb; --group-bg: #264c5b; justify-content: center; gap: 16px; padding: 22px; border-left: 5px solid var(--group-color); background: linear-gradient(110deg, #192a36, var(--surface) 70%); }
 .summary-card .ticket .name { min-width: 0; overflow-wrap: anywhere; }
 .summary-card .group-tone-1 { --group-color: #d0b4f6; --group-bg: #49355c; background: linear-gradient(110deg, #292334, var(--surface) 70%); }
 .summary-card .group-tone-2 { --group-color: #f1ca7f; --group-bg: #55452d; background: linear-gradient(110deg, #302b25, var(--surface) 70%); }
-.summary-card .ticket .avatar { background: var(--group-bg); color: var(--group-color); }
+.summary-card .ticket .avatar { background: var(--group-bg); color: var(--group-color); width: 50px; height: 50px; font-size: 24px; }
 .summary-card .ticket .bar span { background: var(--group-color); }
 .summary-card .ticket .head { gap: 14px; }
 .summary-card .ticket .fair { flex-shrink: 0; }
-.summary-card .ticket .bar { width: 86px; }
+.summary-card .ticket .bar { width: 72px; }
 .summary-card .ticket .price { flex-shrink: 0; width: 208px; }
 .summary-card .legs { gap: 28px; }
 .summary-card .legs-wide { grid-template-columns: minmax(0, 1fr); gap: 18px; }
@@ -167,50 +189,76 @@ body { margin: 0; background: var(--bg); }
 .summary-card .same-plane .stop-marker { border-color: var(--warn); border-radius: 2px; transform: rotate(45deg); }
 .summary-card .same-plane b, .summary-card .same-plane .stop-detail { color: var(--warn); }
 .summary-card .flight-direct { position: absolute; top: 1px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 22px; line-height: 28px; color: var(--muted); }
-
 .summary-card .airport-home { color: #9dd5ef; }
 .summary-card .airport-china { color: #ff9a83; }
 .summary-card .flight-stop .airport-connection, .summary-card .airport-connection { color: #f1ca7f; }
-.summary-card .airport-key { padding: 22px 24px; border: 1px solid var(--line); border-radius: 18px; background: #131f2b; }
-.summary-card .airport-key .label { font-size: 21px; margin-bottom: 18px; }
-.summary-card .airport-list { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 22px; }
-.summary-card .airport-list > div { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
-.summary-card .airport-list dt { font-family: "JetBrains Mono", monospace; font-size: 24px; font-weight: 700; }
-.summary-card .airport-list dd { margin: 0; color: var(--soft); font-size: 23px; line-height: 1.25; overflow-wrap: anywhere; }
-.summary-card .route-panel { padding: 24px 26px 26px; }
-.summary-card .route-legs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; margin: 0; padding: 0; list-style: none; }
-.summary-card .route-leg { display: flex; align-items: center; gap: 10px; min-width: 0; padding-bottom: 14px; border-bottom: 2px dashed var(--mode-color); }
+.summary-card .airport-key { padding: 18px 22px; border: 1px solid var(--line); border-radius: 18px; background: #131f2b; }
+.summary-card .airport-key .label { font-size: 21px; margin-bottom: 14px; }
+.summary-card .airport-list { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 22px; }
+.summary-card .airport-list > div { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.summary-card .airport-list dt { font-family: "JetBrains Mono", monospace; font-size: 23px; font-weight: 700; }
+.summary-card .airport-list dd { margin: 0; color: var(--soft); font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+.summary-flights-dense .header-compact { height: 180px; }
+.summary-flights-dense .header-compact .top { padding-top: 24px; }
+.summary-flights-dense .flights-content { padding-top: 16px; padding-bottom: 26px; gap: 12px; }
+.summary-flights-dense .ticket-list { gap: 8px; }
+.summary-flights-dense .ticket { padding: 12px 20px; gap: 8px; }
+.summary-flights-dense .ticket .avatar { width: 44px; height: 44px; font-size: 22px; }
+.summary-flights-dense .ticket .name { font-size: 30px; }
+.summary-flights-dense .ticket .bar { width: 64px; }
+.summary-flights-dense .ticket .price { width: 190px; }
+.summary-flights-dense .ticket .price .num { font-size: 44px; }
+.summary-flights-dense .leg { gap: 6px; }
+.summary-flights-dense .flight-meta { min-height: 26px; }
+.summary-flights-dense .airport-key { padding: 12px 18px; }
+.summary-flights-dense .airport-key .label { font-size: 20px; margin-bottom: 8px; }
+.summary-flights-dense .airport-list { gap: 6px 18px; }
+.summary-flights-dense .airport-list dt { font-size: 22px; }
+.summary-flights-dense .airport-list dd { font-size: 21px; }
+
+.summary-card .route-content { flex: 1; padding-top: 34px; padding-bottom: 30px; gap: 24px; }
+.summary-card .route-panel { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 30px; padding: 28px; }
+.summary-card .route-legs { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.summary-card .route-leg { display: flex; align-items: center; gap: 18px; min-width: 0; padding: 16px 0; border-bottom: 2px dashed var(--mode-color); }
 .summary-card .route-leg-icon { display: flex; flex-shrink: 0; }
-.summary-card .route-leg-cities { font-size: 23px; font-weight: 650; line-height: 1.25; }
+.summary-card .route-leg-icon svg { width: 34px; height: 34px; }
+.summary-card .route-leg-cities { font-size: 32px; font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
 .summary-card .route-arrow { color: var(--mode-color); white-space: nowrap; }
-.summary-card .route-leg-time { margin-left: auto; color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 23px; font-weight: 700; white-space: nowrap; }
+.summary-card .route-leg-time { margin-left: auto; color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 29px; font-weight: 700; white-space: nowrap; }
 .summary-card .mode-train, .map-card .mode-train { --mode-color: #9dc5e8; }
 .summary-card .mode-sleeper, .map-card .mode-sleeper { --mode-color: #f1ca7f; }
 .summary-card .mode-flight, .map-card .mode-flight { --mode-color: #ff9a83; }
-.summary-card .day-timeline { display: grid; grid-template-rows: auto auto 12px 44px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); }
+.summary-card .day-timeline { display: grid; grid-template-rows: auto auto 14px 52px; padding-top: 26px; border-top: 1px solid var(--line); }
 .summary-card .day-span { --stay-color: #ff9a83; position: relative; display: grid; grid-row: 1 / 5; grid-template-rows: subgrid; min-width: 0; }
 .summary-card .stay-tone-1 { --stay-color: #91d6ca; }
 .summary-card .stay-tone-2 { --stay-color: #f1ca7f; }
 .summary-card .stay-tone-3 { --stay-color: #c6b4ef; }
 .summary-card .stay-tone-4 { --stay-color: #9dd5ef; }
 .summary-card .stay-tone-5 { --stay-color: #f1b4d1; }
-.summary-card .day-name { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 30px; padding: 0 4px 4px; font-size: 22px; font-weight: 750; font-stretch: 80%; line-height: 26px; text-align: center; color: var(--stay-color); }
+.summary-card .day-name { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 38px; padding: 0 8px 8px; font-size: 29px; font-weight: 750; font-stretch: 80%; line-height: 34px; text-align: center; color: var(--stay-color); }
 .summary-card .day-name span { overflow-wrap: anywhere; }
 .summary-card .day-name svg { flex-shrink: 0; }
-.summary-card .day-nights { padding-bottom: 10px; text-align: center; font-size: 24px; line-height: 28px; font-weight: 700; color: var(--soft); }
-.summary-card .day-band { align-self: center; height: 6px; margin-right: 4px; border-radius: 2px; background: var(--stay-color); }
+.summary-card .day-nights { padding-bottom: 14px; text-align: center; font-size: 28px; line-height: 34px; font-weight: 700; color: var(--soft); }
+.summary-card .day-band { align-self: center; height: 8px; margin-right: 4px; border-radius: 2px; background: var(--stay-color); }
 .summary-card .day-span:last-child .day-band { margin-right: 0; }
 .summary-card .day-span.sleeper { --stay-color: #f1ca7f; }
 .summary-card .sleeper .day-band { height: 8px; border-top: 8px double var(--warn); border-radius: 0; background: none; }
-.summary-card .day-date { position: absolute; left: 0; bottom: 0; transform: translateX(-50%); font-family: "JetBrains Mono", monospace; font-size: 21px; line-height: 26px; color: var(--soft); white-space: nowrap; }
-.summary-card .day-date::before { position: absolute; bottom: calc(100% + 4px); left: 50%; height: 10px; border-left: 1px solid var(--line-2); content: ""; }
+.summary-card .day-date { position: absolute; left: 0; bottom: 0; transform: translateX(-50%); font-family: "JetBrains Mono", monospace; font-size: 24px; line-height: 30px; font-variant-numeric: tabular-nums; color: var(--soft); white-space: nowrap; }
+.summary-card .day-date::before { position: absolute; bottom: calc(100% + 5px); left: 50%; height: 12px; border-left: 1px solid var(--line-2); content: ""; }
 .summary-card .day-date.first { transform: none; }
 .summary-card .day-date.first::before { left: 0; }
 .summary-card .day-date.final { right: 0; left: auto; transform: none; }
 .summary-card .day-date.final::before { right: 0; left: auto; }
-.summary-card .legend { gap: 18px 28px; flex-wrap: wrap; font-size: 23px; }
+.summary-card .legend { gap: 18px 28px; flex-wrap: wrap; font-size: 25px; }
 .summary-card .legend > span { color: var(--soft); gap: 9px; }
-.summary-card .legend b { color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 400; }
+.summary-card .legend b { color: var(--mode-color); font-family: "JetBrains Mono", monospace; font-size: 23px; font-weight: 400; }
+.summary-card .footer { margin-top: 0; padding-bottom: 44px; }
+.summary-card .footer .label { font-size: 24px; }
+.summary-card .footer .panel { min-height: 360px; }
+.summary-card .history-empty { flex: 1; display: flex; align-items: center; font-size: 24px; line-height: 1.4; color: var(--muted); }
+.summary-card .history-spark { width: 100%; height: 220px; }
+.summary-card .footer .keys { gap: 14px 20px; font-size: 23px; }
+.summary-card .footer .status { font-size: 26px; }
 
 /* A static 4:5 companion to the summary; projected coordinates remain in the view. */
 .map-card { height: 1350px; }

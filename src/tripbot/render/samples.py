@@ -153,8 +153,9 @@ def render_samples(config: TripConfig, reference: Reference, out_dir: Path) -> l
         with CardRenderer() as renderer:
             deck = Deck(config, reference, conn, report.rankings, date(2026, 11, 8), renderer)
             window = deck.best_window() or config.windows[0].id
+            pages = deck.summary(window) or ()
             cards: dict[str, bytes | None] = {
-                "summary": deck.summary(window),
+                **{f"summary-{n}": page for n, page in enumerate(pages, start=1)},
                 "alert": deck.alert(report.alerts[0]) if report.alerts else None,
                 "route": deck.route(window),
                 "map": deck.route_map(window),

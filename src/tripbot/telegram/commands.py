@@ -98,16 +98,17 @@ def card(context: BotContext, render: Callable[..., bytes | None], *args: str) -
     return Reply(photo=png, button=details_button(context))
 
 
-def summary_album(context: BotContext, deck: CardDeck) -> Reply:
-    """The weekly post: the summary card, then the route on a map, as one album."""
-    window = deck.best_window()
-    summary = deck.summary(window) if window else None
-    if window is None or summary is None:
+def summary_album(context: BotContext, deck: CardDeck, window: str | None = None) -> Reply:
+    """The weekly post: the summary pages, then the route on a map, as one album."""
+    chosen = window or deck.best_window()
+    pages = deck.summary(chosen) if chosen else None
+    if chosen is None or not pages:
         return Reply(text=i18n._(NO_DATA))
-    route_map = deck.route_map(window)
-    if route_map is None:
-        return Reply(photo=summary, button=details_button(context))
-    return Reply(album=(summary, route_map), caption=details_link(context))
+    route_map = deck.route_map(chosen)
+    album = pages if route_map is None else (*pages, route_map)
+    if len(album) == 1:
+        return Reply(photo=album[0], button=details_button(context))
+    return Reply(album=album, caption=details_link(context))
 
 
 @command(gettext_noop("/help"), gettext_noop("/help"), gettext_noop("the command list"))
@@ -178,7 +179,7 @@ def best_command(context: BotContext, request: Request) -> Reply:
     if window is None:
         return Reply(text=i18n._(NO_DATA))
     with context.open_deck(context) as deck:
-        return card(context, deck.summary, window)
+        return summary_album(context, deck, window)
 
 
 @command(
