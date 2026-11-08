@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
+from itertools import pairwise
 from typing import Literal
 
 from tripbot import i18n
@@ -38,12 +39,21 @@ class StopLine:
 
 
 @dataclass(frozen=True)
+class FlightHop:
+    """One flight number's time in the air, placed between its two ends on the rail."""
+
+    duration: str
+    center: float  # percent along the rail, on the same scale as the stops
+
+
+@dataclass(frozen=True)
 class FlightLine:
     origin: str
     origin_city: str
     destination: str
     destination_city: str
     stops: tuple[StopLine, ...]
+    hops: tuple[FlightHop, ...]
     day: str
     depart_time: str
     arrive_time: str
@@ -286,7 +296,8 @@ def flight_line(offer: Offer, names: Names) -> FlightLine:
         origin_city=names.airport_city(offer.origin),
         destination=offer.destination,
         destination_city=names.airport_city(offer.destination),
-        stops=stop_lines(offer),
+        stops=(stops := stop_lines(offer)),
+        hops=flight_hops(offer, stops),
         day=i18n.day(offer.depart.date()),
         depart_time=clock(offer.depart),
         arrive_time=clock(offer.arrive),
@@ -310,6 +321,22 @@ def stop_lines(offer: Offer) -> tuple[StopLine, ...]:
             stops.append(StopLine(segment.origin, wait, _("{wait} wait").format(wait=wait)))
         stops.extend(StopLine(airport, "", _("same plane")) for airport in segment.stops_on_board)
     return tuple(stops)
+
+
+def flight_hops(offer: Offer, stops: tuple[StopLine, ...]) -> tuple[FlightHop, ...]:
+    """Each flight's own duration when there's a connection; a direct flight has only its total.
+
+    Same-plane stops don't split a flight, so its duration spans them.
+    """
+    if len(offer.segments) < 2:
+        return ()
+    slots = len(stops) + 1
+    changes = (index * 100 / slots for index, stop in enumerate(stops, start=1) if stop.wait)
+    edges = [0.0, *changes, 100.0]
+    return tuple(
+        FlightHop(duration_label(segment.minutes), round((left + right) / 2, 1))
+        for segment, (left, right) in zip(offer.segments, pairwise(edges), strict=True)
+    )
 
 
 def timeline(route: Route, names: Names) -> tuple[TimelineItem, ...]:
