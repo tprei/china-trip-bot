@@ -35,13 +35,13 @@ class TelegramApi:
         self._client = client
         self._token = token
 
-    def _call(self, method: str, timeout: float = 30, **fields: Any) -> Any:
+    def _call(self, method: str, *, http_timeout: float = 30, **fields: Any) -> Any:
         url = API.format(token=self._token, method=method)
         files = fields.pop("files", None)
         if files:
-            response = self._client.post(url, data=fields, files=files, timeout=timeout)
+            response = self._client.post(url, data=fields, files=files, timeout=http_timeout)
         else:
-            response = self._client.post(url, json=fields, timeout=timeout)
+            response = self._client.post(url, json=fields, timeout=http_timeout)
         payload = response.json()
         if not payload.get("ok"):
             raise TelegramError(f"{method}: {payload.get('description', response.status_code)}")
@@ -51,7 +51,7 @@ class TelegramApi:
         fields: dict[str, Any] = {"timeout": POLL_SECONDS, "allowed_updates": ["message"]}
         if offset is not None:
             fields["offset"] = offset
-        result = self._call("getUpdates", timeout=POLL_SECONDS + 10, **fields)
+        result = self._call("getUpdates", http_timeout=POLL_SECONDS + 10, **fields)
         return list(result)
 
     def send_message(self, chat_id: str, text: str, button: Button | None = None) -> None:
@@ -74,7 +74,7 @@ class TelegramApi:
         if button:
             fields["reply_markup"] = json.dumps(_keyboard(button))
         self._call(
-            "sendPhoto", timeout=60, files={"photo": ("card.png", png, "image/png")}, **fields
+            "sendPhoto", http_timeout=60, files={"photo": ("card.png", png, "image/png")}, **fields
         )
 
     def set_my_commands(self, commands: list[tuple[str, str]]) -> None:
