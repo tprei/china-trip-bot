@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
-from itertools import pairwise
 from typing import Literal
 
 from tripbot import i18n
@@ -326,16 +325,20 @@ def stop_lines(offer: Offer) -> tuple[StopLine, ...]:
 def flight_hops(offer: Offer, stops: tuple[StopLine, ...]) -> tuple[FlightHop, ...]:
     """Each flight's own duration when there's a connection; a direct flight has only its total.
 
-    Same-plane stops don't split a flight, so its duration spans them.
+    A pill sits between a flight's start and the next marker on the rail, so it never lands
+    on a same-plane stop in the middle of that flight.
     """
     if len(offer.segments) < 2:
         return ()
     slots = len(stops) + 1
-    changes = (index * 100 / slots for index, stop in enumerate(stops, start=1) if stop.wait)
-    edges = [0.0, *changes, 100.0]
+    marks = [index * 100 / slots for index in range(1, slots)] + [100.0]
+    starts = [0.0, *(marks[index] for index, stop in enumerate(stops) if stop.wait)]
     return tuple(
-        FlightHop(duration_label(segment.minutes), round((left + right) / 2, 1))
-        for segment, (left, right) in zip(offer.segments, pairwise(edges), strict=True)
+        FlightHop(
+            duration_label(segment.minutes),
+            round((start + min(mark for mark in marks if mark > start)) / 2, 1),
+        )
+        for segment, start in zip(offer.segments, starts, strict=True)
     )
 
 

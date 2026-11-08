@@ -89,7 +89,9 @@ def test_flight_line_lists_stops_in_order_with_waits(
     )
     line = views.flight_line(found, Names(config, reference))
     assert [(stop.airport, stop.wait) for stop in line.stops] == [("MAD", ""), ("DOH", "3h")]
-    assert [(hop.duration, hop.center) for hop in line.hops] == [("10h", 33.3), ("10h", 83.3)]
+    assert [(hop.duration, hop.center) for hop in line.hops] == [("10h", 16.7), ("10h", 83.3)]
+    marks = {round(i * 100 / (len(line.stops) + 1), 1) for i in range(1, len(line.stops) + 1)}
+    assert not marks & {hop.center for hop in line.hops}
     direct = offer("sao", "outbound", ["GRU", "PEK"], datetime(2027, 8, 28, 21, 0), eur(900))
     assert views.flight_line(direct, Names(config, reference)).hops == ()
     assert (line.depart_time, line.arrive_time, line.arrive_shift) == ("21:00", "20:00", "+1")
