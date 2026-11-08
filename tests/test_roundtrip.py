@@ -61,7 +61,7 @@ def ranking(config: TripConfig, reference: Reference) -> RankingInputs:
 
 
 def test_observed_prices_are_not_reconstructed() -> None:
-    q = quote(Group("g", "Group", "dub", ("A", "B")))
+    q = quote(Group("g", "dub", ("A", "B")))
     assert q.total == Money(20001, "EUR")
     assert q.per_person == Money(10000, "EUR")
     assert not hasattr(q.outbound, "price")
@@ -81,7 +81,7 @@ def test_invalid_passengers(adults: int) -> None:
 
 
 def test_quote_validation() -> None:
-    q = quote(Group("g", "Group", "dub", ("A",)))
+    q = quote(Group("g", "dub", ("A",)))
     with pytest.raises(ValueError, match="currencies"):
         replace(q, total=Money(10001, "USD"))
     with pytest.raises(ValueError, match="positive"):

@@ -124,18 +124,18 @@ def test_compare_alternatives_marks_the_main_plan(
     config: TripConfig, reference: Reference, world: World
 ) -> None:
     _, report = world
+    names = Names(config, reference)
     alternatives = {
-        alt.id: (alt.label, report.rankings.alternatives["B"][alt.id])
+        alt.id: (names.alternative(alt), report.rankings.alternatives["B"][alt.id])
         for alt in config.route.alternatives
     }
-    view = details.compare_alternatives(
-        report.rankings.main["B"], alternatives, Names(config, reference)
-    )
+    view = details.compare_alternatives(report.rankings.main["B"], alternatives, names)
     assert [row.label for row in view.rows] == [
-        "All four cities",
-        "Sem Zhangjiajie",
-        "Sem Xangai",
-        "Sem Yangshuo",
+        "Main plan",
+        "Without Pequim",
+        "Without Xangai",
+        "Without Zhangjiajie",
+        "Without Yangshuo",
     ]
     assert view.rows[0].highlight and view.rows[0].delta is None
 

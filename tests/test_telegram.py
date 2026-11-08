@@ -129,7 +129,8 @@ def test_weekly_summary_goes_out_once(
     assert messenger.sent[0].caption == '<a href="https://trip.example/dash">Details</a>'
     assert deck.calls == ["summary B", "map B"]
     summary = repo.last_summary(conn)
-    assert summary is not None and set(summary[1]) == {"A", "B", "C"}
+    assert summary is not None and set(summary.totals) == {"A", "B", "C"}
+    assert summary.comparable(config.plan.keys()) == summary.totals
 
 
 def test_each_summary_replaces_only_the_bots_own_pin(

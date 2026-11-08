@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 17:27+0000\n"
+"POT-Creation-Date: 2026-11-08 17:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -184,9 +184,6 @@ msgstr "Horários locais dos aeroportos · sem tarifas de só ida separadas"
 
 msgid "Alerts"
 msgstr "Alertas"
-
-msgid "All four cities"
-msgstr "As quatro cidades"
 
 msgid "Arrival-day hotel / internal connections require review"
 msgstr "Hotel do dia da chegada e conexões internas precisam de revisão"
@@ -604,6 +601,10 @@ msgstr "Janelas"
 msgid "Windows · group totals"
 msgstr "Janelas · total do grupo"
 
+#, python-brace-format
+msgid "Without {city}"
+msgstr "Sem {city}"
+
 msgctxt "todo"
 msgid "add"
 msgstr "novo"
@@ -746,8 +747,8 @@ msgstr "trem-leito"
 msgid "the command list"
 msgstr "lista de comandos"
 
-msgid "the plan without Zhangjiajie, Shanghai or Yangshuo"
-msgstr "plano sem Zhangjiajie, Xangai ou Yangshuo"
+msgid "the plan without one of its cities"
+msgstr "o plano sem uma das cidades"
 
 msgid "the route on a map of China"
 msgstr "o roteiro no mapa da China"

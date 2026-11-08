@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -174,6 +175,7 @@ def latest_rates(conn: sqlite3.Connection) -> Rates | None:
 class Snapshot:
     window_id: str
     plan: str  # "main" or an alternative id
+    plan_key: str  # `Plan.key` of the window when the price was taken
     entry: str
     exit: str
     total: Money
@@ -184,12 +186,13 @@ class Snapshot:
 def save_snapshot(conn: sqlite3.Connection, run_id: int | None, snapshot: Snapshot) -> None:
     with conn:
         conn.execute(
-            """INSERT INTO snapshots (run_id, window_id, plan, entry, exit, total_minor,
-                   score_minor, taken_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO snapshots (run_id, window_id, plan, plan_key, entry, exit,
+                   total_minor, score_minor, taken_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 run_id,
                 snapshot.window_id,
                 snapshot.plan,
+                snapshot.plan_key,
                 snapshot.entry,
                 snapshot.exit,
                 snapshot.total.minor,
@@ -199,15 +202,20 @@ def save_snapshot(conn: sqlite3.Connection, run_id: int | None, snapshot: Snapsh
         )
 
 
-def snapshots(conn: sqlite3.Connection, window_id: str, plan: str = "main") -> list[Snapshot]:
+def snapshots(
+    conn: sqlite3.Connection, window_id: str, plan_key: str, plan: str = "main"
+) -> list[Snapshot]:
+    """A window's prices taken under the plan with this key, oldest first."""
     rows = conn.execute(
-        "SELECT * FROM snapshots WHERE window_id = ? AND plan = ? ORDER BY taken_at",
-        (window_id, plan),
+        """SELECT * FROM snapshots WHERE window_id = ? AND plan = ? AND plan_key = ?
+           ORDER BY taken_at""",
+        (window_id, plan, plan_key),
     ).fetchall()
     return [
         Snapshot(
             window_id=row["window_id"],
             plan=row["plan"],
+            plan_key=row["plan_key"],
             entry=row["entry"],
             exit=row["exit"],
             total=Money(int(row["total_minor"]), "EUR"),
@@ -236,22 +244,48 @@ def alerted_on(conn: sqlite3.Connection, window_id: str, day: date) -> bool:
     return int(row["n"]) > 0
 
 
+@dataclass(frozen=True)
+class LastSummary:
+    week: str
+    totals: dict[str, Money]
+    plan_keys: dict[str, str]
+
+    def comparable(self, plan_keys: Mapping[str, str]) -> dict[str, Money]:
+        """The totals of windows still priced under the same plan."""
+        return {
+            window_id: total
+            for window_id, total in self.totals.items()
+            if window_id in plan_keys and self.plan_keys.get(window_id) == plan_keys[window_id]
+        }
+
+
 def record_summary(
-    conn: sqlite3.Connection, week: str, totals: dict[str, Money], now: datetime
+    conn: sqlite3.Connection,
+    week: str,
+    totals: dict[str, Money],
+    plan_keys: Mapping[str, str],
+    now: datetime,
 ) -> None:
     with conn:
         conn.execute(
-            "INSERT OR REPLACE INTO summaries (week, totals_json, sent_at) VALUES (?, ?, ?)",
-            (week, json.dumps({k: v.minor for k, v in totals.items()}), now.isoformat()),
+            """INSERT OR REPLACE INTO summaries (week, totals_json, plan_keys_json, sent_at)
+               VALUES (?, ?, ?, ?)""",
+            (
+                week,
+                json.dumps({k: v.minor for k, v in totals.items()}),
+                json.dumps({k: plan_keys[k] for k in totals}),
+                now.isoformat(),
+            ),
         )
 
 
-def last_summary(conn: sqlite3.Connection) -> tuple[str, dict[str, Money]] | None:
+def last_summary(conn: sqlite3.Connection) -> LastSummary | None:
     row = conn.execute("SELECT * FROM summaries ORDER BY sent_at DESC LIMIT 1").fetchone()
     if row is None:
         return None
     totals = {k: Money(int(v), "EUR") for k, v in json.loads(row["totals_json"]).items()}
-    return row["week"], totals
+    keys = {k: str(v) for k, v in json.loads(row["plan_keys_json"]).items()}
+    return LastSummary(week=row["week"], totals=totals, plan_keys=keys)
 
 
 # Todos and settings -------------------------------------------------------------

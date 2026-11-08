@@ -89,6 +89,10 @@ MIGRATIONS: tuple[str, ...] = (
         value TEXT NOT NULL
     );
     """,
+    """
+    ALTER TABLE snapshots ADD COLUMN plan_key TEXT NOT NULL DEFAULT '';
+    ALTER TABLE summaries ADD COLUMN plan_keys_json TEXT NOT NULL DEFAULT '{}';
+    """,
 )
 
 

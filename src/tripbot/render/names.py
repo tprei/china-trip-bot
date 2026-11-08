@@ -6,7 +6,8 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from tripbot.config import TripConfig
+from tripbot.config import Alternative, TripConfig
+from tripbot.i18n import _
 from tripbot.reference import Reference
 
 
@@ -30,6 +31,10 @@ class Names:
             ),
             None,
         )
+
+    def alternative(self, alternative: Alternative) -> str:
+        """`Without Zhangjiajie`."""
+        return _("Without {city}").format(city=self.city(alternative.drop))
 
     def airport_city(self, airport: str) -> str:
         """`PEK` → Beijing, `LHR` → London; unknown airports keep their code."""

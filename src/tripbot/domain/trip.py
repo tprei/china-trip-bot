@@ -19,9 +19,12 @@ class Group:
     """People who always book the same flights."""
 
     id: str
-    name: str
     origin: str
     people: tuple[str, ...]
+
+    @property
+    def name(self) -> str:
+        return " + ".join(self.people)
 
     @property
     def headcount(self) -> int:

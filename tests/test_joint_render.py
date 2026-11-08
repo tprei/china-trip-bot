@@ -10,7 +10,7 @@ from tripbot.render.joint import joint_card
 
 def test_joint_card_preserves_observed_group_total() -> None:
     observed = replace(
-        quote(Group("g", "Two people", "dub", ("A", "B"))),
+        quote(Group("g", "dub", ("A", "B"))),
         total=Money(200100, "EUR"),
         per_person=Money(100100, "EUR"),
         fare_notes="Itinerary will be split across multiple bookings and flight tickets",
@@ -44,7 +44,7 @@ def test_joint_summary_labels_estimates_separately() -> None:
 
 
 def test_summary_and_dashboard_use_supplied_groups() -> None:
-    view = joint_card("Fictional group", quote(Group("g", "Group", "dub", ("A", "B"))))
+    view = joint_card("Fictional group", quote(Group("g", "dub", ("A", "B"))))
     html = render_html(
         "joint.html.j2",
         view=None,

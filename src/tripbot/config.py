@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -13,6 +13,7 @@ from babel import UnknownLocaleError
 
 from tripbot import i18n
 from tripbot.domain.money import Rates
+from tripbot.domain.plan import Plan
 from tripbot.domain.trip import Flex, Group, Origin, Window
 
 
@@ -36,8 +37,9 @@ class Fairness:
 
 @dataclass(frozen=True)
 class Alternative:
+    """The main plan without one of its stops, for /other."""
+
     id: str
-    label: str
     drop: str
 
 
@@ -49,7 +51,12 @@ class RouteSettings:
     weather_eur_per_risk_night: int
     prefer_sleepers_eur: int
     max_train_minutes: int
-    alternatives: tuple[Alternative, ...]
+
+    @property
+    def alternatives(self) -> tuple[Alternative, ...]:
+        if len(self.stops) < 2:
+            return ()
+        return tuple(Alternative(id=f"no-{stop}", drop=stop) for stop in self.stops)
 
     def alternative(self, alternative_id: str) -> Alternative | None:
         return next((alt for alt in self.alternatives if alt.id == alternative_id), None)
@@ -107,6 +114,28 @@ class TripConfig:
     def city_of(self, airport: str) -> str | None:
         return self.china_airports.get(airport)
 
+    @property
+    def plan(self) -> Plan:
+        return Plan(
+            origins=self.origins,
+            groups=self.groups,
+            windows=self.windows,
+            stops=self.route.stops,
+            nights=self.route.nights,
+        )
+
+    def with_plan(self, plan: Plan) -> TripConfig:
+        """These rules with another plan; `ConfigError` if the two contradict each other."""
+        config = replace(
+            self,
+            origins=dict(plan.origins),
+            groups=plan.groups,
+            windows=plan.windows,
+            route=replace(self.route, stops=plan.stops, nights=dict(plan.nights)),
+        )
+        validate(config)
+        return config
+
 
 WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
@@ -119,49 +148,32 @@ def load_config(path: Path) -> TripConfig:
 
 
 def parse_config(raw: dict[str, Any]) -> TripConfig:
-    origins = {
-        code: Origin(
-            code=code,
-            city=str(spec["city"]),
-            airports=tuple(spec["airports"]),
-            currency=str(spec["currency"]),
-        )
-        for code, spec in raw["origins"].items()
-    }
-    groups = tuple(
-        Group(
-            id=str(spec["id"]),
-            name=str(spec["name"]),
-            origin=str(spec["origin"]),
-            people=tuple(str(person) for person in spec["people"]),
-        )
-        for spec in raw["groups"]
-    )
-    windows = tuple(
-        Window(id=str(spec["id"]), start=_date(spec["start"]), end=_date(spec["end"]))
-        for spec in raw["windows"]
-    )
     route_raw = raw["route"]
+    plan = Plan.from_json(
+        {
+            "origins": raw["origins"],
+            "groups": raw["groups"],
+            "windows": raw["windows"],
+            "stops": route_raw["stops"],
+            "nights": route_raw["nights"],
+        }
+    )
     route = RouteSettings(
-        stops=tuple(route_raw["stops"]),
-        nights={str(city): int(n) for city, n in route_raw["nights"].items()},
+        stops=plan.stops,
+        nights=dict(plan.nights),
         value_of_time_eur_per_hour=int(route_raw["value_of_time_eur_per_hour"]),
         weather_eur_per_risk_night=int(route_raw["weather_eur_per_risk_night"]),
         prefer_sleepers_eur=int(route_raw["prefer_sleepers_eur"]),
         max_train_minutes=int(route_raw["max_train_hours"]) * 60,
-        alternatives=tuple(
-            Alternative(id=str(alt["id"]), label=str(alt["label"]), drop=str(alt["drop"]))
-            for alt in route_raw["alternatives"]
-        ),
     )
     flights_raw = raw["flights"]
     config = TripConfig(
         timezone=str(raw["timezone"]),
         locale=str(raw["locale"]),
         home_currency=str(raw["home_currency"]),
-        origins=origins,
-        groups=groups,
-        windows=windows,
+        origins=dict(plan.origins),
+        groups=plan.groups,
+        windows=plan.windows,
         flex=Flex(
             outbound_days_before=int(raw["flex"]["outbound_days_before"]),
             return_days_after=int(raw["flex"]["return_days_after"]),
@@ -196,14 +208,8 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
             as_of=date(2026, 11, 5),
         ),
     )
-    _validate(config)
+    validate(config)
     return config
-
-
-def _date(value: object) -> date:
-    if isinstance(value, date):
-        return value
-    return date.fromisoformat(str(value))
 
 
 def _summary(raw: dict[str, Any]) -> SummarySchedule:
@@ -214,7 +220,7 @@ def _summary(raw: dict[str, Any]) -> SummarySchedule:
     return SummarySchedule(weekday=WEEKDAYS.index(weekday), hour=hour, minute=minute)
 
 
-def _validate(config: TripConfig) -> None:
+def validate(config: TripConfig) -> None:
     for check in (_check_locale, _check_groups, _check_windows, _check_route, _check_rates):
         check(config)
 
@@ -244,12 +250,11 @@ def _check_windows(config: TripConfig) -> None:
 
 
 def _check_route(config: TripConfig) -> None:
+    if not config.route.stops:
+        raise ConfigError("the route has no stops")
     for stop in config.route.stops:
         if stop not in config.route.nights:
             raise ConfigError(f"route stop {stop} has no nights")
-    for alternative in config.route.alternatives:
-        if alternative.drop not in config.route.stops:
-            raise ConfigError(f"alternative {alternative.id} drops unknown stop {alternative.drop}")
 
 
 def _check_rates(config: TripConfig) -> None:

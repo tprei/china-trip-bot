@@ -118,11 +118,7 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
     ranking = deck.rankings.main[window.id]
     best = ranking.best
     names = deck.names
-    alternatives = {
-        alt.id: (alt.label, deck.rankings.alternatives[window.id][alt.id])
-        for alt in deck.config.route.alternatives
-        if alt.id in deck.rankings.alternatives.get(window.id, {})
-    }
+    alternatives = deck.alternatives(window.id)
     compare = details.compare_alternatives(ranking, alternatives, names)
     other_plans = tuple(
         _other_plan(deck, row, label, other.best)

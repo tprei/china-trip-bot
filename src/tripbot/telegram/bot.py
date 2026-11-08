@@ -96,18 +96,19 @@ def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) ->
 
 def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
     last = repo.last_summary(deps.conn)
-    if not summary_due(now_local, deps.config.summary, last[0] if last else None):
+    if not summary_due(now_local, deps.config.summary, last.week if last else None):
         return False
-    totals, message_id = post_summary(deps, now_local)
-    repo.record_summary(deps.conn, week_key(now_local.date()), totals, now_local)
+    context = deps.context(now_local)
+    totals, message_id = post_summary(deps, context)
+    keys = context.config.plan.keys()
+    repo.record_summary(deps.conn, week_key(now_local.date()), totals, keys, now_local)
     if message_id is not None:
         pin_summary(deps, message_id)
     return True
 
 
-def post_summary(deps: BotDeps, now_local: datetime) -> tuple[dict[str, Money], int | None]:
+def post_summary(deps: BotDeps, context: BotContext) -> tuple[dict[str, Money], int | None]:
     """Post the summary album to the bot's topic: the totals it showed and its first message."""
-    context = deps.context(now_local)
     rankings = context.rankings()
     totals = {w: r.best.total_eur for w, r in rankings.main.items() if r.best is not None}
     if not totals:

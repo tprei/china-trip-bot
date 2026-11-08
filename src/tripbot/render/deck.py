@@ -9,6 +9,7 @@ from datetime import date, datetime
 from tripbot.config import TripConfig
 from tripbot.domain.alerts import Alert
 from tripbot.domain.money import Money
+from tripbot.domain.ranking import WindowRanking
 from tripbot.i18n import _
 from tripbot.pipeline.state import MAIN, Rankings
 from tripbot.reference import Reference
@@ -44,21 +45,27 @@ class Deck:
         return min(bests)[1] if bests else None
 
     def reference_totals(self) -> dict[str, Money]:
-        """Totals to compare against: the last summary, else the previous night."""
+        """Totals to compare against: the last summary, else the previous night.
+
+        Only prices taken under today's plan count; an edited window starts fresh.
+        """
+        keys = self.config.plan.keys()
         summary = repo.last_summary(self.conn)
         if summary is not None:
-            return summary[1]
+            return summary.comparable(keys)
         previous: dict[str, Money] = {}
         for window in self.config.windows:
-            shots = repo.snapshots(self.conn, window.id, MAIN)
+            shots = repo.snapshots(self.conn, window.id, keys[window.id], MAIN)
             if len(shots) >= 2:
                 previous[window.id] = shots[-2].total
         return previous
 
     def history(self) -> dict[str, list[tuple[datetime, Money]]]:
+        keys = self.config.plan.keys()
         return {
             window.id: [
-                (shot.taken_at, shot.total) for shot in repo.snapshots(self.conn, window.id)
+                (shot.taken_at, shot.total)
+                for shot in repo.snapshots(self.conn, window.id, keys[window.id])
             ]
             for window in self.config.windows
         }
@@ -103,7 +110,7 @@ class Deck:
         else:
             alternative = self.config.route.alternative(alternative_id)
             ranking = self.rankings.alternatives.get(window_id, {}).get(alternative_id)
-            label = alternative.label if alternative else alternative_id
+            label = self.names.alternative(alternative) if alternative else alternative_id
         if ranking is None or ranking.best is None:
             return None
         view = details.build_route(ranking.best, self.names, label)
@@ -130,10 +137,15 @@ class Deck:
         main = self.rankings.main.get(window_id)
         if main is None:
             return None
-        alternatives = {
-            alt.id: (alt.label, self.rankings.alternatives[window_id][alt.id])
-            for alt in self.config.route.alternatives
-            if alt.id in self.rankings.alternatives.get(window_id, {})
-        }
-        view = details.compare_alternatives(main, alternatives, self.names)
+        view = details.compare_alternatives(main, self.alternatives(window_id), self.names)
         return self.renderer.png(render_html("compare.html.j2", view=view))
+
+    def alternatives(self, window_id: str) -> dict[str, tuple[str, WindowRanking]]:
+        """Each /other plan ranked for the window, labelled `Without <city>`."""
+        ranked = self.rankings.alternatives.get(window_id, {})
+        names = self.names
+        return {
+            alt.id: (names.alternative(alt), ranked[alt.id])
+            for alt in self.config.route.alternatives
+            if alt.id in ranked
+        }

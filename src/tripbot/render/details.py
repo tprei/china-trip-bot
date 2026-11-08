@@ -292,7 +292,7 @@ def compare_windows(rankings: Mapping[str, WindowRanking]) -> CompareView:
 def compare_alternatives(
     main: WindowRanking, alternatives: Mapping[str, tuple[str, WindowRanking]], names: Names
 ) -> CompareView:
-    entries: list[tuple[str, Combo | None]] = [(_("All four cities"), main.best)]
+    entries: list[tuple[str, Combo | None]] = [(_("Main plan"), main.best)]
     entries += [(label, ranking.best) for label, ranking in alternatives.values()]
     totals = [best.total_eur.minor for _, best in entries if best is not None]
     base = main.best.total_eur.minor if main.best is not None else (min(totals) if totals else 0)
