@@ -78,9 +78,10 @@ def test_a_night_ranks_every_window_and_snapshots_it(
     assert report.health == {"serpapi": (54, 54)}
     assert report.ok and report.alerts == []
     for window in config.windows:
+        key = config.plan.key(window)
         assert report.rankings.main[window.id].best is not None
-        assert len(repo.snapshots(conn, window.id)) == 1
-        assert len(repo.snapshots(conn, window.id, "no-shanghai")) == 1
+        assert len(repo.snapshots(conn, window.id, key)) == 1
+        assert len(repo.snapshots(conn, window.id, key, "no-shanghai")) == 1
 
 
 def test_a_cheaper_night_sends_a_record_low_alert(
@@ -93,6 +94,21 @@ def test_a_cheaper_night_sends_a_record_low_alert(
     assert {alert.window_id for alert in report.alerts} == {"A", "B", "C"}
     assert all(alert.kind == "record_low" for alert in report.alerts)
     assert all(alert.saving == eur(100 * 2 * 2) for alert in report.alerts)
+
+
+def test_prices_from_before_a_plan_edit_never_count_as_history(
+    config: TripConfig, reference: Reference, conn: sqlite3.Connection
+) -> None:
+    run_nightly(nightly(config, reference, conn, FakeSource(PRICES)), NIGHT_ONE)
+    longer = {**config.plan.nights, "beijing": 5}
+    edited = config.with_plan(replace(config.plan, nights=longer))
+    cheaper = FakeSource({**PRICES, "sao": 600})
+    report = run_nightly(nightly(edited, reference, conn, cheaper), NIGHT_ONE + timedelta(days=1))
+
+    assert report.alerts == []
+    window = edited.windows[0]
+    assert len(repo.snapshots(conn, window.id, edited.plan.key(window))) == 1
+    assert len(repo.snapshots(conn, window.id, config.plan.key(window))) == 1
 
 
 def test_a_failing_source_is_announced_once(

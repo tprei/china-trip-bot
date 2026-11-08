@@ -1,5 +1,6 @@
 # Who travels, from where, when, and the rules the ranking follows.
-# Adding a person from an existing origin is one line under `people`.
+# This is the starting plan: once someone edits people, groups, windows or stops
+# from Telegram (/plan), the database holds the plan and this file only sets the rules.
 
 timezone: America/Sao_Paulo   # summary and reminders follow Brasília time
 locale: pt_BR
@@ -11,10 +12,10 @@ origins:
   SAO: {city: São Paulo, airports: [GRU], currency: BRL}   # VCP has no China service
   MEX: {city: Cidade do México, airports: [MEX], currency: MXN}  # dormant until someone joins
 
-groups:   # a group always books the same flights
-  - {id: thiago, name: Thiago, origin: DUB, people: [Thiago]}
-  - {id: lon, name: Luísa + Gabi, origin: LON, people: [Luísa, Gabi]}
-  - {id: sao, name: David + Mari, origin: SAO, people: [David, Mari]}
+groups:   # a group always books the same flights; its name is its people
+  - {id: thiago, origin: DUB, people: [Thiago]}
+  - {id: lon, origin: LON, people: [Luísa, Gabi]}
+  - {id: sao, origin: SAO, people: [David, Mari]}
 
 windows:  # days on the ground in China, first to last
   - {id: C, start: 2027-08-09, end: 2027-08-22}
@@ -51,16 +52,12 @@ fairness:
   max_time_overshoot_hours: 6
 
 route:
-  stops: [beijing, shanghai, zhangjiajie, yangshuo]   # the main plan
+  stops: [beijing, shanghai, zhangjiajie, yangshuo]   # /other drops one at a time
   nights: {beijing: 4, shanghai: 2, zhangjiajie: 2, yangshuo: 3}
   value_of_time_eur_per_hour: 20      # daytime hours spent moving
   weather_eur_per_risk_night: 15      # per person-night at full risk
   prefer_sleepers_eur: 40             # comfort: a sleeper beats a similar day leg
   max_train_hours: 8
-  alternatives:                       # only for /other
-    - {id: no-zhangjiajie, label: Sem Zhangjiajie, drop: zhangjiajie}
-    - {id: no-shanghai, label: Sem Xangai, drop: shanghai}
-    - {id: no-yangshuo, label: Sem Yangshuo, drop: yangshuo}
 
 alerts:
   drop_pct: 5          # vs the total in the last weekly summary

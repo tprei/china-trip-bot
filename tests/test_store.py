@@ -83,8 +83,11 @@ def test_todos_are_added_and_completed(conn: sqlite3.Connection) -> None:
 
 
 def test_summaries_and_alerts(conn: sqlite3.Connection) -> None:
-    repo.record_summary(conn, "2026-W45", {"B": Money(565100, "EUR")}, NOW)
-    assert repo.last_summary(conn) == ("2026-W45", {"B": Money(565100, "EUR")})
+    totals = {"A": Money(612000, "EUR"), "B": Money(565100, "EUR")}
+    repo.record_summary(conn, "2026-W45", totals, {"A": "k-a", "B": "k-b", "C": "k-c"}, NOW)
+    summary = repo.last_summary(conn)
+    assert summary is not None and summary.week == "2026-W45"
+    assert summary.comparable({"A": "k-a", "B": "edited", "C": "k-c"}) == {"A": totals["A"]}
     repo.record_alert(conn, "record_low", "B", Money(542000, "EUR"), NOW)
     assert repo.alerted_on(conn, "B", NOW.date())
     assert not repo.alerted_on(conn, "A", NOW.date())

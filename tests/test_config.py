@@ -33,10 +33,17 @@ def test_unknown_origin_is_rejected() -> None:
         parse_config(raw)
 
 
-def test_alternative_must_drop_a_known_stop() -> None:
+def test_other_plans_drop_each_stop_in_turn(config: TripConfig) -> None:
+    assert [alt.drop for alt in config.route.alternatives] == list(config.route.stops)
     raw = raw_config()
-    raw["route"]["alternatives"][0]["drop"] = "chengdu"
-    with pytest.raises(ConfigError, match="unknown stop"):
+    raw["route"]["stops"] = ["beijing"]
+    assert parse_config(raw).route.alternatives == ()
+
+
+def test_a_route_needs_a_stop() -> None:
+    raw = raw_config()
+    raw["route"]["stops"] = []
+    with pytest.raises(ConfigError, match="no stops"):
         parse_config(raw)
 
 

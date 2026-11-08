@@ -58,8 +58,12 @@ def decide_alerts(
 
 
 def _crossed(earlier: Sequence[Money], target: Money) -> bool:
-    """Only the night the total first gets under the target, not every night after."""
-    return not earlier or earlier[-1] > target
+    """Only the night the total gets under the target, after a night above it.
+
+    No earlier night under this plan means nothing was crossed: a fresh history
+    after an edit (or a new plan key) must not re-announce a target already met.
+    """
+    return bool(earlier) and earlier[-1] > target
 
 
 def _beats(total: Money, record: Money, min_eur: int) -> bool:

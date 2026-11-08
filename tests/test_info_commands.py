@@ -148,6 +148,8 @@ def test_target_alert_fires_only_when_crossing() -> None:
     assert [a.kind for a in crossing] == ["target"]
     staying = decide_alerts({"B": eur(4900)}, {"B": [eur(4950)]}, None, rules, set(), eur(5000))
     assert staying == []
+    fresh = decide_alerts({"B": eur(4900)}, {"B": []}, None, rules, set(), eur(5000))
+    assert fresh == []
 
 
 def test_unknown_commands_are_ignored(chat: tuple[BotDeps, FakeMessenger]) -> None:

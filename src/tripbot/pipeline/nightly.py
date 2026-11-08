@@ -67,8 +67,9 @@ def run_nightly(deps: NightlyDeps, now: datetime) -> NightlyReport:
             repo.record_search(deps.conn, run_id, key, result, now)
 
     rankings = load_rankings(deps.conn, deps.config, deps.reference, now)
-    alerts = _alerts(deps, rankings, now)
-    _snapshot(deps.conn, run_id, rankings, now)
+    plan_keys = deps.config.plan.keys()
+    alerts = _alerts(deps, rankings, plan_keys, now)
+    _snapshot(deps.conn, run_id, rankings, plan_keys, now)
 
     health = repo.source_health(deps.conn, run_id)
     failed_runs = {
@@ -100,14 +101,18 @@ def _refresh_rates(deps: NightlyDeps) -> list[str]:
     return []
 
 
-def _alerts(deps: NightlyDeps, rankings: Rankings, now: datetime) -> list[Alert]:
+def _alerts(
+    deps: NightlyDeps, rankings: Rankings, keys: dict[str, str], now: datetime
+) -> list[Alert]:
     totals: dict[str, Money] = {}
     history: dict[str, list[Money]] = {}
     alerted: set[str] = set()
     for window_id, ranking in rankings.main.items():
         if ranking.best is not None:
             totals[window_id] = ranking.best.total_eur
-        history[window_id] = [s.total for s in repo.snapshots(deps.conn, window_id, MAIN)]
+        history[window_id] = [
+            s.total for s in repo.snapshots(deps.conn, window_id, keys[window_id], MAIN)
+        ]
         if repo.alerted_on(deps.conn, window_id, now.date()):
             alerted.add(window_id)
     summary = repo.last_summary(deps.conn)
@@ -115,7 +120,7 @@ def _alerts(deps: NightlyDeps, rankings: Rankings, now: datetime) -> list[Alert]
     alerts = decide_alerts(
         totals,
         history,
-        summary[1] if summary else None,
+        summary.comparable(keys) if summary else None,
         deps.config.alerts,
         alerted,
         Money.of(target, "EUR") if target else None,
@@ -125,7 +130,13 @@ def _alerts(deps: NightlyDeps, rankings: Rankings, now: datetime) -> list[Alert]
     return alerts
 
 
-def _snapshot(conn: sqlite3.Connection, run_id: int, rankings: Rankings, now: datetime) -> None:
+def _snapshot(
+    conn: sqlite3.Connection,
+    run_id: int,
+    rankings: Rankings,
+    keys: dict[str, str],
+    now: datetime,
+) -> None:
     plans = [(MAIN, rankings.main)]
     plans += [
         (alt_id, {w: by_alt[alt_id] for w, by_alt in rankings.alternatives.items()})
@@ -141,6 +152,7 @@ def _snapshot(conn: sqlite3.Connection, run_id: int, rankings: Rankings, now: da
                 repo.Snapshot(
                     window_id=window_id,
                     plan=plan,
+                    plan_key=keys[window_id],
                     entry=ranking.best.entry,
                     exit=ranking.best.exit,
                     total=ranking.best.total_eur,

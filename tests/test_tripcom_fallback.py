@@ -82,7 +82,7 @@ def test_invalid_limits(budget: int, spacing: float) -> None:
 
 
 def test_browser_success_keeps_joint_quote_and_pax() -> None:
-    observed = quote(Group("lon", "London", "LON", ("A", "B")))
+    observed = quote(Group("lon", "LON", ("A", "B")))
     request = observed.request
     browser = Browser()
     with (
