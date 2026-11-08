@@ -169,6 +169,19 @@ def route_command(context: BotContext, request: Request) -> Reply:
 
 
 @command(
+    gettext_noop("/map"),
+    gettext_noop("/map [window]"),
+    gettext_noop("the route on a map of China"),
+)
+def map_command(context: BotContext, request: Request) -> Reply:
+    window = context.window_arg(request.args)
+    if window is None:
+        return Reply(text=i18n._(NO_DATA))
+    with context.open_deck(context) as deck:
+        return card(context, deck.route_map, window)
+
+
+@command(
     gettext_noop("/history"),
     gettext_noop("/history [window]"),
     gettext_noop("price chart"),

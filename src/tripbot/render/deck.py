@@ -109,6 +109,13 @@ class Deck:
         view = details.build_route(ranking.best, self.names, label)
         return self.renderer.png(render_html("route.html.j2", view=view))
 
+    def route_map(self, window_id: str) -> bytes | None:
+        ranking = self.rankings.main.get(window_id)
+        if ranking is None or ranking.best is None:
+            return None
+        view = details.build_map(ranking.best, self.names)
+        return self.renderer.png(render_html("map.html.j2", view=view))
+
     def history_card(self, window_id: str) -> bytes | None:
         view = details.build_history(self.history(), window_id)
         if view is None:

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 16:14+0000\n"
+"POT-Creation-Date: 2026-11-08 16:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -100,6 +100,12 @@ msgstr "/historico"
 
 msgid "/history [window]"
 msgstr "/historico [janela]"
+
+msgid "/map"
+msgstr "/mapa"
+
+msgid "/map [window]"
+msgstr "/mapa [janela]"
 
 msgid "/other"
 msgstr "/outras"
@@ -210,6 +216,12 @@ msgstr "IDA MAIS BARATA"
 #, python-brace-format
 msgid "Checked {date}"
 msgstr "Verificado em {date}"
+
+msgid "China"
+msgstr "China"
+
+msgid "China 2027"
+msgstr "China 2027"
 
 msgid "China 2027 bot"
 msgstr "Bot da China 2027"
@@ -414,6 +426,9 @@ msgstr "Valor por pessoa arredondado · use o total do grupo observado"
 
 msgid "Route"
 msgstr "Roteiro"
+
+msgid "Route map"
+msgstr "Mapa do roteiro"
 
 #, python-format
 msgid "Route · %(internal)s / person inside China"
@@ -668,6 +683,9 @@ msgstr "lista de comandos"
 
 msgid "the plan without Zhangjiajie, Shanghai or Yangshuo"
 msgstr "plano sem Zhangjiajie, Xangai ou Yangshuo"
+
+msgid "the route on a map of China"
+msgstr "o roteiro no mapa da China"
 
 msgid "the route poster to share"
 msgstr "pôster do roteiro para compartilhar"

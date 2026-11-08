@@ -10,6 +10,7 @@ from typing import Literal
 from tripbot import i18n
 from tripbot.domain.alerts import Alert
 from tripbot.domain.flights import Offer, duration_label
+from tripbot.domain.legs import Mode
 from tripbot.domain.money import Money, Rates
 from tripbot.domain.ranking import Combo, GroupChoice
 from tripbot.domain.routes import PlannedLeg, Route
@@ -81,6 +82,13 @@ class DaySpan:
     nights: int
     arrive: str
     leave: str
+
+
+@dataclass(frozen=True)
+class LegendItem:
+    mode: Mode
+    label: str
+    speed: str
 
 
 @dataclass(frozen=True)
@@ -265,6 +273,22 @@ def timeline(route: Route, names: Names) -> tuple[TimelineItem, ...]:
 def _leg_item(leg: PlannedLeg) -> TimelineItem:
     option = leg.option
     return TimelineItem(kind="leg", mode=option.mode, duration=duration_label(option.minutes))
+
+
+def legend(route: Route, names: Names) -> tuple[LegendItem, ...]:
+    """The modes this route uses, in a fixed order, with their average speed."""
+    labels: dict[Mode, str] = {
+        "train": _("high-speed"),
+        "sleeper": _("sleeper"),
+        "flight": _("flight"),
+    }
+    used = {leg.option.mode for leg in route.legs}
+    speeds = names.reference.speeds_kmh
+    return tuple(
+        LegendItem(mode, label, f"~{speeds[mode]} km/h")
+        for mode, label in labels.items()
+        if mode in used
+    )
 
 
 def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:

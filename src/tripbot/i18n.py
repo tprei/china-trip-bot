@@ -15,7 +15,7 @@ from io import BytesIO
 from pathlib import Path
 
 from babel import Locale
-from babel.dates import format_date
+from babel.dates import format_date, format_skeleton
 from babel.messages.mofile import write_mo
 from babel.messages.pofile import read_po
 from babel.numbers import format_currency
@@ -106,6 +106,11 @@ def day(value: date) -> str:
 def short_day(value: date) -> str:
     """`29 ago.` in pt_BR, `29 Aug` in en."""
     return format_date(value, "d MMM", locale=_current.language.locale)
+
+
+def numeric_day(value: date) -> str:
+    """`30/08` in pt_BR, `8/30` in en."""
+    return format_skeleton("ddMM", value, locale=_current.language.locale)
 
 
 def long_day(value: date) -> str:

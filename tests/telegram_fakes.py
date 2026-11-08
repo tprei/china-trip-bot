@@ -82,6 +82,10 @@ class FakeDeck:
         self.calls.append(f"route {window_id} {alternative_id}")
         return b"route"
 
+    def route_map(self, window_id: str) -> bytes | None:
+        self.calls.append(f"map {window_id}")
+        return b"map"
+
     def history_card(self, window_id: str) -> bytes | None:
         self.calls.append(f"history {window_id}")
         return None

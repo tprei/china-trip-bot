@@ -1,0 +1,117 @@
+{% extends "_base.html.j2" %}
+{% from "_icons.html.j2" import icon, china_header %}
+
+{# The view supplies projected geography. Presentation alone enlarges the route and
+   places labels in two alternating, latitude-sorted rails, never over the cities. #}
+{% set west = view.stops|map(attribute="x")|min %}
+{% set east = view.stops|map(attribute="x")|max %}
+{% set north = view.stops|map(attribute="y")|min %}
+{% set south = view.stops|map(attribute="y")|max %}
+{% set scale = [1.65, 320 / ([east - west, 1]|max), 560 / ([south - north, 1]|max)]|min %}
+{% set tx = 492 - (west + east) / 2 * scale %}
+{% set ty = 474 - (north + south) / 2 * scale %}
+{% set palette = ["#ff9a83", "#91d6ca", "#f1ca7f", "#c6b4ef", "#9dd5ef", "#f1b4d1"] %}
+{% set label_rows = ((view.stops|length + 1) // 2) %}
+
+{% block card %}
+<div class="card map-card">
+  <header class="header">
+    {{ china_header() }}
+    <div class="top">
+      <div>
+        <div class="kicker">{{ _("China 2027") }}</div>
+        <div class="title">{{ _("Route map") }}</div>
+        <div class="map-window">{{ icon("calendar", "#ff9a83", 28) }}<span>{{ view.dates }}</span><b>{{ view.days }}</b></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="map-body">
+    <div class="map-canvas">
+      <svg class="map-geography" viewBox="0 0 984 906" role="img" aria-label="{{ _("Route map") }}">
+        <defs>
+          <radialGradient id="map-sea"><stop stop-color="#1b303c"/><stop offset="1" stop-color="#111f2b"/></radialGradient>
+          <pattern id="map-grid" width="74" height="74" patternUnits="userSpaceOnUse"><path d="M74 0H0V74" fill="none" stroke="#466170" stroke-width="1" opacity=".15"/></pattern>
+          <clipPath id="map-bounds"><rect width="984" height="906" rx="24"/></clipPath>
+          {% for item in view.legend %}
+          <marker id="arrow-{{ item.mode }}" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto"><path d="m2 1 9 5-9 5 2-5Z" fill="{{ {'train': '#9dc5e8', 'sleeper': '#f1ca7f', 'flight': '#ff9a83'}[item.mode] }}"/></marker>
+          {% endfor %}
+        </defs>
+        <g clip-path="url(#map-bounds)">
+          <rect width="984" height="906" fill="url(#map-sea)"/>
+          <rect width="984" height="906" fill="url(#map-grid)"/>
+          <g transform="translate({{ tx }} {{ ty }}) scale({{ scale }})">
+            <path d="{{ view.outline }}" class="map-land"/>
+          </g>
+
+          {# Quiet leader lines sit behind the coloured travel legs. #}
+          {% for stop in view.stops|sort(attribute="y") %}
+          {% set left = loop.index0 % 2 == 0 %}
+          {% set label_y = 268 + (loop.index0 // 2) * 496 / ([label_rows - 1, 1]|max) %}
+          {% set px = stop.x * scale + tx %}
+          {% set py = stop.y * scale + ty %}
+          <path class="map-leader" d="M{{ px }} {{ py }} L{{ 286 if left else 698 }} {{ label_y }} H{{ 258 if left else 726 }}"/>
+          {% endfor %}
+
+          {% for leg in view.legs %}
+          {% set x1 = leg.x1 * scale + tx %}{% set y1 = leg.y1 * scale + ty %}
+          {% set x2 = leg.x2 * scale + tx %}{% set y2 = leg.y2 * scale + ty %}
+          {% set bend = 0.16 if leg.mode == "flight" else 0.055 %}
+          {% set cx = (x1 + x2) / 2 + (y2 - y1) * bend %}
+          {% set cy = (y1 + y2) / 2 - (x2 - x1) * bend %}
+          {% set mx = (x1 + 2 * cx + x2) / 4 %}{% set my = (y1 + 2 * cy + y2) / 4 %}
+          {% set path = "M%s %s Q%s %s %s %s Q%s %s %s %s"|format(x1, y1, (x1 + cx) / 2, (y1 + cy) / 2, mx, my, (cx + x2) / 2, (cy + y2) / 2, x2, y2) %}
+          <g class="mode-{{ leg.mode }}" data-leg="{{ loop.index }}">
+            <title>{{ leg.duration }}</title>
+            <path d="{{ path }}" class="map-route-halo"/>
+            <path d="{{ path }}" class="map-route-line map-route-{{ leg.mode }}" marker-mid="url(#arrow-{{ leg.mode }})"/>
+          </g>
+          {% endfor %}
+
+          {% for stop in view.stops %}
+          {% set color = palette[((stop.order or 1) - 1) % 6] %}
+          <g transform="translate({{ stop.x * scale + tx }} {{ stop.y * scale + ty }})">
+            {% if stop.arrival or stop.departure %}<circle r="29" class="map-international-ring"/>{% endif %}
+            <circle r="21" fill="{{ color }}" stroke="#0e1620" stroke-width="5"/>
+            {% if stop.order is not none %}<text class="map-stop-number" y="1">{{ stop.order }}</text>{% else %}<g transform="translate(-12 -12)">{{ icon("plane", "#0e1620", 24) }}</g>{% endif %}
+          </g>
+          {% endfor %}
+
+          <g class="map-country-inset" transform="translate(20 20)">
+            <rect width="252" height="190" rx="16" fill="#12212c" stroke="#3a5262"/>
+            <svg x="14" y="10" width="224" height="148" viewBox="0 0 {{ view.width }} {{ view.height }}">
+              <path d="{{ view.outline }}" fill="#294450" stroke="#6d8c99" stroke-width="4"/>
+              <rect x="{{ west - 45 }}" y="{{ north - 45 }}" width="{{ east - west + 90 }}" height="{{ south - north + 90 }}" rx="10" fill="#ff9a83" fill-opacity=".12" stroke="#ff9a83" stroke-width="7" stroke-dasharray="16 10"/>
+              {% for stop in view.stops %}<circle cx="{{ stop.x }}" cy="{{ stop.y }}" r="9" fill="#ff9a83"/>{% endfor %}
+            </svg>
+            <text x="126" y="174" class="map-country-name">{{ _("China") }}</text>
+          </g>
+        </g>
+      </svg>
+
+      {% for stop in view.stops|sort(attribute="y") %}
+      {% set left = loop.index0 % 2 == 0 %}
+      {% set label_y = 268 + (loop.index0 // 2) * 496 / ([label_rows - 1, 1]|max) %}
+      {% set color = palette[((stop.order or 1) - 1) % 6] %}
+      <div class="map-city-label {{ 'map-label-left' if left else 'map-label-right' }}" style="top:{{ label_y - 36 }}px;--stop-color:{{ color }}">
+        <div class="map-city-heading">{% if stop.order is not none %}<span class="map-label-number">{{ stop.order }}</span>{% endif %}<span class="map-city-name">{{ stop.name }}</span></div>
+        {% if stop.nights %}<div class="map-city-nights">{{ stop.nights }}</div>{% endif %}
+        {% if stop.dates %}<div class="map-city-dates">{{ stop.dates }}</div>{% endif %}
+        {% if stop.arrival or stop.departure %}
+        <div class="map-international">
+          {% if stop.arrival %}<span class="map-arrival">{{ icon("plane", "#ffb39f", 21) }}{{ _("IN") }}</span>{% endif %}
+          {% if stop.departure %}<span class="map-departure">{{ icon("plane", "#ffb39f", 21) }}{{ _("OUT") }}</span>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="legend map-legend">
+      {% for item in view.legend %}
+      <span class="mode-{{ item.mode }}"><span class="map-mode-sample map-route-{{ item.mode }}"></span>{{ icon("plane" if item.mode == "flight" else item.mode, {"train": "#9dc5e8", "sleeper": "#f1ca7f", "flight": "#ff9a83"}[item.mode], 30) }}<span class="map-mode-copy">{{ item.label }}<b>{{ item.speed }}</b></span></span>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

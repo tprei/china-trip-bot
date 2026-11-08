@@ -1,0 +1,58 @@
+# Short display names for airport codes on the cards, in the group's language.
+# Covers every airport the searches have returned so far plus the configured
+# China airports; a code missing here is shown without a name.
+
+ADD: Adis Abeba
+ALA: Almaty
+AMM: Amã
+AMS: Amsterdã
+AUH: Abu Dhabi
+BAH: Bahrein
+BEG: Belgrado
+BKK: Bangcoc
+BRU: Bruxelas
+CAI: Cairo
+CAN: Guangzhou
+CDG: Paris
+CGO: Zhengzhou
+CKG: Chongqing
+CMN: Casablanca
+CSX: Changsha
+DFW: Dallas
+DOH: Doha
+DUB: Dublin
+DXB: Dubai
+DYG: Zhangjiajie
+FRA: Frankfurt
+GRU: São Paulo Guarulhos
+GYD: Baku
+HEL: Helsinque
+HGH: Hangzhou
+HKG: Hong Kong
+HND: Tóquio Haneda
+ICN: Seul
+IST: Istambul
+KUL: Kuala Lumpur
+KWI: Kuwait
+KWL: Guilin
+LAX: Los Angeles
+LGW: Londres Gatwick
+LHR: Londres Heathrow
+MAD: Madri
+MEX: Cidade do México
+MUC: Munique
+PEK: Pequim Capital
+PKX: Pequim Daxing
+PVG: Xangai Pudong
+RUH: Riade
+SHA: Xangai Hongqiao
+SZX: Shenzhen
+TIJ: Tijuana
+TFU: Chengdu Tianfu
+TPE: Taipé
+VIE: Viena
+WUH: Wuhan
+XIY: Xi'an
+YVR: Vancouver
+YYZ: Toronto
+ZRH: Zurique

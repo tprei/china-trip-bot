@@ -28,6 +28,10 @@ class Names:
                 return origin.city
         return airport
 
+    def airport_name(self, airport: str) -> str | None:
+        """Short display name from `data/airports.yaml`: `DXB` → Dubai."""
+        return self.reference.airports.get(airport)
+
     def entry_airport(self, city_id: str) -> str:
         """The first airport listed for a China city: beijing → PEK."""
         return next(
