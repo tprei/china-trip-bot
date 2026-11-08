@@ -4,13 +4,13 @@
 <div class="card">
   <header class="header" style="height:220px">
     {{ hills() }}
-    <div class="top"><div><div class="kicker">ROUND-TRIP FARE DEMO</div><div class="title">{{ view.name if view else 'Round-trip snapshot' }}</div></div></div>
+    <div class="top"><div><div class="kicker">{{ _("ROUND-TRIP FARE DEMO") }}</div><div class="title">{{ view.name if view else _("Round-trip snapshot") }}</div></div></div>
   </header>
   <section class="hero">
-    <div class="label">{{ (view.adults|string + ' adult(s) · round-trip group total') if view else (groups|sum(attribute='adults')|string + ' people · ' + groups|length|string + ' groups · international RT') }}</div>
+    <div class="label">{% if view %}{% trans count=view.adults %}{{ count }} adult · round-trip group total{% pluralize %}{{ count }} adults · round-trip group total{% endtrans %}{% else %}{% trans people=groups|sum(attribute='adults'), groups=groups|length %}{{ people }} people · {{ groups }} groups · international RT{% endtrans %}{% endif %}</div>
     <div class="num total" style="font-size:140px">{{ view.total if view else total }}</div>
-    <div style="font-size:27px;color:var(--muted)">{{ ('Displayed per person: ' + view.per_person) if view else 'One sampled combo · international round trips' }}</div>
-    <div class="chip" style="font-size:24px">{{ view.observed if view else observed }} · not checkout</div>
+    <div style="font-size:27px;color:var(--muted)">{% if view %}{% trans per_person=view.per_person %}Displayed per person: {{ per_person }}{% endtrans %}{% else %}{{ _("One sampled combo · international round trips") }}{% endif %}</div>
+    <div class="chip" style="font-size:24px">{% trans observed=(view.observed if view else observed) %}{{ observed }} · not checkout{% endtrans %}</div>
   </section>
   {% if view %}
   {% for journey in view.journeys %}
@@ -20,20 +20,20 @@
       <div class="title" style="font-size:38px;margin:0">{{ journey.path }}</div>
       <div class="mono" style="font-size:23px">{{ journey.times }}</div>
       {% for line in journey.segments %}<div style="font-size:24px;line-height:1.4">{{ line }}</div>{% endfor %}
-      <div style="font-size:24px;color:var(--info)">Connection: {{ journey.connections or 'none' }}</div>
+      <div style="font-size:24px;color:var(--info)">{% trans connections=(journey.connections or _("none")) %}Connection: {{ connections }}{% endtrans %}</div>
     </div>
   </section>
   {% endfor %}
   {% else %}
   <section class="section">
-    {% for group in groups %}<div class="panel row"><div style="font-size:32px;font-weight:800">{{ group.name }}<div style="font-size:23px;color:var(--muted);font-weight:400">{{ group.adults }} adult(s) · round trip</div></div><div class="spacer"></div><div class="num" style="font-size:54px">{{ group.total }}</div></div>{% endfor %}
-    <div class="panel" style="font-size:29px;color:var(--info)">Internal transport estimate: {{ internal }}<div style="font-size:24px;margin-top:12px">Separate · not a live fare or feasible timetable</div></div>
+    {% for group in groups %}<div class="panel row"><div style="font-size:32px;font-weight:800">{{ group.name }}<div style="font-size:23px;color:var(--muted);font-weight:400">{% trans count=group.adults %}{{ count }} adult · round trip{% pluralize %}{{ count }} adults · round trip{% endtrans %}</div></div><div class="spacer"></div><div class="num" style="font-size:54px">{{ group.total }}</div></div>{% endfor %}
+    <div class="panel" style="font-size:29px;color:var(--info)">{% trans internal=internal %}Internal transport estimate: {{ internal }}{% endtrans %}<div style="font-size:24px;margin-top:12px">{{ _("Separate · not a live fare or feasible timetable") }}</div></div>
   </section>
   {% endif %}
   <section class="section" style="font-size:25px;line-height:1.45">
     {% for warning in (view.warnings if view else []) %}<div style="color:var(--warn)">⚠ {{ warning }}</div>{% endfor %}
     {% if not view %}{% for group in groups %}{% for warning in group.warnings %}<div style="color:var(--warn)">{{ group.name }}: {{ warning }}</div>{% endfor %}{% endfor %}{% endif %}
-    <div style="color:var(--muted)">Trip.com observed quote · final price / inventory unverified<br>{{ 'Airport-local flight times · no separate one-way fares' if view else 'Bounded sample, not market-best or guaranteed savings' }}</div>
+    <div style="color:var(--muted)">{{ _("Trip.com observed quote · final price / inventory unverified") }}<br>{{ _("Airport-local flight times · no separate one-way fares") if view else _("Bounded sample, not market-best or guaranteed savings") }}</div>
   </section>
 </div>
 {% endblock %}

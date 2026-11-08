@@ -81,6 +81,6 @@ Everything the group reads (Telegram replies, command names, cards and the dashb
 
 - Change a translation: edit `msgstr` in `src/tripbot/locales/pt_BR/LC_MESSAGES/tripbot.po` and restart `tripbot-bot`.
 - After adding or changing text in code or templates, run `scripts/update-translations.sh`, then fill in every empty `msgstr`. `tests/test_i18n.py` fails while any string is untranslated.
-- In Python, wrap text in `_()`, use `ngettext()` for counts, `pgettext()` when a word needs context, and `gettext_noop()` for text fixed at import time. Put values in named placeholders: `_("Window {window}").format(window=...)`. In templates, use `{{ _("...") }}` and `{% trans %}`.
+- In Python, wrap text in `_()`, use `ngettext()` for counts, `pgettext()` when a word needs context, and `gettext_noop()` for text fixed at import time. Put values in named placeholders: `_("Window {window}").format(window=...)`. In templates, use `{{ _("...") }}` and `{% trans %}`; when a `{% trans %}` block has more than one variable, name the count in `{% pluralize count %}`, because Jinja otherwise counts with the first variable.
 - Money, dates and plurals follow the locale through `tripbot.i18n` (`€ 9.479`, `dom. 29 ago.`). Content in `data/*.yaml`, such as city names and visa steps, is written in the group's language directly.
 - Logs and the `tripbot` command-line output stay in English.

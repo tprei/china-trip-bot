@@ -9,6 +9,7 @@ from datetime import date, datetime
 from tripbot.config import TripConfig
 from tripbot.domain.alerts import Alert
 from tripbot.domain.money import Money
+from tripbot.i18n import _
 from tripbot.pipeline.state import MAIN, Rankings
 from tripbot.reference import Reference
 from tripbot.render import details, views
@@ -98,7 +99,7 @@ class Deck:
 
     def route(self, window_id: str, alternative_id: str | None = None) -> bytes | None:
         if alternative_id is None:
-            ranking, label = self.rankings.main.get(window_id), "Main plan"
+            ranking, label = self.rankings.main.get(window_id), _("Main plan")
         else:
             alternative = self.config.route.alternative(alternative_id)
             ranking = self.rankings.alternatives.get(window_id, {}).get(alternative_id)

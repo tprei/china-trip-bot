@@ -1,9 +1,12 @@
 """Presentation for intact observed round trips; no one-way price reconstruction."""
 
 from dataclasses import dataclass
+from datetime import datetime
 
+from tripbot import i18n
 from tripbot.domain.flights import duration_label
 from tripbot.domain.roundtrip import Journey, RoundTripQuote
+from tripbot.i18n import _
 
 
 @dataclass(frozen=True)
@@ -32,35 +35,43 @@ def journey_view(label: str, journey: Journey) -> JointJourney:
         label,
         " → ".join((journey.origin, *journey.via, journey.destination)),
         duration_label(journey.total_minutes),
-        f"{journey.depart:%d %b %Y %H:%M} → {journey.arrive:%d %b %Y %H:%M}",
+        f"{_moment(journey.depart)} → {_moment(journey.arrive)}",
         tuple(
-            f"{s.flight_number} · {s.airline_name} · {s.origin} {s.depart:%d %b %H:%M}"
-            f" → {s.destination} {s.arrive:%d %b %H:%M}"
+            f"{s.flight_number} · {s.airline_name} · {s.origin} {_moment(s.depart)}"
+            f" → {s.destination} {_moment(s.arrive)}"
             for s in journey.segments
         ),
         " · ".join(f"{s.airport} {duration_label(s.minutes)}" for s in journey.layovers),
     )
 
 
+def _moment(value: datetime) -> str:
+    return f"{i18n.short_day(value.date())} {value:%H:%M}"
+
+
 def joint_card(name: str, quote: RoundTripQuote) -> JointCard:
     warnings = [
-        f"Short connection: {stop.airport} {duration_label(stop.minutes)}"
+        _("Short connection: {airport} {wait}").format(
+            airport=stop.airport, wait=duration_label(stop.minutes)
+        )
         for journey in (quote.outbound, quote.inbound)
         for stop in journey.layovers
         if stop.minutes < 60
     ]
     if "multiple bookings" in quote.fare_notes.lower():
-        warnings.append("Multiple bookings / tickets · protection unverified")
+        warnings.append(_("Multiple bookings / tickets · protection unverified"))
     if quote.outbound.arrive.hour >= 22:
-        warnings.append(f"Late arrival: {quote.outbound.arrive:%d %b %Y %H:%M} · plan hotel")
+        warnings.append(
+            _("Late arrival: {moment} · plan hotel").format(moment=_moment(quote.outbound.arrive))
+        )
     if quote.total.minor != quote.per_person.minor * quote.request.adults:
-        warnings.append("Rounded per-person display · use observed group total")
+        warnings.append(_("Rounded per-person display · use observed group total"))
     return JointCard(
         name,
         quote.request.adults,
-        quote.total.whole(),
-        quote.per_person.whole(),
-        f"{quote.quoted_at:%d %b %Y %H:%M} UTC",
-        (journey_view("Outbound", quote.outbound), journey_view("Return", quote.inbound)),
+        i18n.money(quote.total),
+        i18n.money(quote.per_person),
+        f"{_moment(quote.quoted_at)} UTC",
+        (journey_view(_("Outbound"), quote.outbound), journey_view(_("Return"), quote.inbound)),
         tuple(warnings),
     )

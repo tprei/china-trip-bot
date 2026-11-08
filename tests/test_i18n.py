@@ -49,6 +49,5 @@ def test_every_source_string_has_a_pt_br_translation() -> None:
 def test_pt_br_money_and_dates() -> None:
     assert i18n.money(Money(947_949, "EUR")) == "€\xa09.479"
     assert i18n.money(Money(1_173_700, "BRL")) == "R$\xa011.737"
-    assert (
-        i18n.date_range(date(2027, 8, 30), date(2027, 9, 12)) == "30 de ago.\u2009–\u200912 de set."
-    )
+    assert i18n.date_range(date(2027, 8, 30), date(2027, 9, 12)) == "30 ago. – 12 set."
+    assert i18n.date_range(date(2027, 8, 9), date(2027, 8, 22)) == "9 – 22 ago."
