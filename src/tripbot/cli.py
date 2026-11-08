@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from tripbot import i18n
 from tripbot.config import TripConfig, load_config
 from tripbot.dashboard.build import publish
 from tripbot.domain.trip import people_count
@@ -69,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "build-dashboard":
         return dashboard_command(settings)
     if args.command == "render-samples":
-        config = load_config(settings.config_path)
+        config = load_trip(settings)
         for path in render_samples(config, load_reference(settings.data_dir), args.out):
             print(path)
         return 0
@@ -84,7 +85,7 @@ def group_search_command(
     browser_enabled: bool,
     budget: int,
 ) -> int:
-    config = load_config(settings.config_path)
+    config = load_trip(settings)
     plan = load_plan(plan_path, config, window)
     if not 0 <= budget <= config.budgets.tripcom:
         raise ValueError("budget exceeds configured Trip.com limit")
@@ -112,8 +113,15 @@ def check_config(settings: Settings) -> int:
     return 0
 
 
-def nightly_command(settings: Settings, *, search: bool) -> int:
+def load_trip(settings: Settings) -> TripConfig:
+    """The trip config, with its language active for everything the group reads."""
     config = load_config(settings.config_path)
+    i18n.activate(config.locale)
+    return config
+
+
+def nightly_command(settings: Settings, *, search: bool) -> int:
+    config = load_trip(settings)
     reference = load_reference(settings.data_dir)
     with closing(connect(settings.db_path)) as conn:
         currencies = {origin.currency for origin in config.origins.values()} | {"CNY", "USD"}
@@ -145,7 +153,7 @@ def nightly_command(settings: Settings, *, search: bool) -> int:
 
 
 def dashboard_command(settings: Settings) -> int:
-    config = load_config(settings.config_path)
+    config = load_trip(settings)
     reference = load_reference(settings.data_dir)
     with closing(connect(settings.db_path)) as conn:
         now = local_now(config)
@@ -194,7 +202,7 @@ def bot_deps(
 def bot_command(settings: Settings) -> int:
     if not settings.telegram_token:
         raise SystemExit("TELEGRAM_TOKEN is not set")
-    config = load_config(settings.config_path)
+    config = load_trip(settings)
     reference = load_reference(settings.data_dir)
     with closing(connect(settings.db_path)) as conn:
         with httpx.Client() as client:

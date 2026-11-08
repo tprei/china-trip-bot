@@ -45,3 +45,10 @@ def test_every_origin_currency_needs_a_fallback_rate() -> None:
     del raw["fallback_rates_per_eur"]["BRL"]
     with pytest.raises(ConfigError, match="BRL"):
         parse_config(raw)
+
+
+def test_a_locale_without_a_catalog_is_rejected() -> None:
+    raw = raw_config()
+    raw["locale"] = "de_DE"
+    with pytest.raises(ConfigError, match="de_DE"):
+        parse_config(raw)

@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from babel import UnknownLocaleError
 
+from tripbot import i18n
 from tripbot.domain.money import Rates
 from tripbot.domain.trip import Flex, Group, Origin, Window
 
@@ -76,6 +78,7 @@ class Budgets:
 @dataclass(frozen=True)
 class TripConfig:
     timezone: str
+    locale: str
     home_currency: str
     origins: dict[str, Origin]
     groups: tuple[Group, ...]
@@ -152,6 +155,7 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
     flights_raw = raw["flights"]
     config = TripConfig(
         timezone=str(raw["timezone"]),
+        locale=str(raw["locale"]),
         home_currency=str(raw["home_currency"]),
         origins=origins,
         groups=groups,
@@ -209,8 +213,15 @@ def _summary(raw: dict[str, Any]) -> SummarySchedule:
 
 
 def _validate(config: TripConfig) -> None:
-    for check in (_check_groups, _check_windows, _check_route, _check_rates):
+    for check in (_check_locale, _check_groups, _check_windows, _check_route, _check_rates):
         check(config)
+
+
+def _check_locale(config: TripConfig) -> None:
+    try:
+        i18n.load(config.locale)
+    except (ValueError, UnknownLocaleError) as error:
+        raise ConfigError(f"locale {config.locale}: {error}") from error
 
 
 def _check_groups(config: TripConfig) -> None:

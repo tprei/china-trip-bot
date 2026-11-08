@@ -2,6 +2,7 @@
 # Adding a person from an existing origin is one line under `people`.
 
 timezone: America/Sao_Paulo   # summary and reminders follow Brasília time
+locale: pt_BR
 home_currency: EUR
 
 origins:

@@ -61,6 +61,7 @@ Logs are in `var/logs/`. The database is `var/tripbot.sqlite3`; copy it to back 
 - Train and fare facts: edit `data/*.yaml` and update its `as_of`.
 - The poster `/banner` sends: replace `var/banner.png` (outside git). The bot reads it on each request, so no restart is needed.
 - Updating the code: `git pull && uv sync --frozen`.
+- Wording and language: see [Translations](#translations).
 
 ## Development
 
@@ -73,3 +74,13 @@ uv run tripbot check-config
 ```
 
 See `AGENTS.md` for the code rules and the pull-request workflow.
+
+## Translations
+
+Everything the group reads (Telegram replies, command names, cards and the dashboard) is written in English in the code and translated through a gettext catalog. `locale` in `config/trip.yaml` picks the language (`pt_BR`); `en` shows the source text.
+
+- Change a translation: edit `msgstr` in `src/tripbot/locales/pt_BR/LC_MESSAGES/tripbot.po` and restart `tripbot-bot`.
+- After adding or changing text in code or templates, run `scripts/update-translations.sh`, then fill in every empty `msgstr`. `tests/test_i18n.py` fails while any string is untranslated.
+- In Python, wrap text in `_()`, use `ngettext()` for counts, `pgettext()` when a word needs context, and `gettext_noop()` for text fixed at import time. Put values in named placeholders: `_("Window {window}").format(window=...)`. In templates, use `{{ _("...") }}` and `{% trans %}`.
+- Money, dates and plurals follow the locale through `tripbot.i18n` (`€ 9.479`, `dom. 29 ago.`). Content in `data/*.yaml`, such as city names and visa steps, is written in the group's language directly.
+- Logs and the `tripbot` command-line output stay in English.
