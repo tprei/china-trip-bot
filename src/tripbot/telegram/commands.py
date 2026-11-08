@@ -93,6 +93,13 @@ def summary_command(context: BotContext, request: Request) -> Reply:
         return card(context, deck.summary)
 
 
+@command("banner", "/banner", "the route poster to share")
+def banner_command(context: BotContext, request: Request) -> Reply:
+    if context.banner_path is None or not context.banner_path.is_file():
+        return Reply(text="No banner yet.")
+    return Reply(photo=context.banner_path.read_bytes())
+
+
 @command("best", "/best [window]", "best and fairest plan for a window")
 def best_command(context: BotContext, request: Request) -> Reply:
     window = context.window_arg(request.args)

@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 from factories import eur
@@ -89,6 +90,15 @@ def test_help_lists_the_text_commands(chat: tuple[BotDeps, FakeMessenger]) -> No
     reply = ask(chat, "/help")
     for name in ("/visa", "/weather", "/todo", "/trains", "/other"):
         assert name in reply
+
+
+def test_banner_sends_the_saved_poster(chat: tuple[BotDeps, FakeMessenger], tmp_path: Path) -> None:
+    deps, messenger = chat
+    assert ask(chat, "/banner") == "No banner yet."
+    deps.banner_path = tmp_path / "banner.png"
+    deps.banner_path.write_bytes(b"\x89PNG poster")
+    handle_update(deps, message("/banner"), None, NOW)
+    assert (messenger.sent[-1].kind, messenger.sent[-1].body) == ("photo", b"\x89PNG poster")
 
 
 def test_target_alert_fires_only_when_crossing() -> None:

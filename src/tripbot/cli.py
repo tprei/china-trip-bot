@@ -187,6 +187,7 @@ def bot_deps(
         messenger=api,
         chat_id=settings.telegram_chat_id,
         dashboard_url=settings.dashboard_url,
+        banner_path=settings.banner_path,
     )
 
 
