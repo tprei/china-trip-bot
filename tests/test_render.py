@@ -3,11 +3,13 @@ from datetime import date, datetime
 from itertools import pairwise
 
 import pytest
+from factories import eur, offer
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
 from telegram_fakes import World
 
 from tripbot.config import TripConfig
+from tripbot.domain.money import Money
 from tripbot.pipeline.nightly import NightlyReport
 from tripbot.reference import Reference
 from tripbot.render import details, views
@@ -40,13 +42,40 @@ def test_summary_view_shows_every_group_and_currency(
     view = views.build_summary(summary_inputs(config, reference, report, "B"))
     assert view is not None
     assert [group.name for group in view.groups] == ["Thiago", "Luísa + Gabi", "David + Mari"]
-    assert [money.flag for money in view.others] == ["br", "gb"]
+    assert [money.flag for money in view.per_person] == ["eu", "br", "gb"]
+    best = report.rankings.main["B"].best
+    assert best is not None
+    share = Money(best.total_eur.minor // 5, "EUR")
+    brl = report.rankings.rates.from_eur(share, "BRL").whole()
+    assert (view.per_person[0].text, view.per_person[1].text) == (share.whole(), brl)
     assert view.groups[1].price.startswith("£") and view.groups[1].price_note == "each"
     assert view.groups[2].outbound.note == "via MAD"
     assert [dot.id for dot in view.windows] == ["C", "A", "B"]
     assert sum(1 for dot in view.windows if dot.best) == 1
     stops = [item.name for item in view.timeline if item.kind == "stop"]
     assert {"Beijing", "Shanghai", "Zhangjiajie", "Yangshuo"} <= set(stops)
+    assert view.window_days == "14 days"
+    assert sum(span.nights for span in view.days) == 13
+    assert all(before.leave == after.arrive for before, after in pairwise(view.days))
+    assert (view.days[0].arrive, view.days[-1].leave) == ("30 Aug", "12 Sep")
+
+
+def test_flight_line_lists_stops_in_order_with_waits(
+    config: TripConfig, reference: Reference
+) -> None:
+    found = offer(
+        "sao",
+        "outbound",
+        ["GRU", "DOH", "PEK"],
+        datetime(2027, 8, 28, 21, 0),
+        eur(700),
+        hours_per_hop=10,
+        layover_hours=3,
+        stops_on_board=("MAD",),
+    )
+    line = views.flight_line(found, Names(config, reference))
+    assert line.stops == (views.StopLine("MAD", ""), views.StopLine("DOH", "3h"))
+    assert (line.depart_time, line.arrive_time, line.arrive_shift) == ("21:00", "20:00", "+1")
 
 
 def test_route_view_lists_stays_and_legs_in_order(

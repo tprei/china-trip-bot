@@ -3,23 +3,42 @@
 
 {% macro flight(line) -%}
 <div class="leg">
+  <div class="flight-meta">
+    {{ airline(line.airline_code, line.logo_url) }}
+    <span class="flight-day">{{ line.day }}</span>
+    <span class="flight-duration">{{ line.duration }} <small>total</small></span>
+  </div>
   <div class="line">
-    <span class="code"><b>{{ line.origin }}</b><small>{{ line.origin_city }}</small></span>
+    <span class="code">
+      <b>{{ line.origin }}</b>
+      <span class="flight-clock">{{ line.depart_time }}</span>
+      <small>{{ line.origin_city }}</small>
+    </span>
     <div class="track">
       <div class="rail"></div>
       <div class="end" style="left:0"></div>
       <div class="end" style="right:0"></div>
-      {% for stop in line.stops %}<div class="stop" style="left:{{ ((loop.index) * 100 / (line.stops|length + 1))|round(1) }}%"></div>{% endfor %}
-      <span style="position:absolute;left:{{ '22%' if line.stops else 'calc(50% - 14px)' }};top:1px">{{ icon("plane", "#eef2f5", 28) }}</span>
+      {% for stop in line.stops %}
+      <div class="flight-stop {{ 'plane-change' if stop.wait else 'same-plane' }}" style="left:{{ (loop.index * 100 / (line.stops|length + 1))|round(1) }}%">
+        <span class="stop-marker"></span>
+        <b>{{ stop.airport }}</b>
+        <span class="stop-detail">{{ stop.wait ~ ' wait' if stop.wait else 'same plane' }}</span>
+      </div>
+      {% else %}
+      <span class="flight-direct">{{ icon("plane", "#eef2f5", 26) }}<span>direct</span></span>
+      {% endfor %}
     </div>
-    <span class="code"><b>{{ line.destination }}</b><small>{{ line.destination_city }}</small></span>
+    <span class="code destination">
+      <b>{{ line.destination }}</b>
+      <span class="flight-clock">{{ line.arrive_time }}{% if line.arrive_shift %}<sup>{{ line.arrive_shift }}</sup>{% endif %}</span>
+      <small>{{ line.destination_city }}</small>
+    </span>
   </div>
-  <div class="meta">{{ airline(line.airline_code, line.logo_url) }}{{ line.day }} · {{ line.duration }} · {{ line.note }}</div>
 </div>
 {%- endmacro %}
 
 {% block card %}
-<div class="card">
+<div class="card summary-card">
   <header class="header">
     {{ hills() }}
     <div class="top">
@@ -38,12 +57,14 @@
       </div>
       {% endif %}
     </div>
-    <div class="currencies">
-      {% for money in view.others %}<span class="item">{{ flag(money.flag) }}{{ money.text }}</span>{% endfor %}
-      <span style="color:var(--quiet)">·</span><span>≈ {{ view.per_person }} / person</span>
+    <div class="person-average">
+      <span class="average-label">Average per person</span>
+      <div class="average-values">
+        {% for money in view.per_person %}<span class="item">{{ flag(money.flag, 33, 22) }}<span>{{ money.text }}</span></span>{% endfor %}
+      </div>
     </div>
     <div class="chips">
-      <div class="chip solid">{{ icon("calendar", "#1a0f0c", 28) }}<span>{{ view.window_dates }}</span></div>
+      <div class="chip solid">{{ icon("calendar", "#1a0f0c", 28) }}<span>{{ view.window_dates }}</span><span class="window-length">{{ view.window_days }}</span></div>
       <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">IN</span><span class="stack"><span>{{ view.entry_code }}</span><small>{{ view.entry_city }}</small></span></div>
       <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">OUT</span><span class="stack"><span>{{ view.exit_code }}</span><small>{{ view.exit_city }}</small></span></div>
     </div>
@@ -66,7 +87,7 @@
   </section>
 
   <section class="section">
-    <div class="row"><div class="label">Who flies how</div><div class="spacer"></div><div style="font-size:22px;color:var(--quiet)">vs own best</div></div>
+    <div class="row"><div class="label">Who flies how</div><div class="spacer"></div><div class="flight-context">Times local · vs own best</div></div>
     {% for group in view.groups %}
     <div class="panel ticket">
       <div class="head">
@@ -76,21 +97,21 @@
         <div class="fair"><div class="bar"><span style="width:{{ group.fairness_width }}%"></span></div><span class="pct">{{ group.fairness_label }}</span></div>
         <div class="price"><span class="num">{{ group.price }}</span><small>{{ group.price_note }}</small></div>
       </div>
-      <div class="legs">{{ flight(group.outbound) }}{{ flight(group.inbound) }}</div>
+      <div class="legs {{ 'legs-wide' if group.outbound.stops|length > 1 or group.inbound.stops|length > 1 else '' }}">{{ flight(group.outbound) }}{{ flight(group.inbound) }}</div>
     </div>
     {% endfor %}
   </section>
 
   <section class="section">
     <div class="label">Route</div>
-    <div class="panel route" style="grid-template-columns:{% for item in view.timeline %}{{ 'auto' if item.kind == 'stop' else 'minmax(0,1fr)' }} {% endfor %}">
+    <div class="panel route-panel">
+    <div class="route" style="grid-template-columns:{% for item in view.timeline %}{{ 'auto' if item.kind == 'stop' else 'minmax(0,1fr)' }} {% endfor %}">
       {% for item in view.timeline %}
       {% if item.kind == "stop" %}
       <div class="cell">
         <div class="top"></div>
         <div class="mid"><div class="node {{ 'end' if item.endpoint }}"></div></div>
         <div class="city">{{ item.name }}</div>
-        <div class="note" style="{{ 'color:var(--accent-soft)' if item.endpoint }}">{{ item.note }}</div>
       </div>
       {% else %}
       <div class="cell">
@@ -99,6 +120,19 @@
       </div>
       {% endif %}
       {% endfor %}
+    </div>
+    {% if view.days %}
+    <div class="day-timeline" role="list" aria-label="Nights in China, with arrival and departure dates" style="grid-template-columns:{% for span in view.days %}{{ span.nights }}fr {% endfor %}">
+      {% for span in view.days %}
+      <div class="day-span {{ span.kind }}" role="listitem" aria-label="{{ span.name }}: {{ span.arrive }} to {{ span.leave }}, {{ span.nights }} {{ 'night' if span.nights == 1 else 'nights' }}">
+        <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 26) }}{% else %}<span>{{ span.name }}</span>{% endif %}</div>
+        <div class="day-band"></div>
+        <span class="day-date {{ 'first' if loop.first }}" style="--date-row:{{ loop.index0 % 2 }}">{{ span.arrive }}</span>
+        {% if loop.last %}<span class="day-date final" style="--date-row:{{ loop.index % 2 }}">{{ span.leave }}</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
     </div>
     <div class="legend">
       <span>{{ icon("train", "#8fb3d9", 24) }}high-speed</span>
