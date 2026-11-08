@@ -45,5 +45,5 @@ def test_site_is_one_self_contained_page(config: TripConfig, deck: Deck, tmp_pat
     html = path.read_text(encoding="utf-8")
     assert path.name == "index.html"
     assert 'id="tab-B"' in html and "checked" in html
-    assert "Visa needed" in html and "Other plans" in html
+    assert "Visto necessário" in html and "Other plans" in html
     assert "<script" not in html

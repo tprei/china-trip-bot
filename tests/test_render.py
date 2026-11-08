@@ -54,7 +54,7 @@ def test_summary_view_shows_every_group_and_currency(
     assert [dot.id for dot in view.windows] == ["C", "A", "B"]
     assert sum(1 for dot in view.windows if dot.best) == 1
     stops = [item.name for item in view.timeline if item.kind == "stop"]
-    assert {"Beijing", "Shanghai", "Zhangjiajie", "Yangshuo"} <= set(stops)
+    assert {"Pequim", "Xangai", "Zhangjiajie", "Yangshuo"} <= set(stops)
     assert view.window_days == "14 days"
     assert sum(span.nights for span in view.days) == 13
     assert all(before.leave == after.arrive for before, after in pairwise(view.days))
@@ -105,9 +105,9 @@ def test_compare_alternatives_marks_the_main_plan(
     )
     assert [row.label for row in view.rows] == [
         "All four cities",
-        "Without Zhangjiajie",
-        "Without Shanghai",
-        "Without Yangshuo",
+        "Sem Zhangjiajie",
+        "Sem Xangai",
+        "Sem Yangshuo",
     ]
     assert view.rows[0].highlight and view.rows[0].delta is None
 

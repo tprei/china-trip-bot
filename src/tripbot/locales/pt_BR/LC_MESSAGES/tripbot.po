@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 15:43+0000\n"
+"POT-Creation-Date: 2026-11-08 15:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -25,6 +25,12 @@ msgid "%(count)s adult · round-trip group total"
 msgid_plural "%(count)s adults · round-trip group total"
 msgstr[0] "%(count)s adulto · total do grupo, ida e volta"
 msgstr[1] "%(count)s adultos · total do grupo, ida e volta"
+
+#, python-format
+msgid "%(count)s adult · whole round trip"
+msgid_plural "%(count)s adults · whole round trip"
+msgstr[0] "%(count)s adulto · ida e volta completa"
+msgstr[1] "%(count)s adultos · ida e volta completa"
 
 #, python-format
 msgid "%(count)s person"
@@ -52,11 +58,21 @@ msgstr "%(observed)s · não é o checkout"
 msgid "%(people)s people · %(groups)s groups · international RT"
 msgstr "%(people)s pessoas · %(groups)s grupos · ida e volta internacional"
 
+#, python-format
+msgid "%(window)s %(latest)s · low %(low)s"
+msgstr "%(window)s %(latest)s · mínimo %(low)s"
+
+msgid "1 sampled combo · no market-best or guaranteed-saving claim"
+msgstr "1 combinação amostrada · sem garantia de melhor preço ou de economia"
+
 msgid "Airport-local flight times · no separate one-way fares"
 msgstr "Horários locais dos aeroportos · sem tarifas de só ida separadas"
 
 msgid "All four cities"
 msgstr "As quatro cidades"
+
+msgid "Arrival-day hotel / internal connections require review"
+msgstr "Hotel do dia da chegada e conexões internas precisam de revisão"
 
 msgid "Average per person"
 msgstr "Média por pessoa"
@@ -79,6 +95,15 @@ msgstr[1] "Melhor plano · %(count)s pessoas"
 msgid "Bounded sample, not market-best or guaranteed savings"
 msgstr "Amostra limitada, sem garantia de melhor preço ou de economia"
 
+msgid "CHEAPEST BACK"
+msgstr "VOLTA MAIS BARATA"
+
+msgid "CHEAPEST OUT"
+msgstr "IDA MAIS BARATA"
+
+msgid "China trip"
+msgstr "Viagem à China"
+
 #, python-format
 msgid "Connection: %(connections)s"
 msgstr "Conexão: %(connections)s"
@@ -90,9 +115,19 @@ msgstr "Detalhes"
 msgid "Displayed per person: %(per_person)s"
 msgstr "Mostrado por pessoa: %(per_person)s"
 
+#, python-format
+msgid "Displayed per person: %(per_person)s · observed %(observed)s"
+msgstr "Mostrado por pessoa: %(per_person)s · visto em %(observed)s"
+
 #, python-brace-format
 msgid "Down {pct}% this week"
 msgstr "Caiu {pct}% esta semana"
+
+msgid "Entry × exit"
+msgstr "Chegada × saída"
+
+msgid "Flights"
+msgstr "Voos"
 
 msgid "Group total over time"
 msgstr "Total do grupo ao longo do tempo"
@@ -117,6 +152,10 @@ msgstr "Dentro da China <b>%(internal)s</b> por pessoa"
 msgid "Internal transport estimate: %(internal)s"
 msgstr "Estimativa de transporte interno: %(internal)s"
 
+#, python-format
+msgid "International round trips · %(people)s people · %(groups)s groups"
+msgstr "Voos internacionais de ida e volta · %(people)s pessoas · %(groups)s grupos"
+
 #, python-brace-format
 msgid "Last summary {total}"
 msgstr "Último resumo {total}"
@@ -140,14 +179,32 @@ msgstr "Novo menor preço"
 msgid "Nights in China, with arrival and departure dates"
 msgstr "Noites na China, com datas de chegada e saída"
 
+msgid "No complete combo yet"
+msgstr "Ainda sem combinação completa"
+
+msgid "No one-way price splitting · no new search · no booking"
+msgstr "Sem dividir preços de ida e volta · sem nova busca · sem reserva"
+
+msgid "Nothing left."
+msgstr "Nada pendente."
+
 msgid "Now"
 msgstr "Agora"
 
 msgid "OUT"
 msgstr "VOLTA"
 
+msgid "OUT OF RULE"
+msgstr "FORA DA REGRA"
+
+msgid "Observed fare demo · not checkout"
+msgstr "Demonstração de tarifa vista · não é o checkout"
+
 msgid "One sampled combo · international round trips"
 msgstr "Uma combinação amostrada · idas e voltas internacionais"
+
+msgid "Other plans"
+msgstr "Outros planos"
 
 #, python-brace-format
 msgid "Other plans · window {window}"
@@ -155,6 +212,9 @@ msgstr "Outros planos · janela {window}"
 
 msgid "Outbound"
 msgstr "Ida"
+
+msgid "PICK"
+msgstr "ESCOLHA"
 
 #, python-brace-format
 msgid "Previous low {total}"
@@ -179,8 +239,21 @@ msgstr "Valor por pessoa arredondado · use o total do grupo observado"
 msgid "Route"
 msgstr "Roteiro"
 
+#, python-format
+msgid "Route · %(internal)s / person inside China"
+msgstr "Roteiro · %(internal)s por pessoa dentro da China"
+
+msgid "Scope & limits"
+msgstr "Escopo e limites"
+
+msgid "Selected round trips"
+msgstr "Idas e voltas escolhidas"
+
 msgid "Separate · not a live fare or feasible timetable"
 msgstr "À parte · não é tarifa ao vivo nem horário confirmado"
+
+msgid "Separate · not a live quote · timetable feasibility unverified"
+msgstr "À parte · não é cotação ao vivo · horários não verificados"
 
 #, python-brace-format
 msgid "Short connection: {airport} {wait}"
@@ -202,8 +275,29 @@ msgstr "Meta {total}"
 msgid "Times local · vs own best"
 msgstr "Horários locais · vs. melhor do grupo"
 
+msgid "To do"
+msgstr "Afazeres"
+
+msgid "Train tickets open"
+msgstr "Abertura da venda de trens"
+
+msgid "Trip.com browser fare panels · final checkout / inventory unverified"
+msgstr "Tarifas vistas no site da Trip.com · checkout final e disponibilidade não verificados"
+
 msgid "Trip.com observed quote · final price / inventory unverified"
 msgstr "Cotação vista na Trip.com · preço final e disponibilidade não verificados"
+
+#, python-format
+msgid "Updated %(when)s · %(zone)s"
+msgstr "Atualizado %(when)s · %(zone)s"
+
+#, python-format
+msgid "Visa · %(passport)s passports"
+msgstr "Visto · passaporte %(passport)s"
+
+#, python-brace-format
+msgid "Visa-free ends {ends} · decide by {decide} · checked {checked}"
+msgstr "Isenção de visto acaba em {ends} · decidir até {decide} · conferido em {checked}"
 
 #, python-format
 msgid "WINDOW %(window)s"
@@ -225,6 +319,9 @@ msgstr "Janela {window}"
 
 msgid "Windows"
 msgstr "Janelas"
+
+msgid "airport-local"
+msgstr "horário local do aeroporto"
 
 msgid "direct"
 msgstr "direto"
@@ -255,7 +352,7 @@ msgid "no complete combo"
 msgstr "sem combinação completa"
 
 msgid "none"
-msgstr "nenhuma"
+msgstr "nenhum"
 
 msgid "ok"
 msgstr "ok"

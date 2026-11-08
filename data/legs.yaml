@@ -16,7 +16,7 @@
 
 fallback_flight:   # any city pair without a listed option
   mode: flight
-  name: Domestic flight
+  name: Voo doméstico
   minutes: 150
   overhead_minutes: 180
   fare: {EUR: "130"}
@@ -27,31 +27,31 @@ legs:
     to: shanghai
     both_ways: true
     options:
-      - {mode: train, name: G high-speed, minutes: 280, fare: {CNY: "553"}}
-      - {mode: flight, name: Domestic flight, minutes: 135, overhead_minutes: 180, fare: {EUR: "90"}, estimate: true}
+      - {mode: train, name: Trem rápido G, minutes: 280, fare: {CNY: "553"}}
+      - {mode: flight, name: Voo doméstico, minutes: 135, overhead_minutes: 180, fare: {EUR: "90"}, estimate: true}
 
   - from: beijing
     to: shanghai
     options:
-      - {mode: sleeper, name: D7 / D5 / D9, depart: "19:19", arrive: "07:25", minutes: 726, fare: {CNY: "971"}, cabin: 4-berth soft sleeper}
+      - {mode: sleeper, name: D7 / D5 / D9, depart: "19:19", arrive: "07:25", minutes: 726, fare: {CNY: "971"}, cabin: leito macio de 4 camas}
 
   - from: shanghai
     to: beijing
     options:
-      - {mode: sleeper, name: D8 / D6 / D10, depart: "19:08", arrive: "07:19", minutes: 731, fare: {CNY: "971"}, cabin: 4-berth soft sleeper}
+      - {mode: sleeper, name: D8 / D6 / D10, depart: "19:08", arrive: "07:19", minutes: 731, fare: {CNY: "971"}, cabin: leito macio de 4 camas}
 
   - from: beijing
     to: yangshuo
     options:
-      - {mode: sleeper, name: D919, depart: "20:27", arrive: "08:45", minutes: 738, fare: {CNY: "1966.5"}, runs: [fri, sat, sun, mon], cabin: 4-berth soft sleeper, estimate: true}
+      - {mode: sleeper, name: D919, depart: "20:27", arrive: "08:45", minutes: 738, fare: {CNY: "1966.5"}, runs: [fri, sat, sun, mon], cabin: leito macio de 4 camas, estimate: true}
       - {mode: train, name: G309, minutes: 523, fare: {CNY: "989"}}
       - {mode: flight, name: PEK → KWL, minutes: 190, overhead_minutes: 210, fare: {EUR: "130"}, estimate: true}
 
   - from: yangshuo
     to: beijing
     options:
-      - {mode: sleeper, name: D920, depart: "19:56", arrive: "07:09", minutes: 718, fare: {CNY: "1966.5"}, runs: [fri, sat, sun, mon], cabin: 4-berth soft sleeper, estimate: true}
-      - {mode: train, name: G high-speed, minutes: 523, fare: {CNY: "989"}}
+      - {mode: sleeper, name: D920, depart: "19:56", arrive: "07:09", minutes: 718, fare: {CNY: "1966.5"}, runs: [fri, sat, sun, mon], cabin: leito macio de 4 camas, estimate: true}
+      - {mode: train, name: Trem rápido G, minutes: 523, fare: {CNY: "989"}}
       - {mode: flight, name: KWL → PEK, minutes: 190, overhead_minutes: 210, fare: {EUR: "130"}, estimate: true}
 
   - from: shanghai
@@ -63,63 +63,63 @@ legs:
   - from: yangshuo
     to: shanghai
     options:
-      - {mode: sleeper, name: D196, depart: "20:12", arrive: "11:24", minutes: 957, fare: {CNY: "1099"}, cabin: 4-berth soft sleeper, estimate: true}
-      - {mode: train, name: G high-speed, minutes: 618, fare: {CNY: "800"}}
+      - {mode: sleeper, name: D196, depart: "20:12", arrive: "11:24", minutes: 957, fare: {CNY: "1099"}, cabin: leito macio de 4 camas, estimate: true}
+      - {mode: train, name: Trem rápido G, minutes: 618, fare: {CNY: "800"}}
       - {mode: flight, name: KWL → PVG, minutes: 150, overhead_minutes: 210, fare: {EUR: "110"}, estimate: true}
 
   - from: zhangjiajie
     to: yangshuo
     both_ways: true
     options:
-      - {mode: train, name: D train via Guilin, minutes: 465, fare: {CNY: "382"}}
+      - {mode: train, name: Trem D via Guilin, minutes: 465, fare: {CNY: "382"}}
 
   - from: zhangjiajie
     to: shanghai
     both_ways: true
     options:
       - {mode: flight, name: DYG ↔ PVG, minutes: 130, overhead_minutes: 180, fare: {USD: "226"}, estimate: true}
-      - {mode: train, name: G high-speed, minutes: 540, fare: {CNY: "833"}}
+      - {mode: train, name: Trem rápido G, minutes: 540, fare: {CNY: "833"}}
 
   - from: zhangjiajie
     to: beijing
     both_ways: true
     options:
       - {mode: flight, name: DYG ↔ PEK, minutes: 145, overhead_minutes: 180, fare: {USD: "244"}, estimate: true}
-      - {mode: train, name: G high-speed, minutes: 640, fare: {CNY: "1040"}}
+      - {mode: train, name: Trem rápido G, minutes: 640, fare: {CNY: "1040"}}
 
   - from: zhangjiajie
     to: guangzhou
     both_ways: true
     options:
-      - {mode: train, name: High-speed, minutes: 390, fare: {CNY: "600"}, estimate: true}
+      - {mode: train, name: Trem rápido, minutes: 390, fare: {CNY: "600"}, estimate: true}
       - {mode: flight, name: DYG ↔ CAN, minutes: 105, overhead_minutes: 180, fare: {EUR: "150"}, estimate: true}
 
   - from: zhangjiajie
     to: changsha
     both_ways: true
     options:
-      - {mode: train, name: High-speed, minutes: 150, fare: {CNY: "180"}, estimate: true}
+      - {mode: train, name: Trem rápido, minutes: 150, fare: {CNY: "180"}, estimate: true}
 
   - from: guangzhou
     to: yangshuo
     both_ways: true
     options:
-      - {mode: train, name: High-speed, minutes: 150, fare: {CNY: "191"}}
+      - {mode: train, name: Trem rápido, minutes: 150, fare: {CNY: "191"}}
 
   - from: shenzhen
     to: yangshuo
     both_ways: true
     options:
-      - {mode: train, name: High-speed, minutes: 170, fare: {CNY: "266"}}
+      - {mode: train, name: Trem rápido, minutes: 170, fare: {CNY: "266"}}
 
   - from: guilin
     to: yangshuo
     both_ways: true
     options:
-      - {mode: train, name: High-speed, minutes: 35, fare: {CNY: "40"}}
+      - {mode: train, name: Trem rápido, minutes: 35, fare: {CNY: "40"}}
 
   - from: hangzhou
     to: shanghai
     both_ways: true
     options:
-      - {mode: train, name: G high-speed, minutes: 60, fare: {CNY: "73"}, estimate: true}
+      - {mode: train, name: Trem rápido G, minutes: 60, fare: {CNY: "73"}, estimate: true}

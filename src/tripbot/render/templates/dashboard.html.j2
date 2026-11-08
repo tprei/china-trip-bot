@@ -29,7 +29,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>China trip</title>
+<title>{{ _("China trip") }}</title>
 <style>
 @font-face { font-family: "Archivo"; src: url("{{ fonts.archivo }}") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
 @font-face { font-family: "JetBrains Mono"; src: url("{{ fonts.mono_400 }}") format("woff2"); font-weight: 400; }
@@ -103,23 +103,23 @@ li { margin: 4px 0; }
 <body>
 <main>
   <h1>China 2027</h1>
-  <div class="updated">Updated {{ view.updated }} · {{ timezone|default("BRT") }}</div>
+  <div class="updated">{% trans when=view.updated, zone=timezone|default("BRT") %}Updated {{ when }} · {{ zone }}{% endtrans %}</div>
 
   {% if joint is defined %}
-  <h2>Observed fare demo · not checkout</h2>
-  <div class="hero"><div class="num">{{ joint.total }}</div><div class="currencies">International round trips · {{ joint.groups|sum(attribute='adults') }} people · {{ joint.groups|length }} groups</div></div>
-  <div class="box" style="margin-top:18px"><b>Internal transport estimate: {{ joint.internal }}</b><small>Separate · not a live quote · timetable feasibility unverified</small></div>
-  <h2>Selected round trips</h2>
+  <h2>{{ _("Observed fare demo · not checkout") }}</h2>
+  <div class="hero"><div class="num">{{ joint.total }}</div><div class="currencies">{% trans people=joint.groups|sum(attribute='adults'), groups=joint.groups|length %}International round trips · {{ people }} people · {{ groups }} groups{% endtrans %}</div></div>
+  <div class="box" style="margin-top:18px"><b>{% trans internal=joint.internal %}Internal transport estimate: {{ internal }}{% endtrans %}</b><small>{{ _("Separate · not a live quote · timetable feasibility unverified") }}</small></div>
+  <h2>{{ _("Selected round trips") }}</h2>
   {% for group in joint.groups %}
   <div class="box">
-    <header><b>{{ group.name }}</b><b>{{ group.total }} <small>{{ group.adults }} adult(s) · whole round trip</small></b></header>
-    <small>Displayed per person: {{ group.per_person }} · observed {{ group.observed }}</small>
-    {% for journey in group.journeys %}<div class="flight" style="display:block"><b>{{ journey.label }} · {{ journey.path }} · {{ journey.duration }}</b><small>{{ journey.times }} · airport-local</small>{% for line in journey.segments %}<small>{{ line }}</small>{% endfor %}<small>Connection: {{ journey.connections }}</small></div>{% endfor %}
+    <header><b>{{ group.name }}</b><b>{{ group.total }} <small>{% trans count=group.adults %}{{ count }} adult · whole round trip{% pluralize %}{{ count }} adults · whole round trip{% endtrans %}</small></b></header>
+    <small>{% trans per_person=group.per_person, observed=group.observed %}Displayed per person: {{ per_person }} · observed {{ observed }}{% endtrans %}</small>
+    {% for journey in group.journeys %}<div class="flight" style="display:block"><b>{{ journey.label }} · {{ journey.path }} · {{ journey.duration }}</b><small>{{ journey.times }} · {{ _("airport-local") }}</small>{% for line in journey.segments %}<small>{{ line }}</small>{% endfor %}<small>{% trans connections=journey.connections %}Connection: {{ connections }}{% endtrans %}</small></div>{% endfor %}
     {% for warning in group.warnings %}<div style="color:var(--warn)">{{ warning }}</div>{% endfor %}
   </div>
   {% endfor %}
-  <h2>Scope & limits</h2>
-  <div class="box">1 sampled combo · no market-best or guaranteed-saving claim<br>Trip.com browser fare panels · final checkout / inventory unverified<br>Arrival-day hotel / internal connections require review<br>No one-way price splitting · no new search · no booking</div>
+  <h2>{{ _("Scope & limits") }}</h2>
+  <div class="box">{{ _("1 sampled combo · no market-best or guaranteed-saving claim") }}<br>{{ _("Trip.com browser fare panels · final checkout / inventory unverified") }}<br>{{ _("Arrival-day hotel / internal connections require review") }}<br>{{ _("No one-way price splitting · no new search · no booking") }}</div>
   {% else %}
   {% for panel in view.panels %}
   <input type="radio" name="window" id="tab-{{ panel.id }}"{{ ' checked' if panel.id == view.selected }}>
@@ -140,67 +140,67 @@ li { margin: 4px 0; }
       </div>
     </div>
     {% else %}
-    <div class="hero"><b>No complete combo yet</b></div>
+    <div class="hero"><b>{{ _("No complete combo yet") }}</b></div>
     {% endif %}
 
-    <h2>Flights</h2>
+    <h2>{{ _("Flights") }}</h2>
     <div class="groups">
       {% for group in panel.groups %}
       <div class="box">
         <header><b>{{ group.name }}</b>{% if group.chosen %}<span class="mono">{{ group.chosen.price }} <small style="display:inline">{{ group.chosen.price_note }} · {{ group.chosen.fairness_label }}</small></span>{% endif %}</header>
         {% if group.chosen %}
-        <div class="label">PICK</div>
+        <div class="label">{{ _("PICK") }}</div>
         {{ flight({"price": "", "line": group.chosen.outbound}) }}
         {{ flight({"price": "", "line": group.chosen.inbound}) }}
         {% endif %}
-        <div class="label">CHEAPEST OUT</div>
-        {% for item in group.outbound %}{{ flight(item) }}{% else %}<small>none</small>{% endfor %}
-        <div class="label">CHEAPEST BACK</div>
-        {% for item in group.inbound %}{{ flight(item) }}{% else %}<small>none</small>{% endfor %}
+        <div class="label">{{ _("CHEAPEST OUT") }}</div>
+        {% for item in group.outbound %}{{ flight(item) }}{% else %}<small>{{ _("none") }}</small>{% endfor %}
+        <div class="label">{{ _("CHEAPEST BACK") }}</div>
+        {% for item in group.inbound %}{{ flight(item) }}{% else %}<small>{{ _("none") }}</small>{% endfor %}
       </div>
       {% endfor %}
     </div>
 
     {% if panel.route %}
-    <h2>Route · {{ panel.route.internal }} / person inside China</h2>
+    <h2>{% trans internal=panel.route.internal %}Route · {{ internal }} / person inside China{% endtrans %}</h2>
     <div class="box">
       {% for step in panel.route.steps %}
       <div class="step {{ step.kind }} {{ step.mode }}">
         <span class="day">{{ step.day }}</span>
         {% if step.kind == "stay" %}<span class="dot"></span>{% else %}{{ icon("plane" if step.mode == "flight" else step.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[step.mode], 22) }}{% endif %}
-        <div><b>{{ step.title }}</b><small>{{ step.detail }}{% if step.estimate %} · estimate{% endif %}</small></div>
+        <div><b>{{ step.title }}</b><small>{{ step.detail }}{% if step.estimate %} · {{ _("estimate") }}{% endif %}</small></div>
       </div>
       {% endfor %}
     </div>
     {% endif %}
 
-    <h2>Entry × exit</h2>
+    <h2>{{ _("Entry × exit") }}</h2>
     <div class="list">
       {% for combo in panel.combos %}
       <div class="item{{ ' hl' if combo.best }}">
-        <div class="grow"><b>{{ combo.pair }}</b>{% if not combo.within_rule %}<span class="tag">OUT OF RULE</span>{% endif %}</div>
+        <div class="grow"><b>{{ combo.pair }}</b>{% if not combo.within_rule %}<span class="tag">{{ _("OUT OF RULE") }}</span>{% endif %}</div>
         <b class="num">{{ combo.total }}</b>
       </div>
-      {% else %}<small>none</small>{% endfor %}
+      {% else %}<small>{{ _("none") }}</small>{% endfor %}
     </div>
 
-    <h2>Other plans</h2>
+    <h2>{{ _("Other plans") }}</h2>
     {{ compare(panel.alternatives) }}
 
     {% if panel.reminders %}
-    <h2>Train tickets open</h2>
+    <h2>{{ _("Train tickets open") }}</h2>
     <div class="box"><ul>{% for line in panel.reminders %}<li>{{ line }}</li>{% endfor %}</ul></div>
     {% endif %}
   </section>
   {% endfor %}
 
-  <h2>Windows</h2>
+  <h2>{{ _("Windows") }}</h2>
   {{ compare(view.windows) }}
 
   {% if view.history %}
-  <h2>History</h2>
+  <h2>{{ _("History") }}</h2>
   <div class="box chart">
-    <svg viewBox="0 -24 950 404" role="img" aria-label="Group total per window over time">
+    <svg viewBox="0 -24 950 404" role="img" aria-label="{{ _("Group total per window over time") }}">
       {% for y, label in view.history.y_labels %}
       <line x1="70" y1="{{ y }}" x2="900" y2="{{ y }}" stroke="#22303f"/>
       <text x="70" y="{{ y - 10 }}" font-family="JetBrains Mono" font-size="26" fill="#9fb0c2">{{ label }}</text>
@@ -213,21 +213,21 @@ li { margin: 4px 0; }
       {% endfor %}
     </svg>
     <div class="legend">
-      {% for line in view.history.lines %}<span style="color:{{ colors.get(line.window_id, '#b7c4d1') }}">━ {{ line.window_id }} {{ line.latest }} · low {{ line.low }}</span>{% endfor %}
+      {% for line in view.history.lines %}<span style="color:{{ colors.get(line.window_id, '#b7c4d1') }}">━ {% trans window=line.window_id, latest=line.latest, low=line.low %}{{ window }} {{ latest }} · low {{ low }}{% endtrans %}</span>{% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <h2>Visa · {{ view.visa.passport }} passports</h2>
+  <h2>{% trans passport=view.visa.passport %}Visa · {{ passport }} passports{% endtrans %}</h2>
   <div class="box">
     <div class="status">{{ view.visa.status }}</div>
-    <small>Visa-free ends {{ view.visa.visa_free_until.strftime("%-d %b %Y") }} · decide by {{ view.visa.decide_by.strftime("%-d %b %Y") }} · checked {{ view.visa.as_of.strftime("%-d %b %Y") }}</small>
+    <small>{{ view.visa_dates }}</small>
     <ol>{% for step in view.visa.steps %}<li>{{ step }}</li>{% endfor %}</ol>
   </div>
 
-  <h2>To do</h2>
+  <h2>{{ _("To do") }}</h2>
   <div class="box">
-    {% if view.todos %}<ol>{% for text in view.todos %}<li>{{ text }}</li>{% endfor %}</ol>{% else %}<small>Nothing left.</small>{% endif %}
+    {% if view.todos %}<ol>{% for text in view.todos %}<li>{{ text }}</li>{% endfor %}</ol>{% else %}<small>{{ _("Nothing left.") }}</small>{% endif %}
   </div>
   {% endif %}
 </main>

@@ -7,9 +7,9 @@ home_currency: EUR
 
 origins:
   DUB: {city: Dublin, airports: [DUB], currency: EUR}
-  LON: {city: London, airports: [LHR, LGW], currency: GBP}
+  LON: {city: Londres, airports: [LHR, LGW], currency: GBP}
   SAO: {city: São Paulo, airports: [GRU], currency: BRL}   # VCP has no China service
-  MEX: {city: Mexico City, airports: [MEX], currency: MXN}  # dormant until someone joins
+  MEX: {city: Cidade do México, airports: [MEX], currency: MXN}  # dormant until someone joins
 
 groups:   # a group always books the same flights
   - {id: thiago, name: Thiago, origin: DUB, people: [Thiago]}
@@ -58,9 +58,9 @@ route:
   prefer_sleepers_eur: 40             # comfort: a sleeper beats a similar day leg
   max_train_hours: 8
   alternatives:                       # only for /other
-    - {id: no-zhangjiajie, label: Without Zhangjiajie, drop: zhangjiajie}
-    - {id: no-shanghai, label: Without Shanghai, drop: shanghai}
-    - {id: no-yangshuo, label: Without Yangshuo, drop: yangshuo}
+    - {id: no-zhangjiajie, label: Sem Zhangjiajie, drop: zhangjiajie}
+    - {id: no-shanghai, label: Sem Xangai, drop: shanghai}
+    - {id: no-yangshuo, label: Sem Yangshuo, drop: yangshuo}
 
 alerts:
   drop_pct: 5          # vs the total in the last weekly summary
