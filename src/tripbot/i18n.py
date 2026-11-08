@@ -11,6 +11,7 @@ from __future__ import annotations
 import gettext
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
@@ -96,6 +97,14 @@ def money(amount: Money) -> str:
     return format_currency(
         amount.units(), amount.currency, format=pattern, locale=locale, currency_digits=False
     )
+
+
+def exact_money(amount: Money) -> str:
+    """`money`, with cents when the amount has any (`€ 982,50`): for sums that must add up."""
+    if amount.minor % 100 == 0:
+        return money(amount)
+    locale = _current.language.locale
+    return format_currency(Decimal(amount.minor) / 100, amount.currency, locale=locale)
 
 
 def day(value: date) -> str:
