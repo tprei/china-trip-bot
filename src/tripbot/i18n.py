@@ -15,7 +15,7 @@ from io import BytesIO
 from pathlib import Path
 
 from babel import Locale
-from babel.dates import format_date, format_interval
+from babel.dates import format_date
 from babel.messages.mofile import write_mo
 from babel.messages.pofile import read_po
 from babel.numbers import format_currency
@@ -109,8 +109,10 @@ def short_day(value: date) -> str:
 
 
 def date_range(start: date, end: date) -> str:
-    """`30 de ago. – 12 de set.` in pt_BR, `Aug 30 – Sep 12` in en."""
-    return format_interval(start, end, "MMMd", locale=_current.language.locale)
+    """`30 ago. – 12 set.` in pt_BR, `30 Aug – 12 Sep` in en; a shared month once: `9 – 22 ago.`."""
+    if (start.year, start.month) == (end.year, end.month):
+        return f"{start.day} – {short_day(end)}"
+    return f"{short_day(start)} – {short_day(end)}"
 
 
 def html_lang() -> str:

@@ -7,13 +7,15 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Literal
 
+from tripbot import i18n
 from tripbot.domain.alerts import Alert
 from tripbot.domain.flights import Offer, duration_label
 from tripbot.domain.money import Money, Rates
 from tripbot.domain.ranking import Combo, GroupChoice
 from tripbot.domain.routes import PlannedLeg, Route
+from tripbot.i18n import _, ngettext
 from tripbot.pipeline.state import Rankings
-from tripbot.render.names import Names, clock, day_label, initials, short_date
+from tripbot.render.names import Names, clock, initials
 
 RAINIER_EUR_CENTS = 1_000  # a window is "rainier" at €10+ more weather cost per person
 FLAGS = {"GBP": "gb", "BRL": "br", "MXN": "mx", "EUR": "eu", "USD": "us"}
@@ -31,6 +33,7 @@ class StopLine:
 
     airport: str
     wait: str
+    detail: str
 
 
 @dataclass(frozen=True)
@@ -151,16 +154,18 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
     people = sum(choice.group.headcount for choice in best.choices)
     share = Money(best.total_eur.minor // people, "EUR")
     return SummaryView(
-        date_label=day_label(inputs.today),
-        total=best.total_eur.whole(),
+        date_label=i18n.day(inputs.today),
+        total=i18n.money(best.total_eur),
         delta=delta,
         delta_good=good,
         per_person=(
-            MoneyLine(text=share.whole(), flag=FLAGS["EUR"]),
+            MoneyLine(text=i18n.money(share), flag=FLAGS["EUR"]),
             *other_currencies(share, rates, inputs.currencies),
         ),
-        window_dates=best.window.label(),
-        window_days=f"{best.window.nights + 1} days",
+        window_dates=i18n.date_range(best.window.start, best.window.end),
+        window_days=ngettext("{n} day", "{n} days", best.window.nights + 1).format(
+            n=best.window.nights + 1
+        ),
         entry_code=_airport_of(best, "entry"),
         entry_city=names.city(best.entry),
         exit_code=_airport_of(best, "exit"),
@@ -181,7 +186,7 @@ def other_currencies(
     total: Money, rates: Rates, currencies: Sequence[str]
 ) -> tuple[MoneyLine, ...]:
     return tuple(
-        MoneyLine(text=rates.from_eur(total, code).whole(), flag=FLAGS.get(code, ""))
+        MoneyLine(text=i18n.money(rates.from_eur(total, code)), flag=FLAGS.get(code, ""))
         for code in currencies
         if code != "EUR"
     )
@@ -194,8 +199,8 @@ def group_row(choice: GroupChoice, rates: Rates, names: Names) -> GroupRow:
     return GroupRow(
         name=choice.group.name,
         initials=tuple(initials(person) for person in choice.group.people),
-        price=local.whole(),
-        price_note="each" if choice.group.headcount > 1 else "round trip",
+        price=i18n.money(local),
+        price_note=_("each") if choice.group.headcount > 1 else _("round trip"),
         fairness_label=f"+{choice.price_overshoot_pct:.0f}%",
         fairness_width=min(100, round(choice.price_overshoot_pct * 100 / cap)),
         outbound=flight_line(choice.outbound, names),
@@ -212,12 +217,14 @@ def flight_line(offer: Offer, names: Names) -> FlightLine:
         destination=offer.destination,
         destination_city=names.airport_city(offer.destination),
         stops=stop_lines(offer),
-        day=day_label(offer.depart.date()),
+        day=i18n.day(offer.depart.date()),
         depart_time=clock(offer.depart),
         arrive_time=clock(offer.arrive),
         arrive_shift=f"{shift:+d}" if shift else "",
         duration=duration_label(offer.total_minutes),
-        note="direct" if not offer.via else "via " + ", ".join(offer.via),
+        note=_("via {airports}").format(airports=", ".join(offer.via))
+        if offer.via
+        else _("direct"),
         airline_code=first.airline_code,
         logo_url=first.logo_url,
     )
@@ -229,8 +236,9 @@ def stop_lines(offer: Offer) -> tuple[StopLine, ...]:
     stops: list[StopLine] = []
     for index, segment in enumerate(offer.segments):
         if index > 0:
-            stops.append(StopLine(airport=segment.origin, wait=waits[index - 1]))
-        stops.extend(StopLine(airport=airport, wait="") for airport in segment.stops_on_board)
+            wait = waits[index - 1]
+            stops.append(StopLine(segment.origin, wait, _("{wait} wait").format(wait=wait)))
+        stops.extend(StopLine(airport, "", _("same plane")) for airport in segment.stops_on_board)
     return tuple(stops)
 
 
@@ -265,7 +273,7 @@ def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:
         (stay.arrive, _span("stay", names.city(stay.city), stay.arrive, stay.nights))
         for stay in route.stays
     ] + [
-        (leg.day, _span("sleeper", "Sleeper", leg.day, 1))
+        (leg.day, _span("sleeper", _("Sleeper"), leg.day, 1))
         for leg in route.legs
         if leg.option.overnight
     ]
@@ -274,7 +282,7 @@ def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:
 
 def _span(kind: Literal["stay", "sleeper"], name: str, first: date, nights: int) -> DaySpan:
     leave = first + timedelta(days=nights)
-    return DaySpan(kind, name, nights, short_date(first), short_date(leave))
+    return DaySpan(kind, name, nights, i18n.short_day(first), i18n.short_day(leave))
 
 
 def window_dots(
@@ -294,8 +302,8 @@ def window_dots(
         dots.append(
             WindowDot(
                 id=window_id,
-                dates=ranking.window.label(),
-                total=total.whole(),
+                dates=i18n.date_range(ranking.window.start, ranking.window.end),
+                total=i18n.money(total),
                 delta=delta,
                 delta_good=good,
                 position=_position(total.minor, totals_minor),
@@ -342,7 +350,7 @@ def _delta(total: Money, reference: Money | None) -> tuple[str | None, bool]:
         return None, False
     change = total - reference
     good = change.minor < 0
-    return Money(abs(change.minor), "EUR").whole(), good
+    return i18n.money(Money(abs(change.minor), "EUR")), good
 
 
 def _airport_of(combo: Combo, side: str) -> str:
@@ -383,15 +391,19 @@ class AlertView:
 
 def _alert_headline(alert: Alert) -> str:
     if alert.kind == "record_low":
-        return "New record low"
+        return _("New record low")
     if alert.kind == "target":
-        return "Below your target"
-    return f"Down {alert.saving_pct:.0f}% this week"
+        return _("Below your target")
+    return _("Down {pct}% this week").format(pct=f"{alert.saving_pct:.0f}")
 
 
 def _alert_previous(alert: Alert) -> str:
-    label = {"record_low": "Previous low", "target": "Target", "drop": "Last summary"}
-    return f"{label[alert.kind]} {alert.previous.whole()}"
+    previous = i18n.money(alert.previous)
+    if alert.kind == "record_low":
+        return _("Previous low {total}").format(total=previous)
+    if alert.kind == "target":
+        return _("Target {total}").format(total=previous)
+    return _("Last summary {total}").format(total=previous)
 
 
 def build_alert(
@@ -401,24 +413,24 @@ def build_alert(
     return AlertView(
         headline=_alert_headline(alert),
         record=record,
-        total=alert.total.whole(),
-        saving=alert.saving.whole(),
+        total=i18n.money(alert.total),
+        saving=i18n.money(alert.saving),
         saving_pct=f"−{alert.saving_pct:.1f}%",
         others=other_currencies(alert.total, rates, currencies),
         window_id=alert.window_id,
-        window_dates=combo.window.label(),
+        window_dates=i18n.date_range(combo.window.start, combo.window.end),
         entry_code=_airport_of(combo, "entry"),
         exit_code=_airport_of(combo, "exit"),
         rows=tuple(
             AlertRow(
                 name=choice.group.name,
                 origin=choice.group.origin,
-                price=rates.from_eur(
-                    choice.fare_eur, names.config.origin_of(choice.group).currency
-                ).whole(),
+                price=i18n.money(
+                    rates.from_eur(choice.fare_eur, names.config.origin_of(choice.group).currency)
+                ),
             )
             for choice in combo.choices
         ),
         previous=_alert_previous(alert),
-        date_label=f"{day_label(today)}",
+        date_label=i18n.day(today),
     )

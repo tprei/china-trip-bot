@@ -4,7 +4,7 @@
 {% block card %}
 <div class="card" style="padding:56px 64px 56px;gap:28px">
   <div class="row">
-    <div><div class="kicker">ROUTE · WINDOW {{ view.window_id }}</div><div class="title">{{ view.plan_label }}</div></div>
+    <div><div class="kicker">{% trans window=view.window_id %}ROUTE · WINDOW {{ window }}{% endtrans %}</div><div class="title">{{ view.plan_label }}</div></div>
     <div class="spacer"></div>
     <div class="dateline">{{ icon("calendar", "#b7c4d1", 30) }}<span>{{ view.dates }}</span></div>
   </div>
@@ -21,14 +21,14 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         <div style="font-size:{{ 32 if step.kind == 'stay' else 25 }}px;font-weight:{{ 800 if step.kind == 'stay' else 600 }}">{{ step.title }}</div>
-        <div style="font-size:21px;color:{{ '#f5b83d' if step.mode == 'sleeper' else 'var(--muted)' }}">{{ step.detail }}{% if step.estimate %} · estimate{% endif %}</div>
+        <div style="font-size:21px;color:{{ '#f5b83d' if step.mode == 'sleeper' else 'var(--muted)' }}">{{ step.detail }}{% if step.estimate %} · {{ _("estimate") }}{% endif %}</div>
       </div>
     </div>
     {% endfor %}
   </div>
   <div class="row" style="gap:40px;font-size:26px">
-    <span>Inside China <b>{{ view.internal }}</b> / person</span>
-    <span style="color:var(--warn)">{{ icon("sleeper", "#f5b83d", 26) }} {{ view.sleepers }} sleeper{{ "s" if view.sleepers != 1 }}</span>
+    <span>{% trans internal=view.internal %}Inside China <b>{{ internal }}</b> / person{% endtrans %}</span>
+    <span style="color:var(--warn)">{{ icon("sleeper", "#f5b83d", 26) }} {% trans count=view.sleepers %}{{ count }} sleeper{% pluralize %}{{ count }} sleepers{% endtrans %}</span>
   </div>
 </div>
 {% endblock %}

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 15:23+0000\n"
+"POT-Creation-Date: 2026-11-08 15:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -13,4 +13,292 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#, python-format
+msgid "%(count)s adult · round trip"
+msgid_plural "%(count)s adults · round trip"
+msgstr[0] "%(count)s adulto · ida e volta"
+msgstr[1] "%(count)s adultos · ida e volta"
+
+#, python-format
+msgid "%(count)s adult · round-trip group total"
+msgid_plural "%(count)s adults · round-trip group total"
+msgstr[0] "%(count)s adulto · total do grupo, ida e volta"
+msgstr[1] "%(count)s adultos · total do grupo, ida e volta"
+
+#, python-format
+msgid "%(count)s person"
+msgid_plural "%(count)s people"
+msgstr[0] "%(count)s pessoa"
+msgstr[1] "%(count)s pessoas"
+
+#, python-format
+msgid "%(count)s sleeper"
+msgid_plural "%(count)s sleepers"
+msgstr[0] "%(count)s trem-leito"
+msgstr[1] "%(count)s trens-leito"
+
+#, python-format
+msgid "%(name)s: %(arrive)s to %(leave)s, %(count)s night"
+msgid_plural "%(name)s: %(arrive)s to %(leave)s, %(count)s nights"
+msgstr[0] "%(name)s: de %(arrive)s a %(leave)s, %(count)s noite"
+msgstr[1] "%(name)s: de %(arrive)s a %(leave)s, %(count)s noites"
+
+#, python-format
+msgid "%(observed)s · not checkout"
+msgstr "%(observed)s · não é o checkout"
+
+#, python-format
+msgid "%(people)s people · %(groups)s groups · international RT"
+msgstr "%(people)s pessoas · %(groups)s grupos · ida e volta internacional"
+
+msgid "Airport-local flight times · no separate one-way fares"
+msgstr "Horários locais dos aeroportos · sem tarifas de só ida separadas"
+
+msgid "All four cities"
+msgstr "As quatro cidades"
+
+msgid "Average per person"
+msgstr "Média por pessoa"
+
+msgid "BEST"
+msgstr "MELHOR"
+
+msgid "Below your target"
+msgstr "Abaixo da sua meta"
+
+msgid "Best plan per window"
+msgstr "Melhor plano por janela"
+
+#, python-format
+msgid "Best plan · %(count)s person"
+msgid_plural "Best plan · %(count)s people"
+msgstr[0] "Melhor plano · %(count)s pessoa"
+msgstr[1] "Melhor plano · %(count)s pessoas"
+
+msgid "Bounded sample, not market-best or guaranteed savings"
+msgstr "Amostra limitada, sem garantia de melhor preço ou de economia"
+
+#, python-format
+msgid "Connection: %(connections)s"
+msgstr "Conexão: %(connections)s"
+
+msgid "Details"
+msgstr "Detalhes"
+
+#, python-format
+msgid "Displayed per person: %(per_person)s"
+msgstr "Mostrado por pessoa: %(per_person)s"
+
+#, python-brace-format
+msgid "Down {pct}% this week"
+msgstr "Caiu {pct}% esta semana"
+
+msgid "Group total over time"
+msgstr "Total do grupo ao longo do tempo"
+
+msgid "Group total per window over time"
+msgstr "Total do grupo por janela ao longo do tempo"
+
+msgid "HISTORY"
+msgstr "HISTÓRICO"
+
+msgid "History"
+msgstr "Histórico"
+
+msgid "IN"
+msgstr "IDA"
+
+#, python-format
+msgid "Inside China <b>%(internal)s</b> / person"
+msgstr "Dentro da China <b>%(internal)s</b> por pessoa"
+
+#, python-format
+msgid "Internal transport estimate: %(internal)s"
+msgstr "Estimativa de transporte interno: %(internal)s"
+
+#, python-brace-format
+msgid "Last summary {total}"
+msgstr "Último resumo {total}"
+
+#, python-brace-format
+msgid "Late arrival: {moment} · plan hotel"
+msgstr "Chegada tarde: {moment} · reserve hotel"
+
+msgid "Main plan"
+msgstr "Plano principal"
+
+msgid "Main plan vs. dropping a city"
+msgstr "Plano principal vs. tirar uma cidade"
+
+msgid "Multiple bookings / tickets · protection unverified"
+msgstr "Várias reservas e bilhetes · proteção não verificada"
+
+msgid "New record low"
+msgstr "Novo menor preço"
+
+msgid "Nights in China, with arrival and departure dates"
+msgstr "Noites na China, com datas de chegada e saída"
+
+msgid "Now"
+msgstr "Agora"
+
+msgid "OUT"
+msgstr "VOLTA"
+
+msgid "One sampled combo · international round trips"
+msgstr "Uma combinação amostrada · idas e voltas internacionais"
+
+#, python-brace-format
+msgid "Other plans · window {window}"
+msgstr "Outros planos · janela {window}"
+
+msgid "Outbound"
+msgstr "Ida"
+
+#, python-brace-format
+msgid "Previous low {total}"
+msgstr "Menor preço anterior {total}"
+
+msgid "ROUND-TRIP FARE DEMO"
+msgstr "DEMO DE TARIFA DE IDA E VOLTA"
+
+#, python-format
+msgid "ROUTE · WINDOW %(window)s"
+msgstr "ROTEIRO · JANELA %(window)s"
+
+msgid "Return"
+msgstr "Volta"
+
+msgid "Round-trip snapshot"
+msgstr "Retrato de ida e volta"
+
+msgid "Rounded per-person display · use observed group total"
+msgstr "Valor por pessoa arredondado · use o total do grupo observado"
+
+msgid "Route"
+msgstr "Roteiro"
+
+msgid "Separate · not a live fare or feasible timetable"
+msgstr "À parte · não é tarifa ao vivo nem horário confirmado"
+
+#, python-brace-format
+msgid "Short connection: {airport} {wait}"
+msgstr "Conexão curta: {airport} {wait}"
+
+msgid "Sleeper"
+msgstr "Trem-leito"
+
+msgid "Sources"
+msgstr "Fontes"
+
+msgid "Starts after two nights of data."
+msgstr "Começa depois de duas noites de dados."
+
+#, python-brace-format
+msgid "Target {total}"
+msgstr "Meta {total}"
+
+msgid "Times local · vs own best"
+msgstr "Horários locais · vs. melhor do grupo"
+
+msgid "Trip.com observed quote · final price / inventory unverified"
+msgstr "Cotação vista na Trip.com · preço final e disponibilidade não verificados"
+
+#, python-format
+msgid "WINDOW %(window)s"
+msgstr "JANELA %(window)s"
+
+#, python-format
+msgid "WINDOW %(window)s · %(dates)s"
+msgstr "JANELA %(window)s · %(dates)s"
+
+msgid "Weekly summary"
+msgstr "Resumo semanal"
+
+msgid "Who flies how"
+msgstr "Quem voa como"
+
+#, python-brace-format
+msgid "Window {window}"
+msgstr "Janela {window}"
+
+msgid "Windows"
+msgstr "Janelas"
+
+msgid "direct"
+msgstr "direto"
+
+msgid "each"
+msgstr "cada"
+
+msgid "estimate"
+msgstr "estimativa"
+
+msgid "flight"
+msgstr "voo"
+
+msgid "high-speed"
+msgstr "trem rápido"
+
+msgid "land"
+msgstr "chegada"
+
+#, python-format
+msgid "low %(low)s"
+msgstr "mínimo %(low)s"
+
+msgid "no change"
+msgstr "sem mudança"
+
+msgid "no complete combo"
+msgstr "sem combinação completa"
+
+msgid "none"
+msgstr "nenhuma"
+
+msgid "ok"
+msgstr "ok"
+
+msgid "rainier"
+msgstr "mais chuva"
+
+msgid "round trip"
+msgstr "ida e volta"
+
+msgid "same plane"
+msgstr "mesmo avião"
+
+msgid "sleeper"
+msgstr "trem-leito"
+
+msgid "total"
+msgstr "total"
+
+#, python-brace-format
+msgid "via {airports}"
+msgstr "via {airports}"
+
+msgid "warning"
+msgstr "aviso"
+
+#, python-brace-format
+msgid "{dates} · rainier"
+msgstr "{dates} · mais chuva"
+
+#, python-brace-format
+msgid "{n} day"
+msgid_plural "{n} days"
+msgstr[0] "{n} dia"
+msgstr[1] "{n} dias"
+
+#, python-brace-format
+msgid "{n} night"
+msgid_plural "{n} nights"
+msgstr[0] "{n} noite"
+msgstr[1] "{n} noites"
+
+#, python-brace-format
+msgid "{wait} wait"
+msgstr "{wait} de espera"
 

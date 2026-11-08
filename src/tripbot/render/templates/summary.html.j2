@@ -6,7 +6,7 @@
   <div class="flight-meta">
     {{ airline(line.airline_code, line.logo_url) }}
     <span class="flight-day">{{ line.day }}</span>
-    <span class="flight-duration">{{ line.duration }} <small>total</small></span>
+    <span class="flight-duration">{{ line.duration }} <small>{{ _("total") }}</small></span>
   </div>
   <div class="line">
     <span class="code">
@@ -22,10 +22,10 @@
       <div class="flight-stop {{ 'plane-change' if stop.wait else 'same-plane' }}" style="left:{{ (loop.index * 100 / (line.stops|length + 1))|round(1) }}%">
         <span class="stop-marker"></span>
         <b>{{ stop.airport }}</b>
-        <span class="stop-detail">{{ stop.wait ~ ' wait' if stop.wait else 'same plane' }}</span>
+        <span class="stop-detail">{{ stop.detail }}</span>
       </div>
       {% else %}
-      <span class="flight-direct">{{ icon("plane", "#eef2f5", 26) }}<span>direct</span></span>
+      <span class="flight-direct">{{ icon("plane", "#eef2f5", 26) }}<span>{{ _("direct") }}</span></span>
       {% endfor %}
     </div>
     <span class="code destination">
@@ -42,13 +42,13 @@
   <header class="header">
     {{ hills() }}
     <div class="top">
-      <div><div class="kicker">CHINA 2027</div><div class="title">Weekly summary</div></div>
+      <div><div class="kicker">CHINA 2027</div><div class="title">{{ _("Weekly summary") }}</div></div>
       <div class="dateline">{{ icon("calendar", "#b7c4d1", 30) }}<span>{{ view.date_label }}</span></div>
     </div>
   </header>
 
   <section class="hero">
-    <div class="label">Best plan · {{ people }} people</div>
+    <div class="label">{% trans count=people %}Best plan · {{ count }} person{% pluralize %}Best plan · {{ count }} people{% endtrans %}</div>
     <div class="row" style="align-items:flex-end;gap:28px">
       <div class="num total">{{ view.total }}</div>
       {% if view.delta %}
@@ -58,28 +58,28 @@
       {% endif %}
     </div>
     <div class="person-average">
-      <span class="average-label">Average per person</span>
+      <span class="average-label">{{ _("Average per person") }}</span>
       <div class="average-values">
         {% for money in view.per_person %}<span class="item">{{ flag(money.flag, 33, 22) }}<span>{{ money.text }}</span></span>{% endfor %}
       </div>
     </div>
     <div class="chips">
       <div class="chip solid">{{ icon("calendar", "#1a0f0c", 28) }}<span>{{ view.window_dates }}</span><span class="window-length">{{ view.window_days }}</span></div>
-      <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">IN</span><span class="stack"><span>{{ view.entry_code }}</span><small>{{ view.entry_city }}</small></span></div>
-      <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">OUT</span><span class="stack"><span>{{ view.exit_code }}</span><small>{{ view.exit_city }}</small></span></div>
+      <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">{{ _("IN") }}</span><span class="stack"><span>{{ view.entry_code }}</span><small>{{ view.entry_city }}</small></span></div>
+      <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">{{ _("OUT") }}</span><span class="stack"><span>{{ view.exit_code }}</span><small>{{ view.exit_city }}</small></span></div>
     </div>
   </section>
 
   <section class="section">
-    <div class="label">Windows</div>
+    <div class="label">{{ _("Windows") }}</div>
     <div class="windows">
       {% for dot in view.windows %}
       <div class="window {{ 'best' if dot.best }}">
-        <span class="id">{{ dot.id }}{% if dot.best %} · BEST{% endif %}</span>
+        <span class="id">{{ dot.id }}{% if dot.best %} · {{ _("BEST") }}{% endif %}</span>
         <span class="dates">{{ dot.dates }}</span>
         <span class="num amount">{{ dot.total }}</span>
-        {% if dot.delta %}<span class="delta {{ 'good' if dot.delta_good else 'bad' }}">{{ '▼' if dot.delta_good else '▲' }} {{ dot.delta }}</span>{% else %}<span class="delta" style="color:var(--quiet)">no change</span>{% endif %}
-        {% if dot.rainier %}<span class="rain">{{ icon("warning", "#f5b83d", 20) }} rainier</span>{% endif %}
+        {% if dot.delta %}<span class="delta {{ 'good' if dot.delta_good else 'bad' }}">{{ '▼' if dot.delta_good else '▲' }} {{ dot.delta }}</span>{% else %}<span class="delta" style="color:var(--quiet)">{{ _("no change") }}</span>{% endif %}
+        {% if dot.rainier %}<span class="rain">{{ icon("warning", "#f5b83d", 20) }} {{ _("rainier") }}</span>{% endif %}
         <div class="scale"><span style="left:{{ dot.position }}%"></span></div>
       </div>
       {% endfor %}
@@ -87,7 +87,7 @@
   </section>
 
   <section class="section">
-    <div class="row"><div class="label">Who flies how</div><div class="spacer"></div><div class="flight-context">Times local · vs own best</div></div>
+    <div class="row"><div class="label">{{ _("Who flies how") }}</div><div class="spacer"></div><div class="flight-context">{{ _("Times local · vs own best") }}</div></div>
     {% for group in view.groups %}
     <div class="panel ticket">
       <div class="head">
@@ -103,7 +103,7 @@
   </section>
 
   <section class="section">
-    <div class="label">Route</div>
+    <div class="label">{{ _("Route") }}</div>
     <div class="panel route-panel">
     <div class="route" style="grid-template-columns:{% for item in view.timeline %}{{ 'auto' if item.kind == 'stop' else 'minmax(0,1fr)' }} {% endfor %}">
       {% for item in view.timeline %}
@@ -122,9 +122,9 @@
       {% endfor %}
     </div>
     {% if view.days %}
-    <div class="day-timeline" role="list" aria-label="Nights in China, with arrival and departure dates" style="grid-template-columns:{% for span in view.days %}{{ span.nights }}fr {% endfor %}">
+    <div class="day-timeline" role="list" aria-label="{{ _("Nights in China, with arrival and departure dates") }}" style="grid-template-columns:{% for span in view.days %}{{ span.nights }}fr {% endfor %}">
       {% for span in view.days %}
-      <div class="day-span {{ span.kind }}" role="listitem" aria-label="{{ span.name }}: {{ span.arrive }} to {{ span.leave }}, {{ span.nights }} {{ 'night' if span.nights == 1 else 'nights' }}">
+      <div class="day-span {{ span.kind }}" role="listitem" aria-label="{% trans name=span.name, arrive=span.arrive, leave=span.leave, count=span.nights %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} night{% pluralize count %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} nights{% endtrans %}">
         <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 26) }}{% else %}<span>{{ span.name }}</span>{% endif %}</div>
         <div class="day-band"></div>
         <span class="day-date {{ 'first' if loop.first }}" style="--date-row:{{ loop.index0 % 2 }}">{{ span.arrive }}</span>
@@ -135,17 +135,17 @@
     {% endif %}
     </div>
     <div class="legend">
-      <span>{{ icon("train", "#8fb3d9", 24) }}high-speed</span>
-      <span>{{ icon("sleeper", "#f5b83d", 24) }}sleeper</span>
-      <span>{{ icon("plane", "#ff8a73", 24) }}flight</span>
+      <span>{{ icon("train", "#8fb3d9", 24) }}{{ _("high-speed") }}</span>
+      <span>{{ icon("sleeper", "#f5b83d", 24) }}{{ _("sleeper") }}</span>
+      <span>{{ icon("plane", "#ff8a73", 24) }}{{ _("flight") }}</span>
     </div>
   </section>
 
   <section class="footer">
     <div class="panel">
-      <div class="label" style="font-size:22px">History</div>
+      <div class="label" style="font-size:22px">{{ _("History") }}</div>
       {% if view.spark %}
-      <svg viewBox="0 0 480 160" role="img" aria-label="Group total over time" style="width:100%;height:200px">
+      <svg viewBox="0 0 480 160" role="img" aria-label="{{ _("Group total over time") }}" style="width:100%;height:200px">
         <line x1="20" y1="150" x2="460" y2="150" stroke="#2a3a4c"/>
         {% for window_id, points in view.spark.lines %}
         <polyline points="{{ points }}" fill="none" stroke="{{ {'A': '#8fb3d9', 'B': '#ff6a4d', 'C': '#b7c4d1'}.get(window_id, '#b7c4d1') }}" stroke-width="{{ 5 if window_id == selected else 3 }}" {% if window_id != selected %}stroke-dasharray="10 7"{% endif %} stroke-linejoin="round"/>
@@ -153,19 +153,19 @@
         <circle cx="{{ view.spark.low_x }}" cy="{{ view.spark.low_y }}" r="8" fill="#0e1620" stroke="#6fe0b5" stroke-width="3"/>
       </svg>
       <div class="keys">
-        {% for window_id, _ in view.spark.lines %}<span style="color:{{ {'A': '#8fb3d9', 'B': '#ff8a73', 'C': '#b7c4d1'}.get(window_id, '#b7c4d1') }};font-weight:{{ 700 if window_id == selected else 400 }}">━ {{ window_id }}</span>{% endfor %}
-        <span style="color:var(--good)">○ low {{ view.spark.low_label }}</span>
+        {% for window_id, points in view.spark.lines %}<span style="color:{{ {'A': '#8fb3d9', 'B': '#ff8a73', 'C': '#b7c4d1'}.get(window_id, '#b7c4d1') }};font-weight:{{ 700 if window_id == selected else 400 }}">━ {{ window_id }}</span>{% endfor %}
+        <span style="color:var(--good)">○ {% trans low=view.spark.low_label %}low {{ low }}{% endtrans %}</span>
       </div>
       {% else %}
-      <div style="font-size:24px;color:var(--muted)">Starts after two nights of data.</div>
+      <div style="font-size:24px;color:var(--muted)">{{ _("Starts after two nights of data.") }}</div>
       {% endif %}
     </div>
     <div class="panel">
-      <div class="label" style="font-size:22px">Sources</div>
+      <div class="label" style="font-size:22px">{{ _("Sources") }}</div>
       {% for source in view.sources %}
       <div class="status">{{ icon("check" if source.ok else "warning", "#6fe0b5" if source.ok else "#f5b83d", 28) }}<span>{{ source.name }}</span>{% if not source.ok %}<small>{{ source.label }}</small>{% endif %}</div>
       {% endfor %}
-      <div class="button">Details →</div>
+      <div class="button">{{ _("Details") }} →</div>
     </div>
   </section>
 </div>

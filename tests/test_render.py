@@ -8,6 +8,7 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
 from telegram_fakes import World
 
+from tripbot import i18n
 from tripbot.config import TripConfig
 from tripbot.domain.money import Money
 from tripbot.pipeline.nightly import NightlyReport
@@ -46,8 +47,8 @@ def test_summary_view_shows_every_group_and_currency(
     best = report.rankings.main["B"].best
     assert best is not None
     share = Money(best.total_eur.minor // 5, "EUR")
-    brl = report.rankings.rates.from_eur(share, "BRL").whole()
-    assert (view.per_person[0].text, view.per_person[1].text) == (share.whole(), brl)
+    brl = i18n.money(report.rankings.rates.from_eur(share, "BRL"))
+    assert (view.per_person[0].text, view.per_person[1].text) == (i18n.money(share), brl)
     assert view.groups[1].price.startswith("£") and view.groups[1].price_note == "each"
     assert view.groups[2].outbound.note == "via MAD"
     assert [dot.id for dot in view.windows] == ["C", "A", "B"]
@@ -74,7 +75,7 @@ def test_flight_line_lists_stops_in_order_with_waits(
         stops_on_board=("MAD",),
     )
     line = views.flight_line(found, Names(config, reference))
-    assert line.stops == (views.StopLine("MAD", ""), views.StopLine("DOH", "3h"))
+    assert [(stop.airport, stop.wait) for stop in line.stops] == [("MAD", ""), ("DOH", "3h")]
     assert (line.depart_time, line.arrive_time, line.arrive_shift) == ("21:00", "20:00", "+1")
 
 
@@ -121,6 +122,18 @@ def test_summary_html_carries_the_numbers(
     assert view.total in html
     assert "Luísa + Gabi" in html
     assert "data:font/woff2;base64," in html
+
+
+@pytest.mark.usefixtures("pt_br")
+def test_summary_renders_in_pt_br(config: TripConfig, reference: Reference, world: World) -> None:
+    _, report = world
+    view = views.build_summary(summary_inputs(config, reference, report, "B"))
+    assert view is not None
+    html = render_html("summary.html.j2", view=view, people=5, selected="B")
+    assert '<html lang="pt-BR">' in html and "Resumo semanal" in html
+    assert "Melhor plano · 5 pessoas" in html
+    assert any(span.nights > 1 for span in view.days)
+    assert " noites" in html
 
 
 def chromium_available() -> bool:

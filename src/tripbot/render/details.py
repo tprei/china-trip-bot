@@ -6,11 +6,13 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import datetime
 
+from tripbot import i18n
 from tripbot.domain.flights import duration_label
 from tripbot.domain.money import Money
 from tripbot.domain.ranking import Combo, WindowRanking
 from tripbot.domain.routes import PlannedLeg
-from tripbot.render.names import Names, day_label, short_date
+from tripbot.i18n import _, ngettext
+from tripbot.render.names import Names
 from tripbot.render.views import RAINIER_EUR_CENTS
 
 CHART_LEFT, CHART_RIGHT, CHART_TOP, CHART_BOTTOM = 70, 900, 20, 330
@@ -44,13 +46,12 @@ def build_route(combo: Combo, names: Names, plan_label: str) -> RouteView:
         steps.append(_landing(combo, names))
         steps.append(_leg_step(legs.pop(0), names))
     for index, stay in enumerate(stays):
-        nights = "night" if stay.nights == 1 else "nights"
         steps.append(
             RouteStep(
                 kind="stay",
-                day=day_label(stay.arrive),
+                day=i18n.day(stay.arrive),
                 title=names.city(stay.city),
-                detail=f"{stay.nights} {nights}",
+                detail=ngettext("{n} night", "{n} nights", stay.nights).format(n=stay.nights),
             )
         )
         if index < len(stays) - 1 or combo.route.exit != stay.city:
@@ -58,9 +59,9 @@ def build_route(combo: Combo, names: Names, plan_label: str) -> RouteView:
     return RouteView(
         window_id=combo.window.id,
         plan_label=plan_label,
-        dates=combo.window.label(),
+        dates=i18n.date_range(combo.window.start, combo.window.end),
         steps=tuple(steps),
-        internal=combo.route.fare_eur.whole(),
+        internal=i18n.money(combo.route.fare_eur),
         sleepers=combo.route.sleepers,
     )
 
@@ -68,9 +69,9 @@ def build_route(combo: Combo, names: Names, plan_label: str) -> RouteView:
 def _landing(combo: Combo, names: Names) -> RouteStep:
     return RouteStep(
         kind="stay",
-        day=day_label(combo.window.start),
+        day=i18n.day(combo.window.start),
         title=names.city(combo.route.entry),
-        detail="land",
+        detail=_("land"),
     )
 
 
@@ -84,10 +85,10 @@ def _leg_step(leg: PlannedLeg, names: Names) -> RouteStep:
     parts = [times]
     if option.cabin:
         parts.append(option.cabin)
-    parts.append(f"≈ {leg.fare_eur.whole()}")
+    parts.append(f"≈ {i18n.money(leg.fare_eur)}")
     return RouteStep(
         kind="leg",
-        day=day_label(leg.day),
+        day=i18n.day(leg.day),
         title=f"{names.city(leg.origin)} → {names.city(leg.destination)} · {option.name}",
         detail=" · ".join(parts),
         mode=option.mode,
@@ -134,16 +135,22 @@ def build_history(
         HistoryLine(
             window_id=window_id,
             points=" ".join(f"{x(m):.1f},{y(v.minor):.1f}" for m, v in points),
-            latest=points[-1][1].whole(),
-            low=min((v for _, v in points), key=lambda money: money.minor).whole(),
+            latest=i18n.money(points[-1][1]),
+            low=i18n.money(min((v for _, v in points), key=lambda money: money.minor)),
             selected=window_id == selected,
         )
         for window_id, points in series.items()
     )
     return HistoryView(
         lines=lines,
-        y_labels=((y(high), Money(high, "EUR").whole()), (y(low), Money(low, "EUR").whole())),
-        x_labels=((x(start), short_date(start.date())), (x(end), short_date(end.date()))),
+        y_labels=(
+            (y(high), i18n.money(Money(high, "EUR"))),
+            (y(low), i18n.money(Money(low, "EUR"))),
+        ),
+        x_labels=(
+            (x(start), i18n.short_day(start.date())),
+            (x(end), i18n.short_day(end.date())),
+        ),
     )
 
 
@@ -175,36 +182,36 @@ def compare_windows(rankings: Mapping[str, WindowRanking]) -> CompareView:
     driest = min((best.route.weather_eur.minor for best in bests), default=0)
     rows = []
     for window_id, best in entries:
+        label = _("Window {window}").format(window=window_id)
         if best is None:
-            rows.append(
-                CompareRow(f"Window {window_id}", "no complete combo", "—", None, False, 0, False)
-            )
+            rows.append(CompareRow(label, _("no complete combo"), "—", None, False, 0, False))
             continue
         rainier = best.route.weather_eur.minor - driest >= RAINIER_EUR_CENTS
-        sub = best.window.label() + (" · rainier" if rainier else "")
-        row = _row(f"Window {window_id}", sub, best, cheapest, totals)
+        dates = i18n.date_range(best.window.start, best.window.end)
+        sub = _("{dates} · rainier").format(dates=dates) if rainier else dates
+        row = _row(label, sub, best, cheapest, totals)
         rows.append(replace(row, highlight=best is pick))
-    return CompareView(kicker="Windows", title="Best plan per window", rows=tuple(rows))
+    return CompareView(kicker=_("Windows"), title=_("Best plan per window"), rows=tuple(rows))
 
 
 def compare_alternatives(
     main: WindowRanking, alternatives: Mapping[str, tuple[str, WindowRanking]], names: Names
 ) -> CompareView:
-    entries: list[tuple[str, Combo | None]] = [("All four cities", main.best)]
+    entries: list[tuple[str, Combo | None]] = [(_("All four cities"), main.best)]
     entries += [(label, ranking.best) for label, ranking in alternatives.values()]
     totals = [best.total_eur.minor for _, best in entries if best is not None]
     base = main.best.total_eur.minor if main.best is not None else (min(totals) if totals else 0)
     rows = []
     for index, (label, best) in enumerate(entries):
         if best is None:
-            rows.append(CompareRow(label, "no complete combo", "—", None, False, 0, False))
+            rows.append(CompareRow(label, _("no complete combo"), "—", None, False, 0, False))
             continue
         order = " → ".join(names.city(city) for city in best.route.order)
         row = _row(label, order, best, base, totals)
         rows.append(row if index else replace(row, delta=None, highlight=True))
     return CompareView(
-        kicker=f"Other plans · window {main.window.id}",
-        title="Main plan vs. dropping a city",
+        kicker=_("Other plans · window {window}").format(window=main.window.id),
+        title=_("Main plan vs. dropping a city"),
         rows=tuple(rows),
     )
 
@@ -215,8 +222,8 @@ def _row(label: str, sub: str, best: Combo, base: int, totals: list[int]) -> Com
     return CompareRow(
         label=label,
         sub=sub,
-        total=best.total_eur.whole(),
-        delta=None if change == 0 else Money(abs(change), "EUR").whole(),
+        total=i18n.money(best.total_eur),
+        delta=None if change == 0 else i18n.money(Money(abs(change), "EUR")),
         delta_good=change < 0,
         width=round(best.total_eur.minor * 100 / max(1, top)),
         highlight=change == 0,
