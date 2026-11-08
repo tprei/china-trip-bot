@@ -135,6 +135,7 @@ li { margin: 4px 0; }
     {% if panel.total %}
     <div class="hero">
       <div class="num">{{ panel.total }}</div>
+      <div class="currencies">{{ _("Group total for everyone") }}</div>
       <div class="currencies">
         {% for money in panel.others %}<span>{{ flag(money.flag) }}{{ money.text }}</span>{% endfor %}
       </div>

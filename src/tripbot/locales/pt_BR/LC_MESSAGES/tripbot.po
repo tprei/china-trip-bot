@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 16:51+0000\n"
+"POT-Creation-Date: 2026-11-08 16:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -31,12 +31,6 @@ msgid "%(count)s adult · whole round trip"
 msgid_plural "%(count)s adults · whole round trip"
 msgstr[0] "%(count)s adulto · ida e volta completa"
 msgstr[1] "%(count)s adultos · ida e volta completa"
-
-#, python-format
-msgid "%(count)s person"
-msgid_plural "%(count)s people"
-msgstr[0] "%(count)s pessoa"
-msgstr[1] "%(count)s pessoas"
 
 #, python-format
 msgid "%(count)s sleeper"
@@ -170,6 +164,9 @@ msgstr "/janelas"
 msgid "1 sampled combo · no market-best or guaranteed-saving claim"
 msgstr "1 combinação amostrada · sem garantia de melhor preço ou de economia"
 
+msgid "Airport codes"
+msgstr "Aeroportos"
+
 msgid "Airport-local flight times · no separate one-way fares"
 msgstr "Horários locais dos aeroportos · sem tarifas de só ida separadas"
 
@@ -197,12 +194,6 @@ msgstr "Abaixo da sua meta"
 
 msgid "Best plan per window"
 msgstr "Melhor plano por janela"
-
-#, python-format
-msgid "Best plan · %(count)s person"
-msgid_plural "Best plan · %(count)s people"
-msgstr[0] "Melhor plano · %(count)s pessoa"
-msgstr[1] "Melhor plano · %(count)s pessoas"
 
 msgid "Bounded sample, not market-best or guaranteed savings"
 msgstr "Amostra limitada, sem garantia de melhor preço ou de economia"
@@ -274,11 +265,20 @@ msgstr "As tarifas são estimativas."
 msgid "Flights"
 msgstr "Voos"
 
+msgid "Group total for everyone"
+msgstr "Total do grupo, para todos"
+
 msgid "Group total over time"
 msgstr "Total do grupo ao longo do tempo"
 
 msgid "Group total per window over time"
 msgstr "Total do grupo por janela ao longo do tempo"
+
+#, python-format
+msgid "Group total · %(count)s person"
+msgid_plural "Group total · all %(count)s people"
+msgstr[0] "Total do grupo · %(count)s pessoa"
+msgstr[1] "Total do grupo · todas as %(count)s pessoas"
 
 msgid "HISTORY"
 msgstr "HISTÓRICO"
@@ -484,6 +484,9 @@ msgstr "Meta {goal}"
 msgid "Target {total}"
 msgstr "Meta {total}"
 
+msgid "The total includes"
+msgstr "O total inclui"
+
 #, python-brace-format
 msgid "Tickets open {n} day ahead."
 msgid_plural "Tickets open {n} days ahead."
@@ -559,6 +562,9 @@ msgstr "Janela {window}"
 msgid "Windows"
 msgstr "Janelas"
 
+msgid "Windows · group totals"
+msgstr "Janelas · total do grupo"
+
 msgctxt "todo"
 msgid "add"
 msgstr "novo"
@@ -603,6 +609,12 @@ msgstr "estimativa"
 
 msgid "flight"
 msgstr "voo"
+
+#, python-format
+msgid "group total · %(count)s person"
+msgid_plural "group total · %(count)s people"
+msgstr[0] "total do grupo · %(count)s pessoa"
+msgstr[1] "total do grupo · %(count)s pessoas"
 
 msgctxt "weather risk"
 msgid "high"
@@ -702,6 +714,9 @@ msgstr "melhores voos para um grupo"
 msgid "total"
 msgstr "total"
 
+msgid "total for everyone"
+msgstr "total p/ todos"
+
 msgid "train sale dates and deadlines"
 msgstr "datas de abertura das vendas de trem e prazos"
 
@@ -740,6 +755,18 @@ msgstr[0] "{n} dia"
 msgstr[1] "{n} dias"
 
 #, python-brace-format
+msgid "{n} flight in China"
+msgid_plural "{n} flights in China"
+msgstr[0] "{n} voo na China"
+msgstr[1] "{n} voos na China"
+
+#, python-brace-format
+msgid "{n} international ticket"
+msgid_plural "{n} international tickets"
+msgstr[0] "{n} passagem internacional"
+msgstr[1] "{n} passagens internacionais"
+
+#, python-brace-format
 msgid "{n} night"
 msgid_plural "{n} nights"
 msgstr[0] "{n} noite"
@@ -756,6 +783,12 @@ msgid "{n} person"
 msgid_plural "{n} people"
 msgstr[0] "{n} pessoa"
 msgstr[1] "{n} pessoas"
+
+#, python-brace-format
+msgid "{n} train in China"
+msgid_plural "{n} trains in China"
+msgstr[0] "{n} trem na China"
+msgstr[1] "{n} trens na China"
 
 #, python-brace-format
 msgid "{opening_date} · tickets open: {leg} ({travel_date})"

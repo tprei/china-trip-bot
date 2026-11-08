@@ -80,8 +80,15 @@ class DaySpan:
     kind: Literal["stay", "sleeper"]
     name: str
     nights: int
+    nights_label: str
     arrive: str
     leave: str
+
+
+@dataclass(frozen=True)
+class AirportName:
+    code: str
+    name: str
 
 
 @dataclass(frozen=True)
@@ -124,6 +131,7 @@ class SummaryView:
     total: str
     delta: str | None
     delta_good: bool
+    includes: tuple[str, ...]
     per_person: tuple[MoneyLine, ...]
     window_dates: str
     window_days: str
@@ -133,7 +141,9 @@ class SummaryView:
     exit_city: str
     windows: tuple[WindowDot, ...]
     groups: tuple[GroupRow, ...]
+    airports: tuple[AirportName, ...]
     timeline: tuple[TimelineItem, ...]
+    legend: tuple[LegendItem, ...]
     days: tuple[DaySpan, ...]
     spark: Spark | None
     sources: tuple[SourceStatus, ...]
@@ -161,11 +171,13 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
     delta, good = _delta(best.total_eur, inputs.reference_totals.get(inputs.window_id))
     people = sum(choice.group.headcount for choice in best.choices)
     share = Money(best.total_eur.minor // people, "EUR")
+    groups = tuple(group_row(choice, rates, names) for choice in best.choices)
     return SummaryView(
         date_label=i18n.day(inputs.today),
         total=i18n.money(best.total_eur),
         delta=delta,
         delta_good=good,
+        includes=included(best.route, people),
         per_person=(
             MoneyLine(text=i18n.money(share), flag=FLAGS["EUR"]),
             *other_currencies(share, rates, inputs.currencies),
@@ -179,14 +191,64 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
         exit_code=_airport_of(best, "exit"),
         exit_city=names.city(best.exit),
         windows=window_dots(inputs.rankings, inputs.reference_totals, inputs.window_id),
-        groups=tuple(group_row(choice, rates, names) for choice in best.choices),
+        groups=groups,
+        airports=airport_names(groups, names),
         timeline=timeline(best.route, names),
+        legend=legend(best.route, names),
         days=day_spans(best.route, names),
         spark=spark(inputs.history, inputs.window_id),
         sources=tuple(
             SourceStatus(name=_source_name(name), ok=worked > 0, label=f"{worked}/{tried}")
             for name, (worked, tried) in sorted(inputs.health.items())
         ),
+    )
+
+
+def included(route: Route, people: int) -> tuple[str, ...]:
+    """What the group total pays for: every person's round trip and legs inside China."""
+    flights = people * sum(1 for leg in route.legs if leg.option.mode == "flight")
+    trains = people * sum(1 for leg in route.legs if leg.option.mode != "flight")
+    items = [
+        ngettext("{n} person", "{n} people", people).format(n=people),
+        ngettext("{n} international ticket", "{n} international tickets", 2 * people).format(
+            n=2 * people
+        ),
+    ]
+    if flights:
+        items.append(
+            ngettext("{n} flight in China", "{n} flights in China", flights).format(n=flights)
+        )
+    if trains:
+        items.append(ngettext("{n} train in China", "{n} trains in China", trains).format(n=trains))
+    return tuple(items)
+
+
+def airport_names(groups: Sequence[GroupRow], names: Names) -> tuple[AirportName, ...]:
+    """Every airport code on the flight rows, in order of appearance, with its short name."""
+    codes: list[str] = []
+    for group in groups:
+        for line in (group.outbound, group.inbound):
+            codes += [line.origin, *(stop.airport for stop in line.stops), line.destination]
+    return tuple(
+        AirportName(code, name)
+        for code in dict.fromkeys(codes)
+        if (name := names.airport_name(code)) is not None
+    )
+
+
+def legend(route: Route, names: Names) -> tuple[LegendItem, ...]:
+    """The modes this route uses, in a fixed order, with their average speed."""
+    labels: dict[Mode, str] = {
+        "train": _("high-speed"),
+        "sleeper": _("sleeper"),
+        "flight": _("flight"),
+    }
+    used = {leg.option.mode for leg in route.legs}
+    speeds = names.reference.speeds_kmh
+    return tuple(
+        LegendItem(mode, label, f"~{speeds[mode]} km/h")
+        for mode, label in labels.items()
+        if mode in used
     )
 
 
@@ -275,22 +337,6 @@ def _leg_item(leg: PlannedLeg) -> TimelineItem:
     return TimelineItem(kind="leg", mode=option.mode, duration=duration_label(option.minutes))
 
 
-def legend(route: Route, names: Names) -> tuple[LegendItem, ...]:
-    """The modes this route uses, in a fixed order, with their average speed."""
-    labels: dict[Mode, str] = {
-        "train": _("high-speed"),
-        "sleeper": _("sleeper"),
-        "flight": _("flight"),
-    }
-    used = {leg.option.mode for leg in route.legs}
-    speeds = names.reference.speeds_kmh
-    return tuple(
-        LegendItem(mode, label, f"~{speeds[mode]} km/h")
-        for mode, label in labels.items()
-        if mode in used
-    )
-
-
 def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:
     """Every night of the window in date order: hotel stays and sleeper trains."""
     spans = [
@@ -306,7 +352,14 @@ def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:
 
 def _span(kind: Literal["stay", "sleeper"], name: str, first: date, nights: int) -> DaySpan:
     leave = first + timedelta(days=nights)
-    return DaySpan(kind, name, nights, i18n.short_day(first), i18n.short_day(leave))
+    return DaySpan(
+        kind,
+        name,
+        nights,
+        ngettext("{n} night", "{n} nights", nights).format(n=nights),
+        i18n.numeric_day(first),
+        i18n.numeric_day(leave),
+    )
 
 
 def window_dots(

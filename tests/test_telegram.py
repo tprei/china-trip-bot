@@ -123,7 +123,11 @@ def test_weekly_summary_goes_out_once(
     sunday = datetime(2026, 11, 8, 9, 30)
     assert maybe_send_summary(deps, sunday)
     assert not maybe_send_summary(deps, sunday.replace(hour=11))
-    assert [(sent.kind, sent.topic) for sent in messenger.sent] == [("photo", 6)]
+    assert [(sent.kind, sent.body, sent.topic) for sent in messenger.sent] == [
+        ("album", (b"summary", b"map"), 6)
+    ]
+    assert messenger.sent[0].caption == '<a href="https://trip.example/dash">Details</a>'
+    assert deck.calls == ["summary B", "map B"]
     summary = repo.last_summary(conn)
     assert summary is not None and set(summary[1]) == {"A", "B", "C"}
 
@@ -135,23 +139,30 @@ def test_each_summary_replaces_only_the_bots_own_pin(
     deps, messenger = bot(config, reference, conn, FakeDeck())
     assert maybe_send_summary(deps, datetime(2026, 11, 8, 9, 30))
     assert maybe_send_summary(deps, datetime(2026, 11, 15, 9, 30))
-    assert messenger.pins == [("pin", 1), ("pin", 2), ("unpin", 1)]
+    assert messenger.pins == [("pin", 1), ("pin", 3), ("unpin", 1)]
 
 
+@pytest.mark.parametrize(
+    "failure",
+    [
+        TelegramError("pinChatMessage: not enough rights to manage pinned messages"),
+        httpx.ReadTimeout("pinChatMessage timed out"),
+    ],
+)
 def test_a_failed_pin_never_resends_the_summary(
-    config: TripConfig, reference: Reference, world: World
+    config: TripConfig, reference: Reference, world: World, failure: Exception
 ) -> None:
     conn, _ = world
     deps, messenger = bot(config, reference, conn, FakeDeck())
-    messenger.pin_error = "not enough rights to manage pinned messages in the chat"
+    messenger.pin_failure = failure
     logged: list[str] = []
     deps.log = logged.append
     sunday = datetime(2026, 11, 8, 9, 30)
     assert maybe_send_summary(deps, sunday)
     assert not maybe_send_summary(deps, sunday.replace(hour=11))
-    assert [sent.kind for sent in messenger.sent] == ["photo"]
+    assert [sent.kind for sent in messenger.sent] == ["album"]
     assert repo.last_summary(conn) is not None
-    assert any("not enough rights" in line for line in logged)
+    assert any("pinChatMessage" in line for line in logged)
 
 
 def test_nightly_alerts_become_cards(
@@ -205,6 +216,28 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
     assert body["message_thread_id"] == 6
     assert b'name="photo"' in seen[1].content
     assert sent == 7
+
+
+def test_album_attaches_each_card_and_captions_the_first() -> None:
+    seen: list[httpx.Request] = []
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(
+            200, json={"ok": True, "result": [{"message_id": 4}, {"message_id": 5}]}
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(answer)) as client:
+        ids = TelegramApi(client, "TOKEN").send_album(CHAT, (b"one", b"two"), "<b>c</b>", topic=6)
+
+    body = seen[0].content.decode("latin-1")
+    media = json.loads(body.split('name="media"\r\n\r\n')[1].split("\r\n--")[0])
+    assert ids == [4, 5]
+    assert seen[0].url.path == "/botTOKEN/sendMediaGroup"
+    assert [item["media"] for item in media] == ["attach://card0", "attach://card1"]
+    assert media[0]["caption"] == "<b>c</b>" and "caption" not in media[1]
+    assert 'name="card0"' in body and 'name="card1"' in body
+    assert 'name="message_thread_id"\r\n\r\n6' in body
 
 
 def test_get_updates_long_polls_from_the_offset() -> None:

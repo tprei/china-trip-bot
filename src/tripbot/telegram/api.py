@@ -36,6 +36,14 @@ class Messenger(Protocol):
         topic: int | None = None,
     ) -> int: ...
 
+    def send_album(
+        self,
+        chat_id: str,
+        pngs: tuple[bytes, ...],
+        caption: str | None = None,
+        topic: int | None = None,
+    ) -> list[int]: ...
+
     def pin_message(self, chat_id: str, message_id: int) -> None: ...
 
     def unpin_message(self, chat_id: str, message_id: int) -> None: ...
@@ -99,6 +107,28 @@ class TelegramApi:
             "sendPhoto", http_timeout=60, files={"photo": ("card.png", png, "image/png")}, **fields
         )
         return int(result["message_id"])
+
+    def send_album(
+        self,
+        chat_id: str,
+        pngs: tuple[bytes, ...],
+        caption: str | None = None,
+        topic: int | None = None,
+    ) -> list[int]:
+        """Photos as one swipeable album; only the first photo's caption is shown."""
+        media: list[dict[str, str]] = [
+            {"type": "photo", "media": f"attach://card{index}"} for index in range(len(pngs))
+        ]
+        if caption:
+            media[0] |= {"caption": caption, "parse_mode": "HTML"}
+        fields: dict[str, Any] = {"chat_id": chat_id, "media": json.dumps(media)}
+        if topic is not None:
+            fields["message_thread_id"] = topic
+        files = {
+            f"card{index}": (f"card{index}.png", png, "image/png") for index, png in enumerate(pngs)
+        }
+        result = self._call("sendMediaGroup", http_timeout=90, files=files, **fields)
+        return [int(message["message_id"]) for message in result]
 
     def pin_message(self, chat_id: str, message_id: int) -> None:
         self._call(

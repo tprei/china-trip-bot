@@ -14,7 +14,7 @@ from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
 from tripbot.reference import Reference
 from tripbot.render.samples import SampleSource
 from tripbot.store.db import connect
-from tripbot.telegram.api import Button, TelegramError
+from tripbot.telegram.api import Button
 from tripbot.telegram.bot import BotDeps
 from tripbot.telegram.context import BotContext, CardDeck, DeckOpener
 
@@ -27,21 +27,26 @@ World = tuple[sqlite3.Connection, NightlyReport]
 @dataclass
 class Sent:
     kind: str
-    body: str | bytes
+    body: str | bytes | tuple[bytes, ...]
     button: Button | None
     topic: int | None = None
+    caption: str | None = None
 
 
 @dataclass
 class FakeMessenger:
+    """Records what the bot sends; message ids count up per photo, like Telegram's."""
+
     sent: list[Sent] = field(default_factory=list)
     pins: list[tuple[str, int]] = field(default_factory=list)
-    pin_error: str | None = None
+    pin_failure: Exception | None = None
+    next_id: int = 1
 
     def send_message(
         self, chat_id: str, text: str, button: Button | None = None, topic: int | None = None
     ) -> None:
         self.sent.append(Sent("text", text, button, topic))
+        self.next_id += 1
 
     def send_photo(
         self,
@@ -51,12 +56,25 @@ class FakeMessenger:
         button: Button | None = None,
         topic: int | None = None,
     ) -> int:
-        self.sent.append(Sent("photo", png, button, topic))
-        return len(self.sent)
+        self.sent.append(Sent("photo", png, button, topic, caption))
+        self.next_id += 1
+        return self.next_id - 1
+
+    def send_album(
+        self,
+        chat_id: str,
+        pngs: tuple[bytes, ...],
+        caption: str | None = None,
+        topic: int | None = None,
+    ) -> list[int]:
+        self.sent.append(Sent("album", pngs, None, topic, caption))
+        ids = list(range(self.next_id, self.next_id + len(pngs)))
+        self.next_id += len(pngs)
+        return ids
 
     def pin_message(self, chat_id: str, message_id: int) -> None:
-        if self.pin_error is not None:
-            raise TelegramError(self.pin_error)
+        if self.pin_failure is not None:
+            raise self.pin_failure
         self.pins.append(("pin", message_id))
 
     def unpin_message(self, chat_id: str, message_id: int) -> None:
