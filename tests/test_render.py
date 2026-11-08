@@ -9,6 +9,7 @@ from playwright.sync_api import sync_playwright
 from telegram_fakes import World
 
 from tripbot.config import TripConfig
+from tripbot.domain.money import Money
 from tripbot.pipeline.nightly import NightlyReport
 from tripbot.reference import Reference
 from tripbot.render import details, views
@@ -42,6 +43,11 @@ def test_summary_view_shows_every_group_and_currency(
     assert view is not None
     assert [group.name for group in view.groups] == ["Thiago", "Luísa + Gabi", "David + Mari"]
     assert [money.flag for money in view.per_person] == ["eu", "br", "gb"]
+    best = report.rankings.main["B"].best
+    assert best is not None
+    share = Money(best.total_eur.minor // 5, "EUR")
+    brl = report.rankings.rates.from_eur(share, "BRL").whole()
+    assert (view.per_person[0].text, view.per_person[1].text) == (share.whole(), brl)
     assert view.groups[1].price.startswith("£") and view.groups[1].price_note == "each"
     assert view.groups[2].outbound.note == "via MAD"
     assert [dot.id for dot in view.windows] == ["C", "A", "B"]

@@ -125,7 +125,7 @@
     <div class="day-timeline" role="list" aria-label="Nights in China, with arrival and departure dates" style="grid-template-columns:{% for span in view.days %}{{ span.nights }}fr {% endfor %}">
       {% for span in view.days %}
       <div class="day-span {{ span.kind }}" role="listitem" aria-label="{{ span.name }}: {{ span.arrive }} to {{ span.leave }}, {{ span.nights }} {{ 'night' if span.nights == 1 else 'nights' }}">
-        <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 26) }}{% else %}{{ span.name }}{% endif %}</div>
+        <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 26) }}{% else %}<span>{{ span.name }}</span>{% endif %}</div>
         <div class="day-band"></div>
         <span class="day-date {{ 'first' if loop.first }}" style="--date-row:{{ loop.index0 % 2 }}">{{ span.arrive }}</span>
         {% if loop.last %}<span class="day-date final" style="--date-row:{{ loop.index % 2 }}">{{ span.leave }}</span>{% endif %}

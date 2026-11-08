@@ -66,7 +66,6 @@ class GroupRow:
 class TimelineItem:
     kind: str  # stop | leg
     name: str = ""
-    note: str = ""
     endpoint: bool = False
     mode: str = ""
     duration: str = ""
@@ -238,27 +237,20 @@ def stop_lines(offer: Offer) -> tuple[StopLine, ...]:
 def timeline(route: Route, names: Names) -> tuple[TimelineItem, ...]:
     items: list[TimelineItem] = []
     if route.entry != route.order[0]:
-        items.append(
-            TimelineItem(kind="stop", name=names.city(route.entry), note="in", endpoint=True)
-        )
+        items.append(TimelineItem(kind="stop", name=names.city(route.entry), endpoint=True))
     legs = list(route.legs)
     if legs and route.entry != route.order[0]:
         items.append(_leg_item(legs.pop(0)))
     for index, stay in enumerate(route.stays):
         is_first = index == 0 and route.entry == stay.city
         is_last = index == len(route.stays) - 1 and route.exit == stay.city
-        note = "in" if is_first else "out" if is_last else f"{stay.nights} nights"
         items.append(
-            TimelineItem(
-                kind="stop", name=names.city(stay.city), note=note, endpoint=is_first or is_last
-            )
+            TimelineItem(kind="stop", name=names.city(stay.city), endpoint=is_first or is_last)
         )
         if legs:
             items.append(_leg_item(legs.pop(0)))
     if route.exit != route.order[-1]:
-        items.append(
-            TimelineItem(kind="stop", name=names.city(route.exit), note="out", endpoint=True)
-        )
+        items.append(TimelineItem(kind="stop", name=names.city(route.exit), endpoint=True))
     return tuple(items)
 
 
