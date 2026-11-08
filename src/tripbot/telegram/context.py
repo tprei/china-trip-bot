@@ -7,6 +7,7 @@ from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Protocol
 
 from tripbot.config import TripConfig
@@ -38,6 +39,7 @@ class BotContext:
     now: datetime
     open_deck: DeckOpener
     dashboard_url: str | None = None
+    banner_path: Path | None = None
     _rankings: Rankings | None = field(default=None, repr=False)
 
     def rankings(self) -> Rankings:

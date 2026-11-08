@@ -59,6 +59,7 @@ Logs are in `var/logs/`. The database is `var/tripbot.sqlite3`; copy it to back 
 
 - Dates, people, rules: edit `config/trip.yaml`, run `uv run tripbot check-config`. Both tasks pick it up on their next run; restart `tripbot-bot` for the listener.
 - Train and fare facts: edit `data/*.yaml` and update its `as_of`.
+- The poster `/banner` sends: replace `var/banner.png` (outside git). The bot reads it on each request, so no restart is needed.
 - Updating the code: `git pull && uv sync --frozen`.
 
 ## Development
