@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 pot="$(mktemp --suffix=.pot)"
 trap 'rm -f "$pot"' EXIT
 
-uv run pybabel --quiet extract --no-location --sort-output --no-wrap \
+uv run pybabel --quiet extract --no-location --sort-output --no-wrap --keywords gettext_noop \
   --mapping-file babel.cfg --project tripbot --output-file "$pot" src
 uv run pybabel --quiet update --no-fuzzy-matching --ignore-obsolete --no-wrap \
   --input-file "$pot" --output-dir src/tripbot/locales --domain tripbot
