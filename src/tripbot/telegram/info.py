@@ -138,7 +138,9 @@ def flights(context: BotContext, request: Request) -> Reply:
     group = _group_arg(context, request.args)
     if group is None:
         names = ", ".join(g.name for g in context.config.groups)
-        return Reply(text=i18n._("Who? {names} (or DUB, LON, SAO)").format(names=esc(names)))
+        homes = ", ".join(dict.fromkeys(g.origin for g in context.config.groups))
+        text = i18n._("Who? {names} (or {homes})").format(names=names, homes=homes)
+        return Reply(text=esc(text))
     window_id = context.window_arg(request.args)
     window = context.config.window(window_id) if window_id else None
     if window is None:
