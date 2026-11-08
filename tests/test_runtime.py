@@ -51,4 +51,4 @@ def test_build_dashboard_works_on_an_empty_store(tmp_path: Path) -> None:
         (tmp_path / name).symlink_to(ROOT / name)
     assert main(["--root", str(tmp_path), "build-dashboard"]) == 0
     html = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
-    assert "No complete combo yet" in html
+    assert "Ainda sem combinação completa" in html

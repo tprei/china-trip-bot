@@ -48,7 +48,7 @@ def test_trains_and_sleepers_come_from_the_reference_table(
     chat: tuple[BotDeps, FakeMessenger],
 ) -> None:
     trains = ask(chat, "/trains beijing shanghai")
-    assert "D7 / D5 / D9" in trains and "G high-speed" in trains
+    assert "D7 / D5 / D9" in trains and "Trem rápido G" in trains
     assert "Zhangjiajie" not in trains
     sleepers = ask(chat, "/sleepers")
     assert "D919" in sleepers and "Mon/Fri/Sat/Sun" in sleepers
@@ -57,7 +57,7 @@ def test_trains_and_sleepers_come_from_the_reference_table(
 
 def test_visa_says_a_visa_is_needed(chat: tuple[BotDeps, FakeMessenger]) -> None:
     reply = ask(chat, "/visa")
-    assert reply.startswith("<b>Visa needed · Brazilian passports</b>")
+    assert reply.startswith("<b>Visto necessário")
     assert "Tue 1 Dec" in reply
 
 

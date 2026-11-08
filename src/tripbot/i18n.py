@@ -108,6 +108,11 @@ def short_day(value: date) -> str:
     return format_date(value, "d MMM", locale=_current.language.locale)
 
 
+def long_day(value: date) -> str:
+    """`31 de dez. de 2026` in pt_BR, `Dec 31, 2026` in en."""
+    return format_date(value, "medium", locale=_current.language.locale)
+
+
 def date_range(start: date, end: date) -> str:
     """`30 ago. – 12 set.` in pt_BR, `30 Aug – 12 Sep` in en; a shared month once: `9 – 22 ago.`."""
     if (start.year, start.month) == (end.year, end.month):

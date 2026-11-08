@@ -6,15 +6,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from tripbot import i18n
 from tripbot.domain.flights import Offer
 from tripbot.domain.schedule import train_sale_dates
 from tripbot.domain.trip import Group, Window
 from tripbot.domain.visa import VisaInfo
+from tripbot.i18n import _
 from tripbot.pipeline.state import window_offers
 from tripbot.render import details, views
 from tripbot.render.cards import render_html
 from tripbot.render.deck import Deck
-from tripbot.render.names import day_label
 from tripbot.store import repo
 
 TOP_FLIGHTS = 3
@@ -64,6 +65,7 @@ class DashboardView:
     windows: details.CompareView
     history: details.HistoryView | None
     visa: VisaInfo
+    visa_dates: str
     todos: tuple[str, ...]
 
 
@@ -71,12 +73,13 @@ def build_dashboard(deck: Deck, now: datetime) -> DashboardView:
     """`deck` supplies the same numbers the cards use; its renderer is never called."""
     selected = deck.best_window() or deck.config.windows[0].id
     return DashboardView(
-        updated=f"{day_label(now.date())} · {now:%H:%M}",
+        updated=f"{i18n.day(now.date())} · {now:%H:%M}",
         selected=selected,
         panels=tuple(_panel(deck, window) for window in deck.config.windows),
         windows=details.compare_windows(deck.rankings.main),
         history=details.build_history(deck.history(), selected),
         visa=deck.reference.visa,
+        visa_dates=_visa_dates(deck.reference.visa),
         todos=tuple(item.text for item in repo.todos(deck.conn)),
     )
 
@@ -92,6 +95,14 @@ def write_site(view: DashboardView, site_dir: Path) -> Path:
     return path
 
 
+def _visa_dates(visa: VisaInfo) -> str:
+    return _("Visa-free ends {ends} · decide by {decide} · checked {checked}").format(
+        ends=i18n.long_day(visa.visa_free_until),
+        decide=i18n.long_day(visa.decide_by),
+        checked=i18n.long_day(visa.as_of),
+    )
+
+
 def _panel(deck: Deck, window: Window) -> WindowPanel:
     ranking = deck.rankings.main[window.id]
     best = ranking.best
@@ -104,8 +115,8 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
     sales = train_sale_dates(best.route) if best else []
     return WindowPanel(
         id=window.id,
-        dates=window.label(),
-        total=best.total_eur.whole() if best else None,
+        dates=i18n.date_range(window.start, window.end),
+        total=i18n.money(best.total_eur) if best else None,
         others=(
             views.other_currencies(best.total_eur, deck.rankings.rates, deck.currencies())
             if best
@@ -115,16 +126,16 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
         combos=tuple(
             ComboLine(
                 pair=f"{names.city(c.entry)} → {names.city(c.exit)}",
-                total=c.total_eur.whole(),
+                total=i18n.money(c.total_eur),
                 within_rule=c.within_rule,
                 best=c is best,
             )
             for c in ranking.combos[:TOP_COMBOS]
         ),
-        route=details.build_route(best, names, "Main plan") if best else None,
+        route=details.build_route(best, names, _("Main plan")) if best else None,
         alternatives=details.compare_alternatives(ranking, alternatives, names),
         reminders=tuple(
-            f"{day_label(sale.opens)} · {names.city(sale.origin)} → "
+            f"{i18n.day(sale.opens)} · {names.city(sale.origin)} → "
             f"{names.city(sale.destination)} · {sale.train}"
             for sale in sales
         ),
@@ -139,7 +150,7 @@ def _group(deck: Deck, window: Window, group: Group) -> GroupFlights:
     def priced(offers: list[Offer]) -> tuple[PricedFlight, ...]:
         return tuple(
             PricedFlight(
-                price=rates.from_eur(rates.to_eur(offer.price), currency).whole(),
+                price=i18n.money(rates.from_eur(rates.to_eur(offer.price), currency)),
                 line=views.flight_line(offer, deck.names),
             )
             for offer in offers[:TOP_FLIGHTS]

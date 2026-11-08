@@ -2,18 +2,18 @@
 # Volatile: shown with its date, never used for ranking. Recheck before booking.
 
 as_of: 2026-11-05
-passport: Brazilian
-status: Visa needed   # unless the visa-free scheme is extended past 2026
+passport: brasileiro
+status: Visto necessário   # unless the visa-free scheme is extended past 2026
 visa_free_until: 2026-12-31
 decide_by: 2026-12-01
 facts:
-  - 30-day visa-free entry for Brazilians ends 31 Dec 2026; no extension announced yet.
-  - The last two extensions were announced in November (22 Nov 2024, 3 Nov 2025).
-  - 240-hour visa-free transit needs an onward ticket to a third country, so it does not cover a round trip.
+  - A entrada sem visto por 30 dias para brasileiros termina em 31 de dezembro de 2026; nenhuma prorrogação foi anunciada ainda.
+  - As duas últimas prorrogações foram anunciadas em novembro (22/11/2024 e 03/11/2025).
+  - O trânsito de 240 horas sem visto exige passagem para um terceiro país, então não vale para ida e volta.
 steps:
-  - Apply for an L (tourist) visa at the Chinese visa centre where you live (Dublin, London, São Paulo).
-  - Have ready a passport valid 6+ months past the trip, a photo, flight and hotel bookings, and the itinerary.
-  - Fill in the online arrival card within 24 h before landing.
+  - Peça o visto L (turismo) no centro de vistos da China onde você mora (Dublin, Londres, São Paulo).
+  - Separe passaporte válido por mais de 6 meses após a viagem, foto, reservas de voo e hotel e o roteiro.
+  - Preencha o cartão de chegada online nas 24 h antes do pouso.
 sources:
   - https://br.china-embassy.gov.cn/por/lqfw/lqfw2/202601/t20260106_11807321.htm
   - https://en.nia.gov.cn/n147418/n147463/c183412/content.html
