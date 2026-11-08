@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 17:21+0000\n"
+"POT-Creation-Date: 2026-11-08 17:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -100,6 +100,12 @@ msgstr "/historico"
 
 msgid "/history [window]"
 msgstr "/historico [janela]"
+
+msgid "/links"
+msgstr "/links"
+
+msgid "/links [window]"
+msgstr "/links [janela]"
 
 msgid "/map"
 msgstr "/mapa"
@@ -286,6 +292,10 @@ msgid_plural "Group total · all %(count)s people"
 msgstr[0] "Total do grupo · %(count)s pessoa"
 msgstr[1] "Total do grupo · todas as %(count)s pessoas"
 
+#, python-brace-format
+msgid "Group total: {total}"
+msgstr "Total do grupo: {total}"
+
 msgid "HISTORY"
 msgstr "HISTÓRICO"
 
@@ -295,8 +305,14 @@ msgstr "Histórico"
 msgid "History starts after two nights of data."
 msgstr "O histórico começa depois de duas noites de dados."
 
+msgid "How the total adds up"
+msgstr "Como chega no total"
+
 msgid "IN"
 msgstr "IDA"
+
+msgid "Inside China"
+msgstr "Na China"
 
 #, python-format
 msgid "Inside China <b>%(internal)s</b> / person"
@@ -482,6 +498,9 @@ msgstr "Começa depois de duas noites de dados."
 msgid "Steps"
 msgstr "Etapas"
 
+msgid "TBD link not available yet"
+msgstr "TBD Link ainda não disponível"
+
 #, python-brace-format
 msgid "Target set: {amount}"
 msgstr "Meta definida: {amount}"
@@ -588,6 +607,10 @@ msgstr "gatilhos de alerta"
 msgid "alert when a window gets under this total"
 msgstr "avisa quando o total de uma janela fica abaixo desse valor"
 
+msgctxt "flight direction"
+msgid "back"
+msgstr "volta"
+
 msgid "best and fairest plan for a window"
 msgstr "melhor plano e mais justo para uma janela"
 
@@ -619,6 +642,9 @@ msgstr "estim."
 
 msgid "estimate"
 msgstr "estimativa"
+
+msgid "every ticket with its link, and how the total adds up"
+msgstr "cada passagem com link e como chega no total"
 
 msgid "flight"
 msgstr "voo"
@@ -675,6 +701,10 @@ msgstr "ok"
 
 msgid "open the full dashboard"
 msgstr "abrir o painel completo"
+
+msgctxt "flight direction"
+msgid "out"
+msgstr "ida"
 
 msgid "out of rule"
 msgstr "fora da regra"

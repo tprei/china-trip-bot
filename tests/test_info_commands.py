@@ -63,6 +63,23 @@ def test_about_walks_the_route_in_order_and_finds_cities_by_name(
     assert ask(chat, "/about lhasa").startswith("No guide for lhasa. Try one of: Changsha")
 
 
+def test_links_list_every_ticket_and_add_up_to_the_group_total(
+    chat: tuple[BotDeps, FakeMessenger],
+) -> None:
+    deps, _ = chat
+    best = deps.context(NOW).rankings().main["A"].best
+    assert best is not None
+    reply = ask(chat, "/links a")
+    flights = [line for line in reply.splitlines() if line.startswith(("out ", "back "))]
+    assert len(flights) == 2 * len(best.choices)
+    assert all('<a href="https://www.google.com/travel/flights/search?tfs=' in f for f in flights)
+    assert reply.count("TBD link not available yet") == len(best.route.legs)
+    running = [line.rsplit("→ ", 1)[1] for line in reply.splitlines() if " = " in line]
+    assert len(running) == len(best.choices) + 1
+    assert running[-1] == i18n.money(best.total_eur)
+    assert reply.endswith(f"<b>Group total: {i18n.money(best.total_eur)}</b>")
+
+
 def test_trains_and_sleepers_come_from_the_reference_table(
     chat: tuple[BotDeps, FakeMessenger],
 ) -> None:
