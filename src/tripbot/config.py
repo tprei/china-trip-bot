@@ -13,7 +13,7 @@ from babel import UnknownLocaleError
 
 from tripbot import i18n
 from tripbot.domain.money import Rates
-from tripbot.domain.plan import Plan
+from tripbot.domain.plan import MAX_STOPS, Plan
 from tripbot.domain.trip import Flex, Group, Origin, Window
 
 
@@ -250,11 +250,17 @@ def _check_windows(config: TripConfig) -> None:
 
 
 def _check_route(config: TripConfig) -> None:
-    if not config.route.stops:
+    stops = config.route.stops
+    if not stops:
         raise ConfigError("the route has no stops")
-    for stop in config.route.stops:
+    if len(stops) > MAX_STOPS:
+        raise ConfigError(f"the route has {len(stops)} stops; ranking handles at most {MAX_STOPS}")
+    for stop in stops:
         if stop not in config.route.nights:
             raise ConfigError(f"route stop {stop} has no nights")
+    for window in config.windows:
+        if window.nights < len(stops):
+            raise ConfigError(f"window {window.id} is too short for {len(stops)} stops")
 
 
 def _check_rates(config: TripConfig) -> None:

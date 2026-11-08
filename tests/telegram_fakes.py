@@ -143,7 +143,7 @@ def bot(
 ) -> tuple[BotDeps, FakeMessenger]:
     messenger = FakeMessenger()
     deps = BotDeps(
-        config=config,
+        base=config,
         reference=reference,
         conn=conn,
         messenger=messenger,

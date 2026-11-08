@@ -93,6 +93,17 @@ MIGRATIONS: tuple[str, ...] = (
     ALTER TABLE snapshots ADD COLUMN plan_key TEXT NOT NULL DEFAULT '';
     ALTER TABLE summaries ADD COLUMN plan_keys_json TEXT NOT NULL DEFAULT '{}';
     """,
+    """
+    CREATE TABLE plan_changes (
+        id INTEGER PRIMARY KEY,
+        kind TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        detail TEXT NOT NULL,
+        plan_json TEXT NOT NULL,
+        changed_by TEXT NOT NULL,
+        changed_at TEXT NOT NULL
+    );
+    """,
 )
 
 
