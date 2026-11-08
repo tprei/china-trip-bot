@@ -88,6 +88,28 @@ def to_offer(flight: Flights, key: SearchKey, airline_names: dict[str, str]) -> 
     )
 
 
+def search_url(offer: Offer, language: str, currency: str) -> str:
+    """Google Flights on the offer's day and airports, narrowed to its airlines and stops."""
+    airlines = list(dict.fromkeys(segment.airline_code for segment in offer.segments))
+    query = create_query(
+        flights=[
+            FlightQuery(
+                date=offer.depart.date().isoformat(),
+                from_airport=offer.origin,
+                to_airport=offer.destination,
+                max_stops=offer.stops,
+                airlines=airlines,
+            )
+        ],
+        trip="one-way",
+        passengers=Passengers(adults=1),
+        language=language,
+        currency=currency,
+        max_stops=offer.stops,
+    )
+    return query.url()
+
+
 def _segment(single: SingleFlight, names: dict[str, str], fallback: list[str]) -> Segment:
     if type(single.duration) is not int or single.duration <= 0:
         raise ValueError("invalid segment duration")

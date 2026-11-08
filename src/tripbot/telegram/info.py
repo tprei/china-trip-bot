@@ -22,6 +22,7 @@ from tripbot.store import repo
 from tripbot.telegram.commands import NO_DATA, Reply, Request, command
 from tripbot.telegram.context import BotContext
 from tripbot.telegram.format import bold, code, esc, lines
+from tripbot.telegram.links import links
 
 TODO_SEEDED_KEY = "todos_seeded"
 TOP_OPTIONS = 3
@@ -36,6 +37,12 @@ def register_info_commands() -> None:
             gettext_noop("/flights <name or origin> [window]"),
             gettext_noop("top flights for one group"),
             flights,
+        ),
+        (
+            gettext_noop("/links"),
+            gettext_noop("/links [window]"),
+            gettext_noop("every ticket with its link, and how the total adds up"),
+            links,
         ),
         (
             gettext_noop("/cities"),
