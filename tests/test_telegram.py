@@ -85,6 +85,32 @@ def test_weekly_summary_goes_out_once(
     assert summary is not None and set(summary[1]) == {"A", "B", "C"}
 
 
+def test_each_summary_replaces_only_the_bots_own_pin(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, _ = world
+    deps, messenger = bot(config, reference, conn, FakeDeck())
+    assert maybe_send_summary(deps, datetime(2026, 11, 8, 9, 30))
+    assert maybe_send_summary(deps, datetime(2026, 11, 15, 9, 30))
+    assert messenger.pins == [("pin", 1), ("pin", 2), ("unpin", 1)]
+
+
+def test_a_failed_pin_never_resends_the_summary(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, _ = world
+    deps, messenger = bot(config, reference, conn, FakeDeck())
+    messenger.pin_error = "not enough rights to manage pinned messages in the chat"
+    logged: list[str] = []
+    deps.log = logged.append
+    sunday = datetime(2026, 11, 8, 9, 30)
+    assert maybe_send_summary(deps, sunday)
+    assert not maybe_send_summary(deps, sunday.replace(hour=11))
+    assert [sent.kind for sent in messenger.sent] == ["photo"]
+    assert repo.last_summary(conn) is not None
+    assert any("not enough rights" in line for line in logged)
+
+
 def test_nightly_alerts_become_cards(
     config: TripConfig, reference: Reference, world: World
 ) -> None:
@@ -118,12 +144,14 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
         seen.append(request)
         if request.url.path.endswith("/getMe"):
             return httpx.Response(401, json={"ok": False, "description": "Unauthorized"})
+        if request.url.path.endswith("/sendPhoto"):
+            return httpx.Response(200, json={"ok": True, "result": {"message_id": 7}})
         return httpx.Response(200, json={"ok": True, "result": {}})
 
     with httpx.Client(transport=httpx.MockTransport(answer)) as client:
         api = TelegramApi(client, "TOKEN")
         api.send_message(CHAT, "<b>hi</b>", Button("Details", "https://x.example"))
-        api.send_photo(CHAT, b"\x89PNG", None, Button("Details", "https://x.example"))
+        sent = api.send_photo(CHAT, b"\x89PNG", None, Button("Details", "https://x.example"))
         with pytest.raises(TelegramError, match="Unauthorized"):
             api.username()
 
@@ -132,6 +160,7 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
     assert body["parse_mode"] == "HTML"
     assert body["reply_markup"]["inline_keyboard"][0][0]["url"] == "https://x.example"
     assert b'name="photo"' in seen[1].content
+    assert sent == 7
 
 
 def test_get_updates_long_polls_from_the_offset() -> None:

@@ -32,7 +32,7 @@ To add someone from an existing origin, add their name to that group's `people`.
    uv run playwright install --with-deps chromium
    uv run tripbot check-config
    ```
-2. **Telegram.** Message @BotFather, `/newbot`, keep the token. Then `/setprivacy` → Disable, so the bot sees commands in the group. Create the group, add the bot, send any message there and open `https://api.telegram.org/bot<TOKEN>/getUpdates`: the chat id is the negative number under `chat.id`.
+2. **Telegram.** Message @BotFather, `/newbot`, keep the token. Then `/setprivacy` → Disable, so the bot sees commands in the group. Create the group, add the bot, send any message there and open `https://api.telegram.org/bot<TOKEN>/getUpdates`: the chat id is the negative number under `chat.id`. To have each weekly summary pinned, make the bot a group admin with the Pin messages right; it only unpins the summary it pinned before, so other pinned messages stay. Changing admin rights can upgrade a basic group to a supergroup with a new chat id, so check `chat.id` in `getUpdates` again afterwards.
 3. **Secrets.** `cp .env.example .env` and fill in `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID` and `SERPAPI_KEY`. The bot only answers in that one chat.
 4. **First run.** `uv run tripbot nightly`. It prints each source's searches and the best total per window; the first night only fills the store, alerts start from the second.
 5. **Schedule it.** In an elevated PowerShell on Windows:

@@ -22,6 +22,7 @@ from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
 from tripbot.telegram.info import register_info_commands, seed_todos
 
 OFFSET_KEY = "telegram_offset"
+PINNED_KEY = "pinned_summary"
 RETRY_SECONDS = 30
 
 
@@ -87,13 +88,28 @@ def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
     context = deps.context(now_local)
     rankings = context.rankings()
     totals = {w: r.best.total_eur for w, r in rankings.main.items() if r.best is not None}
+    message_id: int | None = None
     if totals:
         with context.open_deck(context) as deck:
             png = deck.summary()
         if png is not None:
-            deps.messenger.send_photo(deps.chat_id, png, None, details_button(context))
+            message_id = deps.messenger.send_photo(deps.chat_id, png, None, details_button(context))
     repo.record_summary(deps.conn, week_key(now_local.date()), totals, now_local)
+    if message_id is not None:
+        pin_summary(deps, message_id)
     return True
+
+
+def pin_summary(deps: BotDeps, message_id: int) -> None:
+    """Pin the new summary and unpin only the one the bot pinned before; other pins stay."""
+    previous = repo.get_setting(deps.conn, PINNED_KEY)
+    try:
+        deps.messenger.pin_message(deps.chat_id, message_id)
+        repo.set_setting(deps.conn, PINNED_KEY, str(message_id))
+        if previous is not None:
+            deps.messenger.unpin_message(deps.chat_id, int(previous))
+    except TelegramError as error:
+        deps.log(f"pinning the summary failed: {error}")
 
 
 def run_forever(deps: BotDeps, api: TelegramApi) -> None:
