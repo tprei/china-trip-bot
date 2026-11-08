@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from tripbot import i18n
 from tripbot.domain.ranking import Combo
@@ -26,6 +26,7 @@ class Reply:
     album: tuple[bytes, ...] = ()
     caption: str | None = None
     button: Button | None = None
+    pin: bool = False  # post to the bot's own topic and pin it in place of the last summary
 
 
 @dataclass(frozen=True)
@@ -124,6 +125,20 @@ def help_command(context: BotContext, request: Request) -> Reply:
 def summary_command(context: BotContext, request: Request) -> Reply:
     with context.open_deck(context) as deck:
         return summary_album(context, deck)
+
+
+@command(
+    gettext_noop("/publish"),
+    gettext_noop("/publish"),
+    gettext_noop("post the summary to the alerts topic and pin it"),
+)
+def publish_command(context: BotContext, request: Request) -> Reply:
+    """The weekly post on demand, for when the plan changed: same album, same pin."""
+    with context.open_deck(context) as deck:
+        reply = summary_album(context, deck)
+    if not reply.album and reply.photo is None:
+        return reply
+    return replace(reply, pin=True)
 
 
 @command(

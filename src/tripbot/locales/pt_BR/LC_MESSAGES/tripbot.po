@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 18:05+0000\n"
+"POT-Creation-Date: 2026-11-08 18:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -151,6 +151,9 @@ msgstr "/pessoa adicionar <nome> <grupo> · remover <nome> · mover <nome> <grup
 
 msgid "/plan"
 msgstr "/plano"
+
+msgid "/publish"
+msgstr "/publicar"
 
 msgid "/reminders"
 msgstr "/lembretes"
@@ -644,6 +647,9 @@ msgstr "Começa depois de duas noites de dados."
 msgid "Steps"
 msgstr "Etapas"
 
+msgid "Summary posted and pinned in the bot's topic."
+msgstr "Resumo publicado e fixado no tópico do bot."
+
 msgid "TBD link not available yet"
 msgstr "TBD Link ainda não disponível"
 
@@ -947,6 +953,9 @@ msgstr "trens-leito: horários, dias e cabines"
 
 msgid "per person, on average"
 msgstr "por pessoa, em média"
+
+msgid "post the summary to the alerts topic and pin it"
+msgstr "publica o resumo no tópico de alertas e fixa"
 
 msgid "price chart"
 msgstr "gráfico de preços"
