@@ -20,7 +20,7 @@
       <div class="title" style="font-size:38px;margin:0">{{ journey.path }}</div>
       <div class="mono" style="font-size:23px">{{ journey.times }}</div>
       {% for line in journey.segments %}<div style="font-size:24px;line-height:1.4">{{ line }}</div>{% endfor %}
-      <div style="font-size:24px;color:var(--info)">{% trans connections=(journey.connections or _("none")) %}Connection: {{ connections }}{% endtrans %}</div>
+      <div style="font-size:24px;color:var(--info)">{% trans connections=(journey.connections or pgettext("connection", "none")) %}Connection: {{ connections }}{% endtrans %}</div>
     </div>
   </section>
   {% endfor %}

@@ -354,6 +354,10 @@ msgstr "sem combinação completa"
 msgid "none"
 msgstr "nenhum"
 
+msgctxt "connection"
+msgid "none"
+msgstr "nenhuma"
+
 msgid "ok"
 msgstr "ok"
 
