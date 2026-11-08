@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
+from typing import Literal
 
 from tripbot.domain.alerts import Alert
 from tripbot.domain.flights import Offer, duration_label
@@ -12,7 +13,7 @@ from tripbot.domain.money import Money, Rates
 from tripbot.domain.ranking import Combo, GroupChoice
 from tripbot.domain.routes import PlannedLeg, Route
 from tripbot.pipeline.state import Rankings
-from tripbot.render.names import Names, day_label, initials
+from tripbot.render.names import Names, clock, day_label, initials, short_date
 
 RAINIER_EUR_CENTS = 1_000  # a window is "rainier" at €10+ more weather cost per person
 FLAGS = {"GBP": "gb", "BRL": "br", "MXN": "mx", "EUR": "eu", "USD": "us"}
@@ -25,13 +26,24 @@ class MoneyLine:
 
 
 @dataclass(frozen=True)
+class StopLine:
+    """A connection; `wait` is empty for a same-plane stop."""
+
+    airport: str
+    wait: str
+
+
+@dataclass(frozen=True)
 class FlightLine:
     origin: str
     origin_city: str
     destination: str
     destination_city: str
-    stops: tuple[str, ...]
+    stops: tuple[StopLine, ...]
     day: str
+    depart_time: str
+    arrive_time: str
+    arrive_shift: str
     duration: str
     note: str
     airline_code: str
@@ -58,6 +70,15 @@ class TimelineItem:
     endpoint: bool = False
     mode: str = ""
     duration: str = ""
+
+
+@dataclass(frozen=True)
+class DaySpan:
+    kind: Literal["stay", "sleeper"]
+    name: str
+    nights: int
+    arrive: str
+    leave: str
 
 
 @dataclass(frozen=True)
@@ -93,9 +114,9 @@ class SummaryView:
     total: str
     delta: str | None
     delta_good: bool
-    others: tuple[MoneyLine, ...]
-    per_person: str
+    per_person: tuple[MoneyLine, ...]
     window_dates: str
+    window_days: str
     entry_code: str
     entry_city: str
     exit_code: str
@@ -103,6 +124,7 @@ class SummaryView:
     windows: tuple[WindowDot, ...]
     groups: tuple[GroupRow, ...]
     timeline: tuple[TimelineItem, ...]
+    days: tuple[DaySpan, ...]
     spark: Spark | None
     sources: tuple[SourceStatus, ...]
 
@@ -128,14 +150,18 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
     names = inputs.names
     delta, good = _delta(best.total_eur, inputs.reference_totals.get(inputs.window_id))
     people = sum(choice.group.headcount for choice in best.choices)
+    share = Money(best.total_eur.minor // people, "EUR")
     return SummaryView(
         date_label=day_label(inputs.today),
         total=best.total_eur.whole(),
         delta=delta,
         delta_good=good,
-        others=other_currencies(best.total_eur, rates, inputs.currencies),
-        per_person=Money(best.total_eur.minor // people, "EUR").whole(),
+        per_person=(
+            MoneyLine(text=share.whole(), flag=FLAGS["EUR"]),
+            *other_currencies(share, rates, inputs.currencies),
+        ),
         window_dates=best.window.label(),
+        window_days=f"{best.window.nights + 1} days",
         entry_code=_airport_of(best, "entry"),
         entry_city=names.city(best.entry),
         exit_code=_airport_of(best, "exit"),
@@ -143,6 +169,7 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
         windows=window_dots(inputs.rankings, inputs.reference_totals, inputs.window_id),
         groups=tuple(group_row(choice, rates, names) for choice in best.choices),
         timeline=timeline(best.route, names),
+        days=day_spans(best.route, names),
         spark=spark(inputs.history, inputs.window_id),
         sources=tuple(
             SourceStatus(name=_source_name(name), ok=worked > 0, label=f"{worked}/{tried}")
@@ -179,18 +206,33 @@ def group_row(choice: GroupChoice, rates: Rates, names: Names) -> GroupRow:
 
 def flight_line(offer: Offer, names: Names) -> FlightLine:
     first = offer.segments[0]
+    shift = (offer.arrive.date() - offer.depart.date()).days
     return FlightLine(
         origin=offer.origin,
         origin_city=names.airport_city(offer.origin),
         destination=offer.destination,
         destination_city=names.airport_city(offer.destination),
-        stops=offer.via,
+        stops=stop_lines(offer),
         day=day_label(offer.depart.date()),
+        depart_time=clock(offer.depart),
+        arrive_time=clock(offer.arrive),
+        arrive_shift=f"+{shift}" if shift > 0 else "",
         duration=duration_label(offer.total_minutes),
         note="direct" if not offer.via else "via " + ", ".join(offer.via),
         airline_code=first.airline_code,
         logo_url=first.logo_url,
     )
+
+
+def stop_lines(offer: Offer) -> tuple[StopLine, ...]:
+    """Stops in `offer.via` order: plane changes with the wait, same-plane stops without."""
+    waits = [duration_label(layover.minutes) for layover in offer.layovers]
+    stops: list[StopLine] = []
+    for index, segment in enumerate(offer.segments):
+        if index > 0:
+            stops.append(StopLine(airport=segment.origin, wait=waits[index - 1]))
+        stops.extend(StopLine(airport=airport, wait="") for airport in segment.stops_on_board)
+    return tuple(stops)
 
 
 def timeline(route: Route, names: Names) -> tuple[TimelineItem, ...]:
@@ -223,6 +265,24 @@ def timeline(route: Route, names: Names) -> tuple[TimelineItem, ...]:
 def _leg_item(leg: PlannedLeg) -> TimelineItem:
     option = leg.option
     return TimelineItem(kind="leg", mode=option.mode, duration=duration_label(option.minutes))
+
+
+def day_spans(route: Route, names: Names) -> tuple[DaySpan, ...]:
+    """Every night of the window in date order: hotel stays and sleeper trains."""
+    spans = [
+        (stay.arrive, _span("stay", names.city(stay.city), stay.arrive, stay.nights))
+        for stay in route.stays
+    ] + [
+        (leg.day, _span("sleeper", "Sleeper", leg.day, 1))
+        for leg in route.legs
+        if leg.option.overnight
+    ]
+    return tuple(span for _, span in sorted(spans, key=lambda dated: dated[0]))
+
+
+def _span(kind: Literal["stay", "sleeper"], name: str, first: date, nights: int) -> DaySpan:
+    leave = first + timedelta(days=nights)
+    return DaySpan(kind, name, nights, short_date(first), short_date(leave))
 
 
 def window_dots(
