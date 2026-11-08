@@ -38,9 +38,13 @@ class Money:
     def times(self, count: int) -> Money:
         return Money(self.minor * count, self.currency)
 
+    def units(self) -> Decimal:
+        """Rounded half up to whole units: 565151 EUR cents → 5652."""
+        return (Decimal(self.minor) / 100).quantize(Decimal(1), rounding=ROUND_HALF_UP)
+
     def whole(self) -> str:
         """Rounded to whole units with a thousands separator: `€5,651`."""
-        units = (Decimal(self.minor) / 100).quantize(Decimal(1), rounding=ROUND_HALF_UP)
+        units = self.units()
         sign = "−" if units < 0 else ""
         return f"{sign}{SYMBOLS.get(self.currency, self.currency + ' ')}{abs(units):,}"
 

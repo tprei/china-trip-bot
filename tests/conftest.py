@@ -6,12 +6,26 @@ from pathlib import Path
 import pytest
 from telegram_fakes import World, sample_world
 
+from tripbot import i18n
 from tripbot.config import TripConfig, load_config
 from tripbot.domain.routes import PlannerInputs
 from tripbot.reference import Reference, load_reference, planner_inputs
 from tripbot.store.db import connect
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(autouse=True)
+def english() -> Iterator[None]:
+    """Tests read English unless they ask for `pt_br`; a CLI run must not leak its language."""
+    i18n.activate(i18n.SOURCE_LOCALE)
+    yield
+    i18n.activate(i18n.SOURCE_LOCALE)
+
+
+@pytest.fixture
+def pt_br() -> None:
+    i18n.activate("pt_BR")
 
 
 @pytest.fixture(scope="session")

@@ -5,6 +5,7 @@ description = "Flight price tracker and Telegram bot for the China 2027 group tr
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "babel>=2.16",
   "faster-flights==3.8.0",
   "httpx>=0.28",
   "jinja2>=3.1",

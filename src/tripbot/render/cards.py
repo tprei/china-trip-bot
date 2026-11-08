@@ -10,6 +10,8 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from playwright.sync_api import Browser, Playwright, sync_playwright
 
+from tripbot import i18n
+
 HERE = Path(__file__).parent
 FONTS = HERE / "fonts"
 CARD_WIDTH = 1080
@@ -17,13 +19,16 @@ LOAD_TIMEOUT_MS = 15_000
 
 
 def environment() -> Environment:
-    return Environment(
+    env = Environment(
         loader=FileSystemLoader(HERE / "templates"),
         autoescape=select_autoescape(enabled_extensions=("html", "j2"), default=True),
         undefined=StrictUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
+        extensions=["jinja2.ext.i18n"],
     )
+    env.globals.update(gettext=i18n._, ngettext=i18n.ngettext, pgettext=i18n.pgettext)
+    return env
 
 
 def font_urls() -> dict[str, str]:
@@ -39,7 +44,11 @@ def font_urls() -> dict[str, str]:
 
 
 def render_html(template: str, **context: Any) -> str:
-    return environment().get_template(template).render(fonts=font_urls(), **context)
+    return (
+        environment()
+        .get_template(template)
+        .render(fonts=font_urls(), lang=i18n.html_lang(), **context)
+    )
 
 
 class CardRenderer:
