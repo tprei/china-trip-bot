@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from tripbot import i18n
 from tripbot.config import TripConfig
 from tripbot.domain.schedule import summary_due, week_key
 from tripbot.reference import Reference
@@ -72,7 +73,7 @@ def handle_update(
         reply = dispatch(deps.context(now), Request(name=name, args=args, sender=sender))
     except Exception as error:  # one bad command must not kill the loop
         deps.log(f"/{name} failed: {type(error).__name__}: {error}")
-        reply = Reply(text="Something went wrong with that command.")
+        reply = Reply(text=i18n._("Something went wrong with that command."))
     if reply is not None:
         send(deps.messenger, deps.chat_id, reply)
 
@@ -118,7 +119,15 @@ def pin_summary(deps: BotDeps, message_id: int) -> None:
 def run_forever(deps: BotDeps, api: TelegramApi) -> None:
     username = api.username()
     seed_todos(deps.context(deps.local_now()))
-    api.set_my_commands([(spec.name, spec.help) for spec in REGISTRY.values()])
+    api.set_my_commands(
+        [
+            (
+                i18n._(spec.name).removeprefix("/"),
+                f"{i18n._(spec.usage)} — {i18n._(spec.help)}",
+            )
+            for spec in REGISTRY.values()
+        ]
+    )
     deps.log(f"polling as @{username}")
     while True:
         try:

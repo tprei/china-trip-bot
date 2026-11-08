@@ -1,4 +1,5 @@
 import json
+import re
 import sqlite3
 from datetime import datetime
 
@@ -6,6 +7,7 @@ import httpx
 import pytest
 from telegram_fakes import CHAT, FakeDeck, World, bot, message
 
+from tripbot import i18n
 from tripbot.config import TripConfig
 from tripbot.domain.alerts import Alert
 from tripbot.domain.money import Money
@@ -13,7 +15,7 @@ from tripbot.reference import Reference
 from tripbot.store import repo
 from tripbot.telegram.api import Button, TelegramApi, TelegramError
 from tripbot.telegram.bot import handle_update, maybe_send_summary
-from tripbot.telegram.commands import parse
+from tripbot.telegram.commands import REGISTRY, parse
 from tripbot.telegram.notify import notify_nightly
 
 NOW = datetime(2026, 11, 8, 10, 0)
@@ -25,6 +27,36 @@ def test_parse_commands_with_and_without_the_bot_name() -> None:
     assert parse("/best@other_bot A", "trip_bot") is None
     assert parse("hello /best") is None
     assert parse("") is None
+
+
+def test_translated_command_names_are_valid_and_unique(
+    pt_br: None, config: TripConfig, reference: Reference, db: sqlite3.Connection
+) -> None:
+    bot(config, reference, db, FakeDeck())
+    names = [i18n._(spec.name) for spec in REGISTRY.values()]
+    assert all(re.fullmatch(r"/[a-z0-9_]{1,32}", name) is not None for name in names)
+    assert len(names) == len(set(names))
+
+
+def test_translated_commands_reach_their_handlers(
+    pt_br: None, config: TripConfig, reference: Reference, db: sqlite3.Connection
+) -> None:
+    deck = FakeDeck()
+    deps, messenger = bot(config, reference, db, deck)
+    handle_update(deps, message("/melhor b"), None, NOW)
+    assert deck.calls == ["summary B"]
+
+    handle_update(deps, message("/afazeres novo comprar adaptador"), None, NOW)
+    assert "comprar adaptador" in str(messenger.sent[-1].body)
+    handle_update(deps, message("/afazeres add x"), None, NOW)
+    usage = str(messenger.sent[-1].body)
+    assert "&lt;texto&gt;" in usage and "<texto>" not in usage
+
+    handle_update(deps, message("/afazeres feito 1"), None, NOW)
+    assert "Nada por fazer" in str(messenger.sent[-1].body)
+    sent_count = len(messenger.sent)
+    handle_update(deps, message("/best"), None, NOW)
+    assert len(messenger.sent) == sent_count
 
 
 def test_commands_only_answer_in_the_group(
