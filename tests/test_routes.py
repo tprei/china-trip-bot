@@ -22,19 +22,25 @@ def test_main_plan_fills_the_window_and_ends_at_the_exit(
     assert set(route.order) == set(config.route.stops)
 
 
-def test_beijing_and_shanghai_are_joined_by_a_sleeper(
+def test_trains_over_the_cap_give_way_to_shorter_options(
     config: TripConfig, inputs: PlannerInputs
 ) -> None:
-    route = plan_route("beijing", "beijing", ("beijing", "shanghai"), config.windows[1], inputs)
+    uncapped = replace(inputs, max_train_minutes=24 * 60)
+    stops = ("beijing", "shanghai")
+    sleeper = plan_route("beijing", "beijing", stops, config.windows[1], uncapped)
+    day_train = plan_route("beijing", "beijing", stops, config.windows[1], inputs)
+    assert sleeper is not None and day_train is not None
+    assert "sleeper" in {leg.option.mode for leg in sleeper.legs}
+    assert all(leg.option.minutes <= 8 * 60 for leg in day_train.legs)
+
+    window = Window(id="Y", start=date(2027, 9, 1), end=date(2027, 9, 5))
+    route = plan_route("yangshuo", "shanghai", ("yangshuo", "shanghai"), window, inputs)
     assert route is not None
-    leg = next(
-        leg for leg in route.legs if {leg.origin, leg.destination} == {"beijing", "shanghai"}
-    )
-    assert leg.option.mode == "sleeper"
+    assert [leg.option.mode for leg in route.legs] == ["flight"]
 
 
 def test_d919_only_runs_friday_to_monday(inputs: PlannerInputs) -> None:
-    two_each = replace(inputs, nights={"beijing": 2, "yangshuo": 2})
+    two_each = replace(inputs, nights={"beijing": 2, "yangshuo": 2}, max_train_minutes=24 * 60)
     stops = ("beijing", "yangshuo")
 
     leaves_friday = Window(id="X", start=date(2027, 9, 1), end=date(2027, 9, 6))

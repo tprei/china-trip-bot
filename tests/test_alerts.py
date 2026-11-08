@@ -62,4 +62,3 @@ def test_train_tickets_open_fourteen_days_before(config: TripConfig, inputs: Pla
     assert (first.origin, first.destination) == ("guangzhou", "yangshuo")
     assert first.travel_day == date(2027, 8, 30)
     assert first.opens == date(2027, 8, 16)
-    assert any(sale.overnight for sale in sales)

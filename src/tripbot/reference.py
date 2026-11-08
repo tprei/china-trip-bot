@@ -65,6 +65,7 @@ def planner_inputs(config: TripConfig, reference: Reference, rates: Rates) -> Pl
         value_of_time_eur_per_hour=config.route.value_of_time_eur_per_hour,
         weather_eur_per_risk_night=config.route.weather_eur_per_risk_night,
         prefer_sleepers_eur=config.route.prefer_sleepers_eur,
+        max_train_minutes=config.route.max_train_minutes,
     )
 
 
