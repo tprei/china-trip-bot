@@ -95,17 +95,20 @@ def test_a_cheaper_night_sends_a_record_low_alert(
     assert all(alert.saving == eur(100 * 2 * 2) for alert in report.alerts)
 
 
-def test_a_source_failing_two_nights_is_reported(
+def test_a_failing_source_is_announced_once(
     config: TripConfig, reference: Reference, conn: sqlite3.Connection
 ) -> None:
-    for night in range(2):
-        report = run_nightly(
+    reports = [
+        run_nightly(
             nightly(config, reference, conn, FakeSource(PRICES), BrokenSource()),
             NIGHT_ONE + timedelta(days=night),
         )
-    assert report.health["tripcom"] == (0, 3)
-    assert report.failing_sources == ["tripcom"]
-    assert report.ok
+        for night in range(3)
+    ]
+    assert reports[1].health["tripcom"] == (0, 3)
+    assert [report.newly_failing for report in reports] == [[], ["tripcom"], []]
+    assert [report.failing_sources for report in reports] == [[], ["tripcom"], ["tripcom"]]
+    assert reports[2].ok
 
 
 class RedundantSource(FakeSource):

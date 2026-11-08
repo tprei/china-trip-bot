@@ -56,6 +56,7 @@ class RouteSettings:
 class AlertRules:
     drop_pct: int
     record_low: bool
+    record_low_min_eur: int
 
 
 @dataclass(frozen=True)
@@ -174,6 +175,7 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
         alerts=AlertRules(
             drop_pct=int(raw["alerts"]["drop_pct"]),
             record_low=bool(raw["alerts"]["record_low"]),
+            record_low_min_eur=int(raw["alerts"]["record_low_min_eur"]),
         ),
         summary=_summary(raw["summary"]),
         budgets=Budgets(

@@ -36,6 +36,7 @@ class NightlyReport:
     run_id: int
     health: dict[str, tuple[int, int]]
     failing_sources: list[str]
+    newly_failing: list[str]
     alerts: list[Alert]
     rankings: Rankings
     notes: list[str] = field(default_factory=list)
@@ -70,12 +71,12 @@ def run_nightly(deps: NightlyDeps, now: datetime) -> NightlyReport:
     _snapshot(deps.conn, run_id, rankings, now)
 
     health = repo.source_health(deps.conn, run_id)
-    failing = [
-        source.name
-        for source in deps.sources
-        if repo.consecutive_failed_runs(deps.conn, source.name) >= FAILED_RUNS_BEFORE_NOTICE
-    ]
-    report = NightlyReport(run_id, health, failing, alerts, rankings, notes)
+    failed_runs = {
+        source.name: repo.consecutive_failed_runs(deps.conn, source.name) for source in deps.sources
+    }
+    failing = [name for name, runs in failed_runs.items() if runs >= FAILED_RUNS_BEFORE_NOTICE]
+    newly = [name for name, runs in failed_runs.items() if runs == FAILED_RUNS_BEFORE_NOTICE]
+    report = NightlyReport(run_id, health, failing, newly, alerts, rankings, notes)
     repo.finish_run(deps.conn, run_id, "ok" if report.ok else "failed", now)
     return report
 

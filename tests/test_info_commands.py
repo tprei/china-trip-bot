@@ -92,7 +92,7 @@ def test_help_lists_the_text_commands(chat: tuple[BotDeps, FakeMessenger]) -> No
 
 
 def test_target_alert_fires_only_when_crossing() -> None:
-    rules = AlertRules(drop_pct=5, record_low=False)
+    rules = AlertRules(drop_pct=5, record_low=False, record_low_min_eur=50)
     crossing = decide_alerts({"B": eur(4900)}, {"B": [eur(5100)]}, None, rules, set(), eur(5000))
     assert [a.kind for a in crossing] == ["target"]
     staying = decide_alerts({"B": eur(4900)}, {"B": [eur(4950)]}, None, rules, set(), eur(5000))

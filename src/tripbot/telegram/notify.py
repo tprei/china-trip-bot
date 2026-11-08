@@ -23,8 +23,8 @@ def notify_nightly(
                     messenger.send_photo(chat_id, png, None, details_button(context))
                 else:
                     messenger.send_message(chat_id, alert_text(alert))
-    if report.failing_sources:
-        names = ", ".join(SOURCE_NAMES.get(name, name) for name in report.failing_sources)
+    if report.newly_failing:
+        names = ", ".join(SOURCE_NAMES.get(name, name) for name in report.newly_failing)
         messenger.send_message(chat_id, f"{bold('Source down')} {esc(names)}: two runs in a row.")
 
 

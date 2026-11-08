@@ -195,7 +195,7 @@ def alerts(context: BotContext, request: Request) -> Reply:
     return Reply(
         text=lines(
             bold("Alerts"),
-            "New record low" if rules.record_low else "",
+            f"New record low by €{rules.record_low_min_eur}+" if rules.record_low else "",
             f"Down {rules.drop_pct}% since the last summary",
             f"Target {esc(goal)}",
         )

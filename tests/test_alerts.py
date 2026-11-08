@@ -7,7 +7,7 @@ from tripbot.domain.alerts import decide_alerts
 from tripbot.domain.routes import PlannerInputs, plan_route
 from tripbot.domain.schedule import summary_due, train_sale_dates, week_key
 
-RULES = AlertRules(drop_pct=5, record_low=True)
+RULES = AlertRules(drop_pct=5, record_low=True, record_low_min_eur=50)
 
 
 def test_a_new_record_low_alerts() -> None:
@@ -26,6 +26,19 @@ def test_a_five_percent_drop_since_the_summary_alerts() -> None:
 def test_small_drops_and_first_runs_stay_quiet() -> None:
     assert decide_alerts({"A": eur(5700)}, {"A": [eur(5000)]}, {"A": eur(5900)}, RULES, set()) == []
     assert decide_alerts({"A": eur(4000)}, {}, None, RULES, set()) == []
+
+
+def test_a_record_low_must_beat_the_previous_low_by_the_minimum() -> None:
+    history = {"B": [eur(5600)]}
+    assert decide_alerts({"B": eur(5551)}, history, None, RULES, set()) == []
+    alerts = decide_alerts({"B": eur(5550)}, history, None, RULES, set())
+    assert [a.kind for a in alerts] == ["record_low"]
+
+
+def test_a_small_record_low_can_still_be_a_drop() -> None:
+    history = {"A": [eur(5320)]}
+    alerts = decide_alerts({"A": eur(5300)}, history, {"A": eur(5600)}, RULES, set())
+    assert [(a.kind, a.previous) for a in alerts] == [("drop", eur(5600))]
 
 
 def test_one_alert_per_window_per_day() -> None:
