@@ -87,11 +87,14 @@ def handle_update(
         send(deps.messenger, deps.chat_id, reply, topic)
         return
     message_id = send(deps.messenger, deps.chat_id, reply, deps.topic)
-    if message_id is not None:
-        pin_summary(deps, message_id)
-    if topic != deps.topic:
-        done = Reply(text=esc(i18n._("Summary posted and pinned in the bot's topic.")))
-        send(deps.messenger, deps.chat_id, done, topic)
+    pinned = message_id is not None and pin_summary(deps, message_id)
+    if pinned and topic == deps.topic:
+        return
+    if pinned:
+        note = i18n._("Summary posted and pinned in the bot's topic.")
+    else:
+        note = i18n._("Summary posted in the bot's topic, but it couldn't be pinned.")
+    send(deps.messenger, deps.chat_id, Reply(text=esc(note)), topic)
 
 
 def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) -> int | None:
@@ -131,16 +134,24 @@ def post_summary(deps: BotDeps, context: BotContext) -> tuple[dict[str, Money], 
     return totals, send(deps.messenger, deps.chat_id, reply, deps.topic)
 
 
-def pin_summary(deps: BotDeps, message_id: int) -> None:
-    """Pin the new summary and unpin only the one the bot pinned before; other pins stay."""
+def pin_summary(deps: BotDeps, message_id: int) -> bool:
+    """Pin the new summary and unpin only the one the bot pinned before; other pins stay.
+
+    False when Telegram refused the pin. A failed unpin of the old one is only logged.
+    """
     previous = repo.get_setting(deps.conn, PINNED_KEY)
     try:
         deps.messenger.pin_message(deps.chat_id, message_id)
-        repo.set_setting(deps.conn, PINNED_KEY, str(message_id))
-        if previous is not None:
-            deps.messenger.unpin_message(deps.chat_id, int(previous))
     except (TelegramError, httpx.HTTPError) as error:
         deps.log(f"pinning the summary failed: {error}")
+        return False
+    repo.set_setting(deps.conn, PINNED_KEY, str(message_id))
+    if previous is not None:
+        try:
+            deps.messenger.unpin_message(deps.chat_id, int(previous))
+        except (TelegramError, httpx.HTTPError) as error:
+            deps.log(f"unpinning the previous summary failed: {error}")
+    return True
 
 
 def run_forever(deps: BotDeps, api: TelegramApi) -> None:

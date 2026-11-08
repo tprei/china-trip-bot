@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 18:14+0000\n"
+"POT-Creation-Date: 2026-11-08 18:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -649,6 +649,9 @@ msgstr "Etapas"
 
 msgid "Summary posted and pinned in the bot's topic."
 msgstr "Resumo publicado e fixado no tópico do bot."
+
+msgid "Summary posted in the bot's topic, but it couldn't be pinned."
+msgstr "Resumo publicado no tópico do bot, mas não deu para fixar."
 
 msgid "TBD link not available yet"
 msgstr "TBD Link ainda não disponível"

@@ -153,8 +153,22 @@ def test_publish_posts_the_album_to_the_bots_topic_and_moves_the_pin(
     handle_update(deps, message("/publish", topic=3), None, datetime(2026, 11, 8, 15, 0))
     album, done = messenger.sent[-2:]
     assert (album.kind, album.body, album.topic) == ("album", (b"summary", b"map"), 6)
-    assert (done.kind, done.topic) == ("text", 3) and "pinned" in str(done.body)
+    assert (done.kind, done.topic) == ("text", 3)
+    assert done.body == "Summary posted and pinned in the bot's topic."
     assert messenger.pins == [("pin", 1), ("pin", 3), ("unpin", 1)]
+
+
+def test_publish_says_so_when_the_pin_fails_even_in_the_bots_topic(
+    config: TripConfig, reference: Reference, world: World
+) -> None:
+    conn, _ = world
+    deps, messenger = bot(config, reference, conn, FakeDeck())
+    deps.topic = 6
+    messenger.pin_failure = TelegramError("pinChatMessage: not enough rights")
+    handle_update(deps, message("/publish", topic=6), None, datetime(2026, 11, 8, 15, 0))
+    album, note = messenger.sent[-2:]
+    assert (album.kind, album.topic, note.topic) == ("album", 6, 6)
+    assert note.body == "Summary posted in the bot's topic, but it couldn't be pinned."
 
 
 @pytest.mark.parametrize(
