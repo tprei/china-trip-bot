@@ -132,3 +132,20 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
     assert body["parse_mode"] == "HTML"
     assert body["reply_markup"]["inline_keyboard"][0][0]["url"] == "https://x.example"
     assert b'name="photo"' in seen[1].content
+
+
+def test_get_updates_long_polls_from_the_offset() -> None:
+    seen: list[httpx.Request] = []
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json={"ok": True, "result": [{"update_id": 7}]})
+
+    with httpx.Client(transport=httpx.MockTransport(answer)) as client:
+        updates = TelegramApi(client, "TOKEN").get_updates(7)
+
+    assert updates == [{"update_id": 7}]
+    body = json.loads(seen[0].content)
+    assert seen[0].url.path == "/botTOKEN/getUpdates"
+    assert (body["timeout"], body["offset"], body["allowed_updates"]) == (50, 7, ["message"])
+    assert seen[0].extensions["timeout"]["read"] == 60
