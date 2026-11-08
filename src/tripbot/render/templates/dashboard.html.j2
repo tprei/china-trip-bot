@@ -12,13 +12,26 @@
   {% if item.price %}<b class="price">{{ item.price }}</b>{% endif %}
 </div>
 {%- endmacro %}
+{% macro compare_row(row, expands=false) -%}
+<div class="item{{ ' hl' if row.highlight }}">
+  <div class="grow"><b>{{ row.label }}</b><small>{{ row.sub }}</small></div>
+  {% if row.delta %}<span class="delta {{ 'good' if row.delta_good else 'bad' }}">{{ '▼' if row.delta_good else '▲' }} {{ row.delta }}</span>{% endif %}
+  <b class="num">{{ row.total }}</b>
+  {% if expands %}<span class="chevron" aria-hidden="true">›</span>{% endif %}
+</div>
+{%- endmacro %}
 {% macro compare(view) -%}
 <div class="list">
-  {% for row in view.rows %}
-  <div class="item{{ ' hl' if row.highlight }}">
-    <div class="grow"><b>{{ row.label }}</b><small>{{ row.sub }}</small></div>
-    {% if row.delta %}<span class="delta {{ 'good' if row.delta_good else 'bad' }}">{{ '▼' if row.delta_good else '▲' }} {{ row.delta }}</span>{% endif %}
-    <b class="num">{{ row.total }}</b>
+  {% for row in view.rows %}{{ compare_row(row) }}{% endfor %}
+</div>
+{%- endmacro %}
+{% macro route_steps(route) -%}
+<div class="box">
+  {% for step in route.steps %}
+  <div class="step {{ step.kind }} {{ step.mode }}">
+    <span class="day">{{ step.day }}</span>
+    {% if step.kind == "stay" %}<span class="dot"></span>{% else %}{{ icon("plane" if step.mode == "flight" else step.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[step.mode], 22) }}{% endif %}
+    <div><b>{{ step.title }}</b><small>{{ step.detail }}{% if step.estimate %} · {{ _("estimate") }}{% endif %}</small></div>
   </div>
   {% endfor %}
 </div>
@@ -97,6 +110,15 @@ li { margin: 4px 0; }
 .chart svg { width: 100%; height: auto; }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; margin-top: 6px; }
 .status { color: var(--warn); font-weight: 800; }
+.hint { margin: -4px 0 8px; }
+details.plan > summary { list-style: none; cursor: pointer; }
+details.plan > summary::-webkit-details-marker { display: none; }
+details.plan > summary:focus-visible .item { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.chevron { width: 18px; text-align: center; color: var(--muted); font-size: 24px; line-height: 1; transition: transform .15s; }
+details.plan[open] .chevron { transform: rotate(90deg); color: var(--accent-soft); }
+details.plan[open] > summary .item { border-color: var(--line); }
+.plan-body { margin: 8px 0 4px 12px; padding-left: 12px; border-left: 2px solid var(--line); }
+.plan-body .label:first-child { margin-top: 0; }
 @media (min-width: 640px) { .groups { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .groups .box { margin: 0; } }
 </style>
 </head>
@@ -164,15 +186,7 @@ li { margin: 4px 0; }
 
     {% if panel.route %}
     <h2>{% trans internal=panel.route.internal %}Route · {{ internal }} / person inside China{% endtrans %}</h2>
-    <div class="box">
-      {% for step in panel.route.steps %}
-      <div class="step {{ step.kind }} {{ step.mode }}">
-        <span class="day">{{ step.day }}</span>
-        {% if step.kind == "stay" %}<span class="dot"></span>{% else %}{{ icon("plane" if step.mode == "flight" else step.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[step.mode], 22) }}{% endif %}
-        <div><b>{{ step.title }}</b><small>{{ step.detail }}{% if step.estimate %} · {{ _("estimate") }}{% endif %}</small></div>
-      </div>
-      {% endfor %}
-    </div>
+    {{ route_steps(panel.route) }}
     {% endif %}
 
     <h2>{{ _("Entry × exit") }}</h2>
@@ -186,7 +200,33 @@ li { margin: 4px 0; }
     </div>
 
     <h2>{{ _("Other plans") }}</h2>
-    {{ compare(panel.alternatives) }}
+    <small class="hint">{{ _("Tap a plan to see its flights and route.") }}</small>
+    <div class="list">
+      {{ compare_row(panel.main_plan) }}
+      {% for plan in panel.other_plans %}
+      {% if plan.route %}
+      <details class="plan">
+        <summary>{{ compare_row(plan.row, true) }}</summary>
+        <div class="plan-body">
+          <div class="label">{{ _("FLIGHTS") }}</div>
+          <div class="groups">
+            {% for group in plan.groups %}
+            <div class="box">
+              <header><b>{{ group.name }}</b><span class="mono">{{ group.price }} <small style="display:inline">{{ group.price_note }} · {{ group.fairness_label }}</small></span></header>
+              {{ flight({"price": "", "line": group.outbound}) }}
+              {{ flight({"price": "", "line": group.inbound}) }}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="label">{% trans internal=plan.route.internal %}ROUTE · {{ internal }} / person inside China{% endtrans %}</div>
+          {{ route_steps(plan.route) }}
+        </div>
+      </details>
+      {% else %}
+      {{ compare_row(plan.row) }}
+      {% endif %}
+      {% endfor %}
+    </div>
 
     {% if panel.reminders %}
     <h2>{{ _("Train tickets open") }}</h2>
