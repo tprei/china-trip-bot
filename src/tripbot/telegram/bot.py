@@ -15,11 +15,12 @@ import httpx
 
 from tripbot import i18n
 from tripbot.config import TripConfig
+from tripbot.domain.money import Money
 from tripbot.domain.schedule import summary_due, week_key
 from tripbot.reference import Reference
 from tripbot.store import repo
 from tripbot.telegram.api import Messenger, TelegramApi, TelegramError
-from tripbot.telegram.commands import REGISTRY, Reply, Request, details_button, dispatch, parse
+from tripbot.telegram.commands import REGISTRY, Reply, Request, dispatch, parse, summary_album
 from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
 from tripbot.telegram.info import register_info_commands, seed_todos
 
@@ -82,32 +83,40 @@ def handle_update(
         send(deps.messenger, deps.chat_id, reply, topic)
 
 
-def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) -> None:
+def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) -> int | None:
+    """Post the reply; the id of its first card, if it has one, so it can be pinned."""
+    if reply.album:
+        return messenger.send_album(chat_id, reply.album, reply.caption, topic)[0]
     if reply.photo is not None:
-        messenger.send_photo(chat_id, reply.photo, reply.caption, reply.button, topic)
-    elif reply.text is not None:
+        return messenger.send_photo(chat_id, reply.photo, reply.caption, reply.button, topic)
+    if reply.text is not None:
         messenger.send_message(chat_id, reply.text, reply.button, topic)
+    return None
 
 
 def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
     last = repo.last_summary(deps.conn)
     if not summary_due(now_local, deps.config.summary, last[0] if last else None):
         return False
-    context = deps.context(now_local)
-    rankings = context.rankings()
-    totals = {w: r.best.total_eur for w, r in rankings.main.items() if r.best is not None}
-    message_id: int | None = None
-    if totals:
-        with context.open_deck(context) as deck:
-            png = deck.summary()
-        if png is not None:
-            message_id = deps.messenger.send_photo(
-                deps.chat_id, png, None, details_button(context), deps.topic
-            )
+    totals, message_id = post_summary(deps, now_local)
     repo.record_summary(deps.conn, week_key(now_local.date()), totals, now_local)
     if message_id is not None:
         pin_summary(deps, message_id)
     return True
+
+
+def post_summary(deps: BotDeps, now_local: datetime) -> tuple[dict[str, Money], int | None]:
+    """Post the summary album to the bot's topic: the totals it showed and its first message."""
+    context = deps.context(now_local)
+    rankings = context.rankings()
+    totals = {w: r.best.total_eur for w, r in rankings.main.items() if r.best is not None}
+    if not totals:
+        return totals, None
+    with context.open_deck(context) as deck:
+        reply = summary_album(context, deck)
+    if not reply.album and reply.photo is None:
+        return totals, None
+    return totals, send(deps.messenger, deps.chat_id, reply, deps.topic)
 
 
 def pin_summary(deps: BotDeps, message_id: int) -> None:
@@ -118,7 +127,7 @@ def pin_summary(deps: BotDeps, message_id: int) -> None:
         repo.set_setting(deps.conn, PINNED_KEY, str(message_id))
         if previous is not None:
             deps.messenger.unpin_message(deps.chat_id, int(previous))
-    except TelegramError as error:
+    except (TelegramError, httpx.HTTPError) as error:
         deps.log(f"pinning the summary failed: {error}")
 
 

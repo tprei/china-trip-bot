@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from tripbot import i18n
 from tripbot.i18n import gettext_noop
 from tripbot.telegram.api import Button
-from tripbot.telegram.context import BotContext
+from tripbot.telegram.context import BotContext, CardDeck
 from tripbot.telegram.format import bold, esc
 
 NO_DATA = gettext_noop(
@@ -20,6 +20,7 @@ NO_DATA = gettext_noop(
 class Reply:
     text: str | None = None
     photo: bytes | None = None
+    album: tuple[bytes, ...] = ()
     caption: str | None = None
     button: Button | None = None
 
@@ -79,11 +80,30 @@ def details_button(context: BotContext) -> Button | None:
     return Button(i18n._("Details"), context.dashboard_url) if context.dashboard_url else None
 
 
+def details_link(context: BotContext) -> str | None:
+    """Albums can't carry buttons, so their caption links the dashboard instead."""
+    if not context.dashboard_url:
+        return None
+    return f'<a href="{esc(context.dashboard_url)}">{esc(i18n._("Details"))}</a>'
+
+
 def card(context: BotContext, render: Callable[..., bytes | None], *args: str) -> Reply:
     png = render(*args)
     if png is None:
         return Reply(text=i18n._(NO_DATA))
     return Reply(photo=png, button=details_button(context))
+
+
+def summary_album(context: BotContext, deck: CardDeck) -> Reply:
+    """The weekly post: the summary card, then the route on a map, as one album."""
+    window = deck.best_window()
+    summary = deck.summary(window) if window else None
+    if window is None or summary is None:
+        return Reply(text=i18n._(NO_DATA))
+    route_map = deck.route_map(window)
+    if route_map is None:
+        return Reply(photo=summary, button=details_button(context))
+    return Reply(album=(summary, route_map), caption=details_link(context))
 
 
 @command(gettext_noop("/help"), gettext_noop("/help"), gettext_noop("the command list"))
@@ -100,7 +120,7 @@ def help_command(context: BotContext, request: Request) -> Reply:
 )
 def summary_command(context: BotContext, request: Request) -> Reply:
     with context.open_deck(context) as deck:
-        return card(context, deck.summary)
+        return summary_album(context, deck)
 
 
 @command(

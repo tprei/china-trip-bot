@@ -14,7 +14,7 @@
     <div class="num" style="position:relative;font-size:230px;font-stretch:76%">{{ view.total }}</div>
     <div style="position:relative;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;background:#06231a;color:#fff;font-size:34px;font-weight:800;padding:10px 22px 10px 14px;border-radius:999px">{{ icon("down", "#3dd39b", 30) }}{{ view.saving }} · {{ view.saving_pct }}</div>
-      <div style="font-size:28px;font-weight:600">{% trans count=people %}{{ count }} person{% pluralize %}{{ count }} people{% endtrans %}</div>
+      <div style="font-size:28px;font-weight:600">{% trans count=people %}group total · {{ count }} person{% pluralize %}group total · {{ count }} people{% endtrans %}</div>
     </div>
     <div style="position:relative;display:flex;align-items:center;gap:28px;font-size:30px;font-weight:700">
       {% for money in view.others %}<span style="display:inline-flex;align-items:center;gap:12px">{{ flag(money.flag) }}{{ money.text }}</span>{% endfor %}

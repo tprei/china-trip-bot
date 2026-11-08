@@ -58,7 +58,17 @@ def test_summary_view_shows_every_group_and_currency(
     assert view.window_days == "14 days"
     assert sum(span.nights for span in view.days) == 13
     assert all(before.leave == after.arrive for before, after in pairwise(view.days))
-    assert (view.days[0].arrive, view.days[-1].leave) == ("30 Aug", "12 Sep")
+    assert (view.days[0].arrive, view.days[-1].leave) == ("8/30", "9/12")
+    legs = best.route.legs
+    flights = 5 * sum(1 for leg in legs if leg.option.mode == "flight")
+    trains = 5 * (len(legs) - flights // 5)
+    assert view.includes[:2] == ("5 people", "10 international tickets")
+    assert f"{flights} flights in China" in view.includes or flights == 0
+    assert f"{trains} trains in China" in view.includes or trains == 0
+    assert {leg.option.mode for leg in legs} == {item.mode for item in view.legend}
+    codes = [line.origin for group in view.groups for line in (group.outbound, group.inbound)]
+    assert set(codes) <= {airport.code for airport in view.airports}
+    assert next(a.name for a in view.airports if a.code == "MAD") == "Madri"
 
 
 def test_flight_line_lists_stops_in_order_with_waits(
@@ -149,7 +159,7 @@ def test_summary_renders_in_pt_br(config: TripConfig, reference: Reference, worl
     assert view is not None
     html = render_html("summary.html.j2", view=view, people=5, selected="B")
     assert '<html lang="pt-BR">' in html and "Resumo semanal" in html
-    assert "Melhor plano · 5 pessoas" in html
+    assert "Total do grupo · todas as 5 pessoas" in html and "total p/ todos" in html
     assert any(span.nights > 1 for span in view.days)
     assert " noites" in html
 

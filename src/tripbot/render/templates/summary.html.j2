@@ -1,5 +1,18 @@
 {% extends "_base.html.j2" %}
-{% from "_icons.html.j2" import icon, flag, airline, hills %}
+{% from "_icons.html.j2" import icon, flag, airline, china_header %}
+
+{% set connections = namespace(codes=[]) %}
+{% for group in view.groups %}
+  {% for line in (group.outbound, group.inbound) %}
+    {% for stop in line.stops %}
+      {% if stop.airport not in connections.codes %}{% set connections.codes = connections.codes + [stop.airport] %}{% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+
+{% macro airport_tone(code) -%}
+{{ "airport-china" if code in (view.entry_code, view.exit_code) else "airport-connection" if code in connections.codes else "airport-home" }}
+{%- endmacro %}
 
 {% macro flight(line) -%}
 <div class="leg">
@@ -10,7 +23,7 @@
   </div>
   <div class="line">
     <span class="code">
-      <b>{{ line.origin }}</b>
+      <b class="{{ airport_tone(line.origin) }}">{{ line.origin }}</b>
       <span class="flight-clock">{{ line.depart_time }}</span>
       <small>{{ line.origin_city }}</small>
     </span>
@@ -21,7 +34,7 @@
       {% for stop in line.stops %}
       <div class="flight-stop {{ 'plane-change' if stop.wait else 'same-plane' }}" style="left:{{ (loop.index * 100 / (line.stops|length + 1))|round(1) }}%">
         <span class="stop-marker"></span>
-        <b>{{ stop.airport }}</b>
+        <b class="{{ airport_tone(stop.airport) }}">{{ stop.airport }}</b>
         <span class="stop-detail">{{ stop.detail }}</span>
       </div>
       {% else %}
@@ -29,7 +42,7 @@
       {% endfor %}
     </div>
     <span class="code destination">
-      <b>{{ line.destination }}</b>
+      <b class="{{ airport_tone(line.destination) }}">{{ line.destination }}</b>
       <span class="flight-clock">{{ line.arrive_time }}{% if line.arrive_shift %}<sup>{{ line.arrive_shift }}</sup>{% endif %}</span>
       <small>{{ line.destination_city }}</small>
     </span>
@@ -40,27 +53,34 @@
 {% block card %}
 <div class="card summary-card">
   <header class="header">
-    {{ hills() }}
+    {{ china_header() }}
     <div class="top">
-      <div><div class="kicker">CHINA 2027</div><div class="title">{{ _("Weekly summary") }}</div></div>
+      <div><div class="kicker">{{ _("China 2027") }}</div><div class="title">{{ _("Weekly summary") }}</div></div>
       <div class="dateline">{{ icon("calendar", "#b7c4d1", 30) }}<span>{{ view.date_label }}</span></div>
     </div>
   </header>
 
   <section class="hero">
-    <div class="label">{% trans count=people %}Best plan · {{ count }} person{% pluralize %}Best plan · {{ count }} people{% endtrans %}</div>
-    <div class="row" style="align-items:flex-end;gap:28px">
-      <div class="num total">{{ view.total }}</div>
-      {% if view.delta %}
-      <div class="pill {{ 'good' if view.delta_good else 'bad' }}" style="margin-bottom:18px">
-        {{ icon("down" if view.delta_good else "up", "#6fe0b5" if view.delta_good else "#ffb3a3", 30) }}<span>{{ view.delta }}</span>
+    <div class="label">{% trans count=people %}Group total · {{ count }} person{% pluralize %}Group total · all {{ count }} people{% endtrans %}</div>
+    <div class="total-overview">
+      <div class="total-price">
+        <div class="num total">{{ view.total }}</div>
+        <span class="pill" style="background:#ff6a4d;color:#1a0f0c;font-weight:800">{{ _("total for everyone") }}</span>
+        {% if view.delta %}
+        <div class="pill {{ 'good' if view.delta_good else 'bad' }}">
+          {{ icon("down" if view.delta_good else "up", "#6fe0b5" if view.delta_good else "#ffb3a3", 24) }}<span>{{ view.delta }}</span>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
+      <ul class="total-includes">
+        <li style="color:var(--muted)">{{ _("The total includes") }}</li>
+        {% for item in view.includes %}<li>{{ item }}</li>{% endfor %}
+      </ul>
     </div>
     <div class="person-average">
       <span class="average-label">{{ _("Average per person") }}</span>
       <div class="average-values">
-        {% for money in view.per_person %}<span class="item">{{ flag(money.flag, 33, 22) }}<span>{{ money.text }}</span></span>{% endfor %}
+        {% for money in view.per_person %}<span class="item">{{ flag(money.flag, 42, 28) }}<span class="num">{{ money.text }}</span></span>{% endfor %}
       </div>
     </div>
     <div class="chips">
@@ -71,7 +91,7 @@
   </section>
 
   <section class="section">
-    <div class="label">{{ _("Windows") }}</div>
+    <div class="label">{{ _("Windows · group totals") }}</div>
     <div class="windows">
       {% for dot in view.windows %}
       <div class="window {{ 'best' if dot.best }}">
@@ -89,7 +109,7 @@
   <section class="section">
     <div class="row"><div class="label">{{ _("Who flies how") }}</div><div class="spacer"></div><div class="flight-context">{{ _("Times local · vs own best") }}</div></div>
     {% for group in view.groups %}
-    <div class="panel ticket">
+    <div class="panel ticket group-tone-{{ loop.index0 % 3 }}">
       <div class="head">
         <div class="avatars">{% for letter in group.initials %}<div class="avatar">{{ letter }}</div>{% endfor %}</div>
         <div class="name">{{ group.name }}</div>
@@ -100,44 +120,52 @@
       <div class="legs {{ 'legs-wide' if group.outbound.stops|length > 1 or group.inbound.stops|length > 1 else '' }}">{{ flight(group.outbound) }}{{ flight(group.inbound) }}</div>
     </div>
     {% endfor %}
+    {% if view.airports %}
+    <div class="airport-key">
+      <div class="label">{{ _("Airport codes") }}</div>
+      <dl class="airport-list">
+        {% for airport in view.airports %}
+        <div class="{{ airport_tone(airport.code) }}"><dt>{{ airport.code }}</dt><dd>{{ airport.name }}</dd></div>
+        {% endfor %}
+      </dl>
+    </div>
+    {% endif %}
   </section>
 
   <section class="section">
     <div class="label">{{ _("Route") }}</div>
     <div class="panel route-panel">
-    <div class="route" style="grid-template-columns:{% for item in view.timeline %}{{ 'auto' if item.kind == 'stop' else 'minmax(0,1fr)' }} {% endfor %}">
+    <ol class="route-legs">
       {% for item in view.timeline %}
-      {% if item.kind == "stop" %}
-      <div class="cell">
-        <div class="top"></div>
-        <div class="mid"><div class="node {{ 'end' if item.endpoint }}"></div></div>
-        <div class="city">{{ item.name }}</div>
-      </div>
-      {% else %}
-      <div class="cell">
-        <div class="top">{{ icon("plane" if item.mode == "flight" else item.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[item.mode], 30) }}<span>{{ item.duration }}</span></div>
-        <div class="mid"><div class="seg-{{ item.mode }}"></div></div>
-      </div>
+      {% if item.kind == "leg" %}
+      <li class="route-leg mode-{{ item.mode }}">
+        <span class="route-leg-icon">{{ icon("plane" if item.mode == "flight" else item.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[item.mode], 28) }}</span>
+        <span class="route-leg-cities">{{ view.timeline[loop.index0 - 1].name }} <span class="route-arrow">→</span> {{ view.timeline[loop.index0 + 1].name }}</span>
+        <span class="route-leg-time">{{ item.duration }}</span>
+      </li>
       {% endif %}
       {% endfor %}
-    </div>
+    </ol>
     {% if view.days %}
-    <div class="day-timeline" role="list" aria-label="{{ _("Nights in China, with arrival and departure dates") }}" style="grid-template-columns:{% for span in view.days %}{{ span.nights }}fr {% endfor %}">
+    <div class="day-timeline" role="list" aria-label="{{ _("Nights in China, with arrival and departure dates") }}" style="grid-template-columns:repeat({{ view.days|length }}, minmax(0, 1fr))">
+      {% set stay = namespace(index=0) %}
       {% for span in view.days %}
-      <div class="day-span {{ span.kind }}" role="listitem" aria-label="{% trans name=span.name, arrive=span.arrive, leave=span.leave, count=span.nights %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} night{% pluralize count %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} nights{% endtrans %}">
-        <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 26) }}{% else %}<span>{{ span.name }}</span>{% endif %}</div>
+      <div class="day-span {{ span.kind }} stay-tone-{{ stay.index % 6 }}" role="listitem" aria-label="{% trans name=span.name, arrive=span.arrive, leave=span.leave, count=span.nights %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} night{% pluralize count %}{{ name }}: {{ arrive }} to {{ leave }}, {{ count }} nights{% endtrans %}">
+        <div class="day-name">{% if span.kind == "sleeper" %}{{ icon("sleeper", "#f5b83d", 24) }}{% endif %}<span>{{ span.name }}</span></div>
+        <div class="day-nights">{{ span.nights_label }}</div>
         <div class="day-band"></div>
-        <span class="day-date {{ 'first' if loop.first }}" style="--date-row:{{ loop.index0 % 2 }}">{{ span.arrive }}</span>
-        {% if loop.last %}<span class="day-date final" style="--date-row:{{ loop.index % 2 }}">{{ span.leave }}</span>{% endif %}
+        <span class="day-date {{ 'first' if loop.first }}">{{ span.arrive }}</span>
+        {% if loop.last %}<span class="day-date final">{{ span.leave }}</span>{% endif %}
       </div>
+      {% if span.kind == "stay" %}{% set stay.index = stay.index + 1 %}{% endif %}
       {% endfor %}
     </div>
     {% endif %}
     </div>
     <div class="legend">
-      <span>{{ icon("train", "#8fb3d9", 24) }}{{ _("high-speed") }}</span>
-      <span>{{ icon("sleeper", "#f5b83d", 24) }}{{ _("sleeper") }}</span>
-      <span>{{ icon("plane", "#ff8a73", 24) }}{{ _("flight") }}</span>
+      {% for item in view.legend %}
+      <span class="mode-{{ item.mode }}">{{ icon("plane" if item.mode == "flight" else item.mode, {"train": "#8fb3d9", "sleeper": "#f5b83d", "flight": "#ff8a73"}[item.mode], 26) }}{{ item.label }} <b>{{ item.speed }}</b></span>
+      {% endfor %}
     </div>
   </section>
 
