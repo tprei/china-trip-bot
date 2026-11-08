@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime
 
@@ -17,6 +18,18 @@ class Names:
     def city(self, city_id: str) -> str:
         city = self.reference.cities.get(city_id)
         return city.name if city else city_id.title()
+
+    def find_city(self, text: str) -> str | None:
+        """A city id from its id or display name, ignoring case and accents: `pequim`, `xian`."""
+        wanted = _plain(text)
+        return next(
+            (
+                city_id
+                for city_id, city in self.reference.cities.items()
+                if wanted in (_plain(city_id), _plain(city.name))
+            ),
+            None,
+        )
 
     def airport_city(self, airport: str) -> str:
         """`PEK` → Beijing, `LHR` → London; unknown airports keep their code."""
@@ -55,3 +68,8 @@ def clock(moment: datetime) -> str:
 
 def initials(name: str) -> str:
     return name.strip()[:1].upper()
+
+
+def _plain(text: str) -> str:
+    folded = unicodedata.normalize("NFKD", text.casefold())
+    return "".join(ch for ch in folded if ch.isalnum())
