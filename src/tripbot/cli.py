@@ -32,6 +32,7 @@ from tripbot.sources.tripcom import TripCom
 from tripbot.sources.tripcom_browser import TripComBrowserSource
 from tripbot.sources.tripcom_fallback import TripComFallback
 from tripbot.store.db import connect
+from tripbot.store.plans import effective_config
 from tripbot.telegram.api import TelegramApi
 from tripbot.telegram.bot import BotDeps, run_forever
 from tripbot.telegram.notify import notify_nightly
@@ -85,7 +86,8 @@ def group_search_command(
     browser_enabled: bool,
     budget: int,
 ) -> int:
-    config = load_trip(settings)
+    with closing(connect(settings.db_path)) as conn:
+        config = effective_config(conn, load_trip(settings))
     plan = load_plan(plan_path, config, window)
     if not 0 <= budget <= config.budgets.tripcom:
         raise ValueError("budget exceeds configured Trip.com limit")
@@ -104,8 +106,12 @@ def group_search_command(
 
 
 def check_config(settings: Settings) -> int:
+    """Check `trip.yaml`, and the group's edited plan against its rules when there's a database."""
     config = load_config(settings.config_path)
     load_reference(settings.data_dir)
+    if settings.db_path.exists():
+        with closing(connect(settings.db_path)) as conn:
+            config = effective_config(conn, config)
     groups = list(config.groups)
     print(f"{people_count(groups)} people in {len(groups)} groups")
     for window in config.windows:
@@ -121,9 +127,10 @@ def load_trip(settings: Settings) -> TripConfig:
 
 
 def nightly_command(settings: Settings, *, search: bool) -> int:
-    config = load_trip(settings)
+    base = load_trip(settings)
     reference = load_reference(settings.data_dir)
     with closing(connect(settings.db_path)) as conn:
+        config = effective_config(conn, base)
         currencies = {origin.currency for origin in config.origins.values()} | {"CNY", "USD"}
         with httpx.Client(follow_redirects=True) as client:
             sources: list[FlightSource] = []
@@ -145,19 +152,20 @@ def nightly_command(settings: Settings, *, search: bool) -> int:
             print(build_site(settings, config, reference, conn, report.rankings, now))
             if settings.telegram_token and settings.telegram_chat_id:
                 bot = bot_deps(
-                    settings, config, reference, conn, TelegramApi(client, settings.telegram_token)
+                    settings, base, reference, conn, TelegramApi(client, settings.telegram_token)
                 )
-                notify_nightly(
-                    bot.messenger, bot.chat_id, report, bot.context(now), topic=bot.topic
-                )
+                context = bot.context(now)
+                context.use(config, report.rankings)
+                notify_nightly(bot.messenger, bot.chat_id, report, context, topic=bot.topic)
             ping(client, settings.healthcheck_url, report.ok)
         return 0 if report.ok else 1
 
 
 def dashboard_command(settings: Settings) -> int:
-    config = load_trip(settings)
+    base = load_trip(settings)
     reference = load_reference(settings.data_dir)
     with closing(connect(settings.db_path)) as conn:
+        config = effective_config(conn, base)
         now = local_now(config)
         rankings = load_rankings(conn, config, reference, now)
         print(build_site(settings, config, reference, conn, rankings, now))
@@ -183,7 +191,7 @@ def local_now(config: TripConfig) -> datetime:
 
 def bot_deps(
     settings: Settings,
-    config: TripConfig,
+    base: TripConfig,
     reference: Reference,
     conn: sqlite3.Connection,
     api: TelegramApi,
@@ -191,7 +199,7 @@ def bot_deps(
     if not settings.telegram_chat_id:
         raise SystemExit("TELEGRAM_CHAT_ID is not set")
     return BotDeps(
-        config=config,
+        base=base,
         reference=reference,
         conn=conn,
         messenger=api,

@@ -185,6 +185,6 @@ def _group(deck: Deck, window: Window, group: Group) -> GroupFlights:
     return GroupFlights(
         name=group.name,
         chosen=views.group_row(choice, rates, deck.names) if choice else None,
-        outbound=priced(window_offers(deck.config, deck.rankings, group_id, "outbound", window)),
-        inbound=priced(window_offers(deck.config, deck.rankings, group_id, "return", window)),
+        outbound=priced(window_offers(deck.config, deck.rankings, group, "outbound", window)),
+        inbound=priced(window_offers(deck.config, deck.rankings, group, "return", window)),
     )

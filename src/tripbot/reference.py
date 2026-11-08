@@ -109,6 +109,7 @@ def planner_inputs(config: TripConfig, reference: Reference, rates: Rates) -> Pl
 def ranking_inputs(config: TripConfig, reference: Reference, rates: Rates) -> RankingInputs:
     return RankingInputs(
         groups=config.groups,
+        home_airports={group.id: config.origin_of(group).airports for group in config.groups},
         flex=config.flex,
         fairness=config.fairness,
         china_airports=config.china_airports,

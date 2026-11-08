@@ -19,6 +19,7 @@ from tripbot.domain.money import Money
 from tripbot.domain.schedule import summary_due, week_key
 from tripbot.reference import Reference
 from tripbot.store import repo
+from tripbot.store.plans import effective_config
 from tripbot.telegram.api import Messenger, TelegramApi, TelegramError
 from tripbot.telegram.commands import REGISTRY, Reply, Request, dispatch, parse, summary_album
 from tripbot.telegram.context import BotContext, DeckOpener, chromium_deck
@@ -31,7 +32,7 @@ RETRY_SECONDS = 30
 
 @dataclass
 class BotDeps:
-    config: TripConfig
+    base: TripConfig  # `trip.yaml`; each update applies the group's latest plan to it
     reference: Reference
     conn: sqlite3.Connection
     messenger: Messenger
@@ -47,7 +48,8 @@ class BotDeps:
 
     def context(self, now: datetime) -> BotContext:
         return BotContext(
-            config=self.config,
+            config=effective_config(self.conn, self.base),
+            base=self.base,
             reference=self.reference,
             conn=self.conn,
             now=now,
@@ -57,7 +59,7 @@ class BotDeps:
         )
 
     def local_now(self) -> datetime:
-        return datetime.now(ZoneInfo(self.config.timezone)).replace(tzinfo=None)
+        return datetime.now(ZoneInfo(self.base.timezone)).replace(tzinfo=None)
 
 
 def handle_update(
@@ -96,7 +98,7 @@ def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) ->
 
 def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
     last = repo.last_summary(deps.conn)
-    if not summary_due(now_local, deps.config.summary, last.week if last else None):
+    if not summary_due(now_local, deps.base.summary, last.week if last else None):
         return False
     context = deps.context(now_local)
     totals, message_id = post_summary(deps, context)

@@ -144,8 +144,8 @@ def flights(context: BotContext, request: Request) -> Reply:
     if window is None:
         return Reply(text=i18n._(NO_DATA))
     rankings = context.rankings()
-    outbound = window_offers(context.config, rankings, group.id, "outbound", window)
-    inbound = window_offers(context.config, rankings, group.id, "return", window)
+    outbound = window_offers(context.config, rankings, group, "outbound", window)
+    inbound = window_offers(context.config, rankings, group, "return", window)
     currency = context.config.origin_of(group).currency
     return Reply(
         text=lines(

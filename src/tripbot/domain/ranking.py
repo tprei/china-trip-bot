@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from tripbot.config import Fairness
@@ -65,6 +65,7 @@ class WindowRanking:
 @dataclass(frozen=True)
 class RankingInputs:
     groups: Sequence[Group]
+    home_airports: Mapping[str, tuple[str, ...]]  # group id -> the airports it flies from
     flex: Flex
     fairness: Fairness
     china_airports: dict[str, str]
@@ -105,12 +106,15 @@ def rank_window(
 def _outbound(
     offers: Sequence[Offer], group: Group, window: Window, inputs: RankingInputs
 ) -> list[Offer]:
+    """The group's flights out, from its own home: offers stay keyed by group id when it moves."""
     dates = set(window.outbound_dates(inputs.flex))
+    home = inputs.home_airports[group.id]
     return [
         offer
         for offer in offers
         if offer.group_id == group.id
         and offer.direction == "outbound"
+        and offer.origin in home
         and offer.depart.date() in dates
         and offer.arrive.date() <= window.start
     ]
@@ -120,11 +124,13 @@ def _inbound(
     offers: Sequence[Offer], group: Group, window: Window, inputs: RankingInputs
 ) -> list[Offer]:
     dates = set(window.return_dates(inputs.flex))
+    home = inputs.home_airports[group.id]
     return [
         offer
         for offer in offers
         if offer.group_id == group.id
         and offer.direction == "return"
+        and offer.destination in home
         and offer.depart.date() in dates
     ]
 

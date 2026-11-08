@@ -14,10 +14,16 @@ from tripbot.domain.roundtrip import RoundTripRequest
 from tripbot.domain.searches import SearchKey, SearchResult
 from tripbot.pipeline.group_search import GroupRunPlan, load_plan, run_groups, validate_plan
 from tripbot.reference import Reference
-from tripbot.settings import load_settings
+from tripbot.settings import Settings, load_settings
 from tripbot.sources.base import SearchShape
 from tripbot.sources.tripcom import TripCom
 from tripbot.sources.tripcom_fallback import TripComFallback
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def settings_for(tmp_path: Path) -> Settings:
+    return load_settings(ROOT, {"TRIPBOT_DB": str(tmp_path / "trip.sqlite3")})
 
 
 def plan(config: TripConfig) -> GroupRunPlan:
@@ -120,7 +126,7 @@ class EmptyGoogle:
 def test_group_command_has_no_publish_side_effects(
     config: TripConfig, tmp_path: Path, enabled: bool
 ) -> None:
-    settings = load_settings(Path(__file__).resolve().parents[1], {})
+    settings = settings_for(tmp_path)
     with (
         patch("tripbot.cli.load_plan", return_value=plan(config)),
         patch("tripbot.cli.run_groups", return_value=tmp_path / "results.json") as run,
@@ -141,7 +147,7 @@ def test_group_command_has_no_publish_side_effects(
 def test_command_budget_checked_before_network(
     config: TripConfig, tmp_path: Path, budget: int
 ) -> None:
-    settings = load_settings(Path(__file__).resolve().parents[1], {})
+    settings = settings_for(tmp_path)
     with (
         patch("tripbot.cli.load_plan", return_value=plan(config)),
         patch("tripbot.cli.run_groups") as run,

@@ -34,7 +34,8 @@ DeckOpener = Callable[["BotContext"], AbstractContextManager[CardDeck]]
 
 @dataclass
 class BotContext:
-    config: TripConfig
+    config: TripConfig  # the plan as the group last edited it
+    base: TripConfig  # `trip.yaml`, which edits apply to
     reference: Reference
     conn: sqlite3.Connection
     now: datetime
@@ -59,6 +60,11 @@ class BotContext:
             if window is not None:
                 return window.id
         return self.best_window()
+
+    def use(self, config: TripConfig, rankings: Rankings | None = None) -> None:
+        """Switch to another plan; without `rankings` they're worked out again on next use."""
+        self.config = config
+        self._rankings = rankings
 
 
 @contextmanager
