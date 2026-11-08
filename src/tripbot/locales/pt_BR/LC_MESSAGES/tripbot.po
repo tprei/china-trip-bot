@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 17:24+0000\n"
+"POT-Creation-Date: 2026-11-08 17:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -271,6 +271,9 @@ msgstr "Chegada × saída"
 msgid "Entry × exit · window {window}"
 msgstr "Chegada × saída · janela {window}"
 
+msgid "FLIGHTS"
+msgstr "VOOS"
+
 msgid "Fares are estimates."
 msgstr "As tarifas são estimativas."
 
@@ -435,6 +438,10 @@ msgid "ROUND-TRIP FARE DEMO"
 msgstr "DEMO DE TARIFA DE IDA E VOLTA"
 
 #, python-format
+msgid "ROUTE · %(internal)s / person inside China"
+msgstr "ROTEIRO · %(internal)s / pessoa na China"
+
+#, python-format
 msgid "ROUTE · WINDOW %(window)s"
 msgstr "ROTEIRO · JANELA %(window)s"
 
@@ -500,6 +507,9 @@ msgstr "Etapas"
 
 msgid "TBD link not available yet"
 msgstr "TBD Link ainda não disponível"
+
+msgid "Tap a plan to see its flights and route."
+msgstr "Toque num plano para ver os voos e o roteiro."
 
 #, python-brace-format
 msgid "Target set: {amount}"

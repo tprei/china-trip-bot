@@ -8,6 +8,7 @@ from pathlib import Path
 
 from tripbot import i18n
 from tripbot.domain.flights import Offer
+from tripbot.domain.ranking import Combo
 from tripbot.domain.schedule import train_sale_dates
 from tripbot.domain.trip import Group, Window
 from tripbot.domain.visa import VisaInfo
@@ -45,6 +46,15 @@ class ComboLine:
 
 
 @dataclass(frozen=True)
+class OtherPlan:
+    """One /other plan: its row in the comparison and, when it prices, its flights and route."""
+
+    row: details.CompareRow
+    groups: tuple[views.GroupRow, ...]
+    route: details.RouteView | None
+
+
+@dataclass(frozen=True)
 class WindowPanel:
     id: str
     dates: str
@@ -53,7 +63,8 @@ class WindowPanel:
     groups: tuple[GroupFlights, ...]
     combos: tuple[ComboLine, ...]
     route: details.RouteView | None
-    alternatives: details.CompareView
+    main_plan: details.CompareRow
+    other_plans: tuple[OtherPlan, ...]
     reminders: tuple[str, ...]
 
 
@@ -112,6 +123,11 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
         for alt in deck.config.route.alternatives
         if alt.id in deck.rankings.alternatives.get(window.id, {})
     }
+    compare = details.compare_alternatives(ranking, alternatives, names)
+    other_plans = tuple(
+        _other_plan(deck, row, label, other.best)
+        for row, (label, other) in zip(compare.rows[1:], alternatives.values(), strict=True)
+    )
     sales = train_sale_dates(best.route) if best else []
     return WindowPanel(
         id=window.id,
@@ -133,12 +149,24 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
             for c in ranking.combos[:TOP_COMBOS]
         ),
         route=details.build_route(best, names, _("Main plan")) if best else None,
-        alternatives=details.compare_alternatives(ranking, alternatives, names),
+        main_plan=compare.rows[0],
+        other_plans=other_plans,
         reminders=tuple(
             f"{i18n.day(sale.opens)} · {names.city(sale.origin)} → "
             f"{names.city(sale.destination)} · {sale.train}"
             for sale in sales
         ),
+    )
+
+
+def _other_plan(deck: Deck, row: details.CompareRow, label: str, best: Combo | None) -> OtherPlan:
+    if best is None:
+        return OtherPlan(row=row, groups=(), route=None)
+    rates, names = deck.rankings.rates, deck.names
+    return OtherPlan(
+        row=row,
+        groups=tuple(views.group_row(choice, rates, names) for choice in best.choices),
+        route=details.build_route(best, names, label),
     )
 
 
