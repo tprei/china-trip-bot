@@ -16,13 +16,13 @@ groups:   # a group always books the same flights
   - {id: sao, name: David + Mari, origin: SAO, people: [David, Mari]}
 
 windows:  # days on the ground in China, first to last
-  - {id: C, start: 2027-08-09, end: 2027-08-20}
-  - {id: A, start: 2027-08-23, end: 2027-09-03}
-  - {id: B, start: 2027-08-30, end: 2027-09-10}
+  - {id: C, start: 2027-08-09, end: 2027-08-22}
+  - {id: A, start: 2027-08-23, end: 2027-09-05}
+  - {id: B, start: 2027-08-30, end: 2027-09-12}
 
-flex:     # free days around a window that cost no leave
+flex:
   outbound_days_before: 2   # leave Sat or Sun, land by the first day
-  return_days_after: 2      # fly home Fri, Sat or Sun
+  return_days_after: 2
 
 china_airports:   # mainland only; the city each airport serves
   PEK: beijing
@@ -51,7 +51,7 @@ fairness:
 
 route:
   stops: [beijing, shanghai, zhangjiajie, yangshuo]   # the main plan
-  nights: {beijing: 3, shanghai: 2, zhangjiajie: 2, yangshuo: 3}
+  nights: {beijing: 4, shanghai: 2, zhangjiajie: 2, yangshuo: 3}
   value_of_time_eur_per_hour: 20      # daytime hours spent moving
   weather_eur_per_risk_night: 15      # per person-night at full risk
   prefer_sleepers_eur: 40             # comfort: a sleeper beats a similar day leg

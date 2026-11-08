@@ -12,7 +12,7 @@ from tripbot.domain.ranking import RankingInputs, rank_window
 from tripbot.reference import Reference, ranking_inputs
 
 OUT = datetime(2027, 8, 29, 9, 0)  # window B starts Mon 30 Aug
-BACK = datetime(2027, 9, 10, 12, 0)
+BACK = datetime(2027, 9, 12, 12, 0)
 HOME = {"thiago": "DUB", "lon": "LHR", "sao": "GRU"}
 FREE_TRAIN = LegOption(mode="train", name="Free", minutes=0, fare=Money.zero("EUR"))
 

@@ -19,7 +19,7 @@ from tripbot.domain.trip import Group
 from tripbot.reference import Reference, ranking_inputs
 
 OUT = datetime(2027, 8, 29, 9)
-BACK = datetime(2027, 9, 10, 12)
+BACK = datetime(2027, 9, 12, 12)
 RULES = FlightRules(1, 360, frozenset({"HKG"}), False)
 
 
