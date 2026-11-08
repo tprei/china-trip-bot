@@ -216,7 +216,7 @@ def flight_line(offer: Offer, names: Names) -> FlightLine:
         day=day_label(offer.depart.date()),
         depart_time=clock(offer.depart),
         arrive_time=clock(offer.arrive),
-        arrive_shift=f"+{shift}" if shift > 0 else "",
+        arrive_shift=f"{shift:+d}" if shift else "",
         duration=duration_label(offer.total_minutes),
         note="direct" if not offer.via else "via " + ", ".join(offer.via),
         airline_code=first.airline_code,
