@@ -14,7 +14,7 @@ from tripbot.pipeline.nightly import NightlyDeps, NightlyReport, run_nightly
 from tripbot.reference import Reference
 from tripbot.render.samples import SampleSource
 from tripbot.store.db import connect
-from tripbot.telegram.api import Button
+from tripbot.telegram.api import Button, TelegramError
 from tripbot.telegram.bot import BotDeps
 from tripbot.telegram.context import BotContext, CardDeck, DeckOpener
 
@@ -34,14 +34,25 @@ class Sent:
 @dataclass
 class FakeMessenger:
     sent: list[Sent] = field(default_factory=list)
+    pins: list[tuple[str, int]] = field(default_factory=list)
+    pin_error: str | None = None
 
     def send_message(self, chat_id: str, text: str, button: Button | None = None) -> None:
         self.sent.append(Sent("text", text, button))
 
     def send_photo(
         self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
-    ) -> None:
+    ) -> int:
         self.sent.append(Sent("photo", png, button))
+        return len(self.sent)
+
+    def pin_message(self, chat_id: str, message_id: int) -> None:
+        if self.pin_error is not None:
+            raise TelegramError(self.pin_error)
+        self.pins.append(("pin", message_id))
+
+    def unpin_message(self, chat_id: str, message_id: int) -> None:
+        self.pins.append(("unpin", message_id))
 
 
 @dataclass

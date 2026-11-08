@@ -27,7 +27,11 @@ class Messenger(Protocol):
 
     def send_photo(
         self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
-    ) -> None: ...
+    ) -> int: ...
+
+    def pin_message(self, chat_id: str, message_id: int) -> None: ...
+
+    def unpin_message(self, chat_id: str, message_id: int) -> None: ...
 
 
 class TelegramApi:
@@ -67,15 +71,24 @@ class TelegramApi:
 
     def send_photo(
         self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
-    ) -> None:
+    ) -> int:
         fields: dict[str, Any] = {"chat_id": chat_id, "parse_mode": "HTML"}
         if caption:
             fields["caption"] = caption
         if button:
             fields["reply_markup"] = json.dumps(_keyboard(button))
-        self._call(
+        result = self._call(
             "sendPhoto", http_timeout=60, files={"photo": ("card.png", png, "image/png")}, **fields
         )
+        return int(result["message_id"])
+
+    def pin_message(self, chat_id: str, message_id: int) -> None:
+        self._call(
+            "pinChatMessage", chat_id=chat_id, message_id=message_id, disable_notification=True
+        )
+
+    def unpin_message(self, chat_id: str, message_id: int) -> None:
+        self._call("unpinChatMessage", chat_id=chat_id, message_id=message_id)
 
     def set_my_commands(self, commands: list[tuple[str, str]]) -> None:
         listed = [{"command": name, "description": text} for name, text in commands]
