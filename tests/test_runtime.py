@@ -43,7 +43,7 @@ def test_check_config_validates_the_real_files(capsys: pytest.CaptureFixture[str
     assert main(["--root", str(ROOT), "check-config"]) == 0
     out = capsys.readouterr().out
     assert "5 people in 3 groups" in out
-    assert "window B: 30 Aug – 10 Sep" in out
+    assert "window B: 30 Aug – 12 Sep" in out
 
 
 def test_build_dashboard_works_on_an_empty_store(tmp_path: Path) -> None:
