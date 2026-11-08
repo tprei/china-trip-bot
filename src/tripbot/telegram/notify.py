@@ -14,22 +14,27 @@ SOURCE_NAMES = {"google": "Google Flights", "serpapi": "SerpApi", "tripcom": "Tr
 
 
 def notify_nightly(
-    messenger: Messenger, chat_id: str, report: NightlyReport, context: BotContext
+    messenger: Messenger,
+    chat_id: str,
+    report: NightlyReport,
+    context: BotContext,
+    *,
+    topic: int | None,
 ) -> None:
     if report.alerts:
         with context.open_deck(context) as deck:
             for alert in report.alerts:
                 png = deck.alert(alert)
                 if png is not None:
-                    messenger.send_photo(chat_id, png, None, details_button(context))
+                    messenger.send_photo(chat_id, png, None, details_button(context), topic)
                 else:
-                    messenger.send_message(chat_id, alert_text(alert))
+                    messenger.send_message(chat_id, alert_text(alert), None, topic)
     if report.newly_failing:
         names = ", ".join(SOURCE_NAMES.get(name, name) for name in report.newly_failing)
         notice = bold(
             i18n._("Source down: {sources}; failing two runs in a row.").format(sources=names)
         )
-        messenger.send_message(chat_id, notice)
+        messenger.send_message(chat_id, notice, None, topic)
 
 
 def alert_text(alert: Alert) -> str:

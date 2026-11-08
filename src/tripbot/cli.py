@@ -147,7 +147,9 @@ def nightly_command(settings: Settings, *, search: bool) -> int:
                 bot = bot_deps(
                     settings, config, reference, conn, TelegramApi(client, settings.telegram_token)
                 )
-                notify_nightly(bot.messenger, bot.chat_id, report, bot.context(now))
+                notify_nightly(
+                    bot.messenger, bot.chat_id, report, bot.context(now), topic=bot.topic
+                )
             ping(client, settings.healthcheck_url, report.ok)
         return 0 if report.ok else 1
 
@@ -194,6 +196,7 @@ def bot_deps(
         conn=conn,
         messenger=api,
         chat_id=settings.telegram_chat_id,
+        topic=settings.telegram_topic_id,
         dashboard_url=settings.dashboard_url,
         banner_path=settings.banner_path,
     )

@@ -70,6 +70,16 @@ def test_commands_only_answer_in_the_group(
     assert "/other [window]" in str(messenger.sent[0].body)
 
 
+def test_commands_are_answered_in_their_topic(
+    config: TripConfig, reference: Reference, db: sqlite3.Connection
+) -> None:
+    deps, messenger = bot(config, reference, db, FakeDeck())
+    deps.topic = 6
+    handle_update(deps, message("/help", topic=9), None, NOW)
+    handle_update(deps, message("/help"), None, NOW)
+    assert [sent.topic for sent in messenger.sent] == [9, None]
+
+
 def test_card_commands_send_photos_with_the_dashboard_button(
     config: TripConfig, reference: Reference, world: World
 ) -> None:
@@ -109,10 +119,11 @@ def test_weekly_summary_goes_out_once(
     conn, _ = world
     deck = FakeDeck()
     deps, messenger = bot(config, reference, conn, deck)
+    deps.topic = 6
     sunday = datetime(2026, 11, 8, 9, 30)
     assert maybe_send_summary(deps, sunday)
     assert not maybe_send_summary(deps, sunday.replace(hour=11))
-    assert [sent.kind for sent in messenger.sent] == ["photo"]
+    assert [(sent.kind, sent.topic) for sent in messenger.sent] == [("photo", 6)]
     summary = repo.last_summary(conn)
     assert summary is not None and set(summary[1]) == {"A", "B", "C"}
 
@@ -151,9 +162,9 @@ def test_nightly_alerts_become_cards(
     deps, messenger = bot(config, reference, conn, deck)
     report.newly_failing = ["tripcom"]
     report.alerts = [Alert("record_low", "B", Money(600000, "EUR"), Money(620000, "EUR"))]
-    notify_nightly(messenger, CHAT, report, deps.context(NOW))
+    notify_nightly(messenger, CHAT, report, deps.context(NOW), topic=6)
     assert deck.calls == ["alert B"]
-    assert [sent.kind for sent in messenger.sent] == ["photo", "text"]
+    assert [(sent.kind, sent.topic) for sent in messenger.sent] == [("photo", 6), ("text", 6)]
     assert "Trip.com" in str(messenger.sent[1].body)
 
 
@@ -165,7 +176,7 @@ def test_a_source_still_down_stays_quiet(
     report.failing_sources = ["tripcom"]
     report.newly_failing = []
     report.alerts = []
-    notify_nightly(messenger, CHAT, report, deps.context(NOW))
+    notify_nightly(messenger, CHAT, report, deps.context(NOW), topic=None)
     assert messenger.sent == []
 
 
@@ -182,7 +193,7 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
 
     with httpx.Client(transport=httpx.MockTransport(answer)) as client:
         api = TelegramApi(client, "TOKEN")
-        api.send_message(CHAT, "<b>hi</b>", Button("Details", "https://x.example"))
+        api.send_message(CHAT, "<b>hi</b>", Button("Details", "https://x.example"), topic=6)
         sent = api.send_photo(CHAT, b"\x89PNG", None, Button("Details", "https://x.example"))
         with pytest.raises(TelegramError, match="Unauthorized"):
             api.username()
@@ -191,6 +202,7 @@ def test_api_sends_html_messages_and_raises_on_errors() -> None:
     assert seen[0].url.path == "/botTOKEN/sendMessage"
     assert body["parse_mode"] == "HTML"
     assert body["reply_markup"]["inline_keyboard"][0][0]["url"] == "https://x.example"
+    assert body["message_thread_id"] == 6
     assert b'name="photo"' in seen[1].content
     assert sent == 7
 

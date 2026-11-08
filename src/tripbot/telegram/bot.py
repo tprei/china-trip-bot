@@ -35,6 +35,7 @@ class BotDeps:
     conn: sqlite3.Connection
     messenger: Messenger
     chat_id: str
+    topic: int | None = None
     dashboard_url: str | None = None
     banner_path: Path | None = None
     open_deck: DeckOpener = chromium_deck
@@ -64,6 +65,9 @@ def handle_update(
     message = update.get("message") or {}
     if str((message.get("chat") or {}).get("id")) != deps.chat_id:
         return
+    topic: int | None = (
+        message.get("message_thread_id") if message.get("is_topic_message") else None
+    )
     parsed = parse(str(message.get("text") or ""), username)
     if parsed is None:
         return
@@ -75,14 +79,14 @@ def handle_update(
         deps.log(f"/{name} failed: {type(error).__name__}: {error}")
         reply = Reply(text=i18n._("Something went wrong with that command."))
     if reply is not None:
-        send(deps.messenger, deps.chat_id, reply)
+        send(deps.messenger, deps.chat_id, reply, topic)
 
 
-def send(messenger: Messenger, chat_id: str, reply: Reply) -> None:
+def send(messenger: Messenger, chat_id: str, reply: Reply, topic: int | None) -> None:
     if reply.photo is not None:
-        messenger.send_photo(chat_id, reply.photo, reply.caption, reply.button)
+        messenger.send_photo(chat_id, reply.photo, reply.caption, reply.button, topic)
     elif reply.text is not None:
-        messenger.send_message(chat_id, reply.text, reply.button)
+        messenger.send_message(chat_id, reply.text, reply.button, topic)
 
 
 def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
@@ -97,7 +101,9 @@ def maybe_send_summary(deps: BotDeps, now_local: datetime) -> bool:
         with context.open_deck(context) as deck:
             png = deck.summary()
         if png is not None:
-            message_id = deps.messenger.send_photo(deps.chat_id, png, None, details_button(context))
+            message_id = deps.messenger.send_photo(
+                deps.chat_id, png, None, details_button(context), deps.topic
+            )
     repo.record_summary(deps.conn, week_key(now_local.date()), totals, now_local)
     if message_id is not None:
         pin_summary(deps, message_id)

@@ -23,10 +23,17 @@ class Button:
 
 
 class Messenger(Protocol):
-    def send_message(self, chat_id: str, text: str, button: Button | None = None) -> None: ...
+    def send_message(
+        self, chat_id: str, text: str, button: Button | None = None, topic: int | None = None
+    ) -> None: ...
 
     def send_photo(
-        self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
+        self,
+        chat_id: str,
+        png: bytes,
+        caption: str | None = None,
+        button: Button | None = None,
+        topic: int | None = None,
     ) -> int: ...
 
     def pin_message(self, chat_id: str, message_id: int) -> None: ...
@@ -58,7 +65,9 @@ class TelegramApi:
         result = self._call("getUpdates", http_timeout=POLL_SECONDS + 10, **fields)
         return list(result)
 
-    def send_message(self, chat_id: str, text: str, button: Button | None = None) -> None:
+    def send_message(
+        self, chat_id: str, text: str, button: Button | None = None, topic: int | None = None
+    ) -> None:
         fields: dict[str, Any] = {
             "chat_id": chat_id,
             "text": text,
@@ -67,16 +76,25 @@ class TelegramApi:
         }
         if button:
             fields["reply_markup"] = _keyboard(button)
+        if topic is not None:
+            fields["message_thread_id"] = topic
         self._call("sendMessage", **fields)
 
     def send_photo(
-        self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
+        self,
+        chat_id: str,
+        png: bytes,
+        caption: str | None = None,
+        button: Button | None = None,
+        topic: int | None = None,
     ) -> int:
         fields: dict[str, Any] = {"chat_id": chat_id, "parse_mode": "HTML"}
         if caption:
             fields["caption"] = caption
         if button:
             fields["reply_markup"] = json.dumps(_keyboard(button))
+        if topic is not None:
+            fields["message_thread_id"] = topic
         result = self._call(
             "sendPhoto", http_timeout=60, files={"photo": ("card.png", png, "image/png")}, **fields
         )

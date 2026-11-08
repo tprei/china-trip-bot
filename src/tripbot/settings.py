@@ -19,6 +19,7 @@ class Settings:
     serpapi_key: str | None
     telegram_token: str | None
     telegram_chat_id: str | None
+    telegram_topic_id: int | None
     healthcheck_url: str | None
     dashboard_url: str | None
 
@@ -58,6 +59,7 @@ def load_settings(root: Path, env: Mapping[str, str] | None = None) -> Settings:
         serpapi_key=optional("SERPAPI_KEY"),
         telegram_token=optional("TELEGRAM_TOKEN"),
         telegram_chat_id=optional("TELEGRAM_CHAT_ID"),
+        telegram_topic_id=int(topic) if (topic := optional("TELEGRAM_TOPIC_ID")) else None,
         healthcheck_url=optional("HEALTHCHECK_URL"),
         dashboard_url=optional("DASHBOARD_URL"),
     )

@@ -29,6 +29,7 @@ class Sent:
     kind: str
     body: str | bytes
     button: Button | None
+    topic: int | None = None
 
 
 @dataclass
@@ -37,13 +38,20 @@ class FakeMessenger:
     pins: list[tuple[str, int]] = field(default_factory=list)
     pin_error: str | None = None
 
-    def send_message(self, chat_id: str, text: str, button: Button | None = None) -> None:
-        self.sent.append(Sent("text", text, button))
+    def send_message(
+        self, chat_id: str, text: str, button: Button | None = None, topic: int | None = None
+    ) -> None:
+        self.sent.append(Sent("text", text, button, topic))
 
     def send_photo(
-        self, chat_id: str, png: bytes, caption: str | None = None, button: Button | None = None
+        self,
+        chat_id: str,
+        png: bytes,
+        caption: str | None = None,
+        button: Button | None = None,
+        topic: int | None = None,
     ) -> int:
-        self.sent.append(Sent("photo", png, button))
+        self.sent.append(Sent("photo", png, button, topic))
         return len(self.sent)
 
     def pin_message(self, chat_id: str, message_id: int) -> None:
@@ -125,8 +133,12 @@ def bot(
     return deps, messenger
 
 
-def message(text: str, chat: str = CHAT, update_id: int = 1) -> dict[str, object]:
-    return {
-        "update_id": update_id,
-        "message": {"chat": {"id": int(chat)}, "from": {"first_name": "Luísa"}, "text": text},
-    }
+def message(
+    text: str, chat: str = CHAT, update_id: int = 1, topic: int | None = None
+) -> dict[str, object]:
+    body: dict[str, object] = {"chat": {"id": int(chat)}, "from": {"first_name": "Luísa"}}
+    body["text"] = text
+    if topic is not None:
+        body["message_thread_id"] = topic
+        body["is_topic_message"] = True
+    return {"update_id": update_id, "message": body}
