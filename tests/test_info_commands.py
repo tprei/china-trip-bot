@@ -46,6 +46,23 @@ def test_cities_and_people(chat: tuple[BotDeps, FakeMessenger]) -> None:
     assert "serpapi · 54/54" in ask(chat, "/sources")
 
 
+def test_about_walks_the_route_in_order_and_finds_cities_by_name(
+    chat: tuple[BotDeps, FakeMessenger],
+) -> None:
+    deps, _ = chat
+    context = deps.context(NOW)
+    window = context.best_window()
+    assert window is not None
+    best = context.rankings().main[window].best
+    assert best is not None
+    reply = ask(chat, "/about")
+    headings = [line.split("</b>")[0].removeprefix("<b>") for line in reply.split("\n\n")]
+    assert headings == [context.reference.cities[city].name for city in best.route.order]
+    assert "• Grande Muralha em Mutianyu" in reply
+    assert ask(chat, "/about XI'AN").startswith("<b>Xi'an</b>\n")
+    assert ask(chat, "/about lhasa").startswith("No guide for lhasa. Try one of: Changsha")
+
+
 def test_trains_and_sleepers_come_from_the_reference_table(
     chat: tuple[BotDeps, FakeMessenger],
 ) -> None:

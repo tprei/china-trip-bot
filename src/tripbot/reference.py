@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -23,6 +24,14 @@ TYPHOON_LEVELS: dict[str, Typhoon] = {"low": "low", "moderate": "moderate", "hig
 
 
 @dataclass(frozen=True)
+class CityGuide:
+    """What a city is like and what to see there, in the group's language."""
+
+    summary: str
+    sights: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class Reference:
     cities: dict[str, City]
     legs: LegTable
@@ -31,18 +40,35 @@ class Reference:
     todo_seed: tuple[str, ...]
     airports: dict[str, str]
     speeds_kmh: dict[Mode, int]
+    guide: dict[str, CityGuide]
 
 
 def load_reference(data_dir: Path) -> Reference:
+    cities = load_cities(data_dir / "cities.yaml")
     return Reference(
-        cities=load_cities(data_dir / "cities.yaml"),
+        cities=cities,
         legs=load_legs(data_dir / "legs.yaml"),
         climate=load_climate(data_dir / "weather.yaml"),
         visa=load_visa(data_dir / "visa.yaml"),
         todo_seed=tuple(str(item) for item in _read(data_dir / "todo.yaml")),
         airports={str(code): str(name) for code, name in _read(data_dir / "airports.yaml").items()},
         speeds_kmh=load_speeds(data_dir / "legs.yaml"),
+        guide=load_guide(data_dir / "guide.yaml", cities),
     )
+
+
+def load_guide(path: Path, cities: Mapping[str, City]) -> dict[str, CityGuide]:
+    """Every city the route can touch has a guide entry, so /about never comes up empty."""
+    raw = _read(path)
+    missing = sorted(set(cities) - set(raw))
+    if missing:
+        raise ValueError(f"{path.name} has no entry for {', '.join(missing)}")
+    return {
+        str(city): CityGuide(
+            summary=str(spec["summary"]), sights=tuple(str(sight) for sight in spec["sights"])
+        )
+        for city, spec in raw.items()
+    }
 
 
 def load_speeds(path: Path) -> dict[Mode, int]:

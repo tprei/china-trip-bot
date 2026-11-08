@@ -74,6 +74,12 @@ def register_info_commands() -> None:
             weather,
         ),
         (
+            gettext_noop("/about"),
+            gettext_noop("/about [city]"),
+            gettext_noop("each city on the route and what to see"),
+            about,
+        ),
+        (
             gettext_noop("/reminders"),
             gettext_noop("/reminders [window]"),
             gettext_noop("train sale dates and deadlines"),
@@ -265,6 +271,32 @@ def weather(context: BotContext, request: Request) -> Reply:
             *rows,
         )
     )
+
+
+def about(context: BotContext, request: Request) -> Reply:
+    names = Names(context.config, context.reference)
+    window_id = context.best_window()
+    best = context.rankings().main[window_id].best if window_id else None
+    nights = {stay.city: stay.nights for stay in best.route.stays} if best else {}
+    if request.args:
+        city = names.find_city(" ".join(request.args))
+        if city is None:
+            known = ", ".join(sorted(names.city(city_id) for city_id in context.reference.guide))
+            text = i18n._("No guide for {city}. Try one of: {cities}")
+            return Reply(text=esc(text.format(city=" ".join(request.args), cities=known)))
+        cities = [city]
+    else:
+        cities = list(best.route.order if best else context.config.route.stops)
+    blocks = []
+    for city in cities:
+        guide = context.reference.guide[city]
+        heading = bold(names.city(city))
+        if city in nights:
+            count = nights[city]
+            heading += " · " + esc(i18n.ngettext("{n} night", "{n} nights", count).format(n=count))
+        sights = [f"• {esc(sight)}" for sight in guide.sights]
+        blocks.append(lines(heading, esc(guide.summary), *sights))
+    return Reply(text="\n\n".join(blocks))
 
 
 def reminders(context: BotContext, request: Request) -> Reply:

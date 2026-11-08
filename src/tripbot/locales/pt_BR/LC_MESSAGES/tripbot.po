@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 16:46+0000\n"
+"POT-Creation-Date: 2026-11-08 17:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -55,6 +55,12 @@ msgstr "%(people)s pessoas · %(groups)s grupos · ida e volta internacional"
 #, python-format
 msgid "%(window)s %(latest)s · low %(low)s"
 msgstr "%(window)s %(latest)s · mínimo %(low)s"
+
+msgid "/about"
+msgstr "/sobre"
+
+msgid "/about [city]"
+msgstr "/sobre [cidade]"
 
 msgid "/alerts"
 msgstr "/alertas"
@@ -347,6 +353,10 @@ msgstr "Ainda sem combinação completa"
 msgid "No complete combo yet: every group needs flights into the same city. Try after tonight's run."
 msgstr "Ainda não há uma combinação completa: todos precisam voar para a mesma cidade. Tente novamente após a busca de hoje à noite."
 
+#, python-brace-format
+msgid "No guide for {city}. Try one of: {cities}"
+msgstr "Sem guia para {city}. Tente uma destas: {cities}"
+
 msgid "No one-way price splitting · no new search · no booking"
 msgstr "Sem dividir preços de ida e volta · sem nova busca · sem reserva"
 
@@ -596,6 +606,9 @@ msgstr "feito"
 
 msgid "each"
 msgstr "cada"
+
+msgid "each city on the route and what to see"
+msgstr "cada cidade do roteiro e o que ver"
 
 msgid "entry × exit city comparison"
 msgstr "comparação de cidades de chegada × saída"
