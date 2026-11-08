@@ -74,6 +74,7 @@ class PlannerInputs:
     value_of_time_eur_per_hour: int
     weather_eur_per_risk_night: int
     prefer_sleepers_eur: int
+    max_train_minutes: int
 
 
 def plan_route(
@@ -155,7 +156,9 @@ def _choose(
     candidates = [
         option
         for option in inputs.legs.between(origin, destination)
-        if option.runs(day) and (allow_sleeper or not option.overnight)
+        if option.runs(day)
+        and (allow_sleeper or not option.overnight)
+        and (option.mode == "flight" or option.minutes <= inputs.max_train_minutes)
     ] or [inputs.legs.fallback_flight]
     best = min(candidates, key=lambda option: _leg_score(option, inputs).minor)
     return PlannedLeg(
