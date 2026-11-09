@@ -60,7 +60,7 @@
     <div class="heading">
       <div class="kicker">{{ _("China 2027") }}</div>
       <h1 class="title">{{ title }}</h1>
-      {% if compact %}<div class="page-window">{{ icon("calendar", "#ff8a73", 26) }}<span>{{ view.window_dates }}</span><span class="page-days">{{ view.window_days }}</span></div>{% endif %}
+      {% if compact %}<div class="page-window">{{ icon("calendar", "#ff8a73", 26) }}<span>{{ view.window_dates }}</span><span class="page-days">{{ view.window_days }}</span>{% if view.window_shift %}<span class="page-days">{{ view.window_shift }}</span>{% endif %}</div>{% endif %}
     </div>
     <div class="page-meta">
       <div class="dateline">{{ icon("calendar", "#b7c4d1", 24) }}<span>{{ view.date_label }}</span></div>
@@ -98,7 +98,7 @@
       </div>
     </div>
     <div class="chips">
-      <div class="chip solid">{{ icon("calendar", "#1a0f0c", 28) }}<span>{{ view.window_dates }}</span><span class="window-length">{{ view.window_days }}</span></div>
+      <div class="chip solid">{{ icon("calendar", "#1a0f0c", 28) }}<span>{{ view.window_dates }}</span><span class="window-length">{{ view.window_days }}</span>{% if view.window_shift %}<span class="window-length">{{ view.window_shift }}</span>{% endif %}</div>
       <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">{{ _("IN") }}</span><span class="stack"><span>{{ view.entry_code }}</span><small>{{ view.entry_city }}</small></span></div>
       <div class="chip">{{ icon("pin", "#ff8a73", 30) }}<span class="tag">{{ _("OUT") }}</span><span class="stack"><span>{{ view.exit_code }}</span><small>{{ view.exit_city }}</small></span></div>
     </div>

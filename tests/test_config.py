@@ -33,6 +33,13 @@ def test_unknown_origin_is_rejected() -> None:
         parse_config(raw)
 
 
+def test_negative_flex_is_rejected() -> None:
+    raw = raw_config()
+    raw["flex"]["shift_days"] = -1
+    with pytest.raises(ConfigError, match="negative"):
+        parse_config(raw)
+
+
 def test_a_person_belongs_to_one_group_and_window_ids_are_unique() -> None:
     raw = raw_config()
     raw["groups"][1]["people"] = ["Luísa", "thiago"]

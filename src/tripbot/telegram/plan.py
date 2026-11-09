@@ -84,6 +84,7 @@ def plan_command(context: BotContext, request: Request) -> Reply:
         i18n._(name) for name in ("/person", "/group", "/home", "/window", "/destination", "/undo")
     )
     recent = [bold(i18n._("Last changes")), *changes, ""] if changes else []
+    rules = _date_rules(config)
     return Reply(
         text="\n".join(
             [
@@ -92,6 +93,7 @@ def plan_command(context: BotContext, request: Request) -> Reply:
                 "",
                 bold(i18n._("Windows")),
                 *windows,
+                *rules,
                 "",
                 bold(i18n._("Route · nights per city")),
                 esc(stops),
@@ -103,6 +105,27 @@ def plan_command(context: BotContext, request: Request) -> Reply:
             ]
         )
     )
+
+
+def _date_rules(config: TripConfig) -> list[str]:
+    """How the bot may move each window, and which return days it prefers."""
+    flex = config.flex
+    rules: list[str] = []
+    if flex.shift_days > 0:
+        shift = i18n.ngettext(
+            "Each window can also start {n} day earlier or later.",
+            "Each window can also start {n} days earlier or later.",
+            flex.shift_days,
+        )
+        rules.append(esc(shift.format(n=flex.shift_days)))
+    if flex.weekday_return_eur > 0:
+        amount = i18n.money(Money.of(flex.weekday_return_eur, "EUR"))
+        weekday = i18n._(
+            "A return leaving China Monday to Thursday counts {amount} more per person"
+            " in the ranking, not in the total."
+        )
+        rules.append(esc(weekday.format(amount=amount)))
+    return rules
 
 
 def person(context: BotContext, request: Request) -> Reply:

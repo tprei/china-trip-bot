@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 
 
@@ -35,6 +35,10 @@ class Group:
 class Flex:
     outbound_days_before: int
     return_days_after: int
+    shift_days: int  # the whole trip can also start and end this many days earlier or later
+    weekday_return_eur: (
+        int  # per person: a return leaving China Mon-Thu ranks as if it cost this much more
+    )
 
 
 @dataclass(frozen=True)
@@ -59,6 +63,15 @@ class Window:
     def return_dates(self, flex: Flex) -> list[date]:
         """Departure dates from China: the last day and the free days after it."""
         return [self.end + timedelta(days=offset) for offset in range(flex.return_days_after + 1)]
+
+    def shifted(self, days: int) -> Window:
+        """The same nights, starting and ending `days` later (earlier when negative)."""
+        moved = timedelta(days=days)
+        return replace(self, start=self.start + moved, end=self.end + moved)
+
+    def variants(self, flex: Flex) -> tuple[Window, ...]:
+        """This window slid up to `flex.shift_days` days either way, earliest first."""
+        return tuple(self.shifted(days) for days in range(-flex.shift_days, flex.shift_days + 1))
 
     def label(self) -> str:
         """`9 – 20 Aug` or `30 Aug – 10 Sep`."""

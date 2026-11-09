@@ -125,9 +125,10 @@ def _panel(deck: Deck, window: Window) -> WindowPanel:
         for row, (label, other) in zip(compare.rows[1:], alternatives.values(), strict=True)
     )
     sales = train_sale_dates(best.route) if best else []
+    dated = best.window if best else window
     return WindowPanel(
         id=window.id,
-        dates=i18n.date_range(window.start, window.end),
+        dates=i18n.date_range(dated.start, dated.end),
         total=i18n.money(best.total_eur) if best else None,
         others=(
             views.other_currencies(best.total_eur, deck.rankings.rates, deck.currencies())

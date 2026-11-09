@@ -177,6 +177,8 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
         flex=Flex(
             outbound_days_before=int(raw["flex"]["outbound_days_before"]),
             return_days_after=int(raw["flex"]["return_days_after"]),
+            shift_days=int(raw["flex"]["shift_days"]),
+            weekday_return_eur=int(raw["flex"]["weekday_return_eur"]),
         ),
         china_airports={str(code): str(city) for code, city in raw["china_airports"].items()},
         flights=FlightRules(
@@ -221,7 +223,8 @@ def _summary(raw: dict[str, Any]) -> SummarySchedule:
 
 
 def validate(config: TripConfig) -> None:
-    for check in (_check_locale, _check_groups, _check_windows, _check_route, _check_rates):
+    checks = (_check_locale, _check_groups, _check_windows, _check_route, _check_flex, _check_rates)
+    for check in checks:
         check(config)
 
 
@@ -267,6 +270,18 @@ def _check_route(config: TripConfig) -> None:
     for window in config.windows:
         if window.nights < len(stops):
             raise ConfigError(f"window {window.id} is too short for {len(stops)} stops")
+
+
+def _check_flex(config: TripConfig) -> None:
+    flex = config.flex
+    values = (
+        flex.outbound_days_before,
+        flex.return_days_after,
+        flex.shift_days,
+        flex.weekday_return_eur,
+    )
+    if min(values) < 0:
+        raise ConfigError("flex values can't be negative")
 
 
 def _check_rates(config: TripConfig) -> None:

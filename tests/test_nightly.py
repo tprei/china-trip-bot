@@ -74,8 +74,8 @@ def test_a_night_ranks_every_window_and_snapshots_it(
     source = FakeSource(PRICES)
     report = run_nightly(nightly(config, reference, conn, source), NIGHT_ONE)
 
-    assert source.calls == 54
-    assert report.health == {"serpapi": (54, 54)}
+    assert source.calls == 90
+    assert report.health == {"serpapi": (90, 90)}
     assert report.ok and report.alerts == []
     for window in config.windows:
         key = config.plan.key(window)

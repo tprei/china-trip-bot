@@ -149,13 +149,17 @@ def flights(context: BotContext, request: Request) -> Reply:
     outbound = window_offers(context.config, rankings, group, "outbound", window)
     inbound = window_offers(context.config, rankings, group, "return", window)
     currency = context.config.origin_of(group).currency
+    dates = i18n.date_range(window.start, window.end)
+    shift = context.config.flex.shift_days
+    if shift > 0:
+        dates += " " + i18n.ngettext("±{n} day", "±{n} days", shift).format(n=shift)
     return Reply(
         text=lines(
             bold(
                 i18n._("{group} · window {window} · {dates}").format(
                     group=group.name,
                     window=window.id,
-                    dates=i18n.date_range(window.start, window.end),
+                    dates=dates,
                 )
             ),
             bold(i18n.pgettext("flight direction", "Out")),

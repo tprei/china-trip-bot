@@ -14,6 +14,7 @@ from tripbot.domain.legs import Mode
 from tripbot.domain.money import Money, Rates
 from tripbot.domain.ranking import Combo, GroupChoice
 from tripbot.domain.routes import PlannedLeg, Route
+from tripbot.domain.trip import Window
 from tripbot.i18n import _, ngettext
 from tripbot.pipeline.state import Rankings
 from tripbot.render.names import Names, clock, initials
@@ -144,6 +145,7 @@ class SummaryView:
     per_person: tuple[MoneyLine, ...]
     window_dates: str
     window_days: str
+    window_shift: str
     entry_code: str
     entry_city: str
     exit_code: str
@@ -195,6 +197,7 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
         window_days=ngettext("{n} day", "{n} days", best.window.nights + 1).format(
             n=best.window.nights + 1
         ),
+        window_shift=shift_label(ranking.window, best.window),
         entry_code=_airport_of(best, "entry"),
         entry_city=names.city(best.entry),
         exit_code=_airport_of(best, "exit"),
@@ -211,6 +214,16 @@ def build_summary(inputs: SummaryInputs) -> SummaryView | None:
             for name, (worked, tried) in sorted(inputs.health.items())
         ),
     )
+
+
+def shift_label(base: Window, chosen: Window) -> str:
+    """`starts 1 day early` when the plan slid the window; empty when it kept the dates."""
+    days = (chosen.start - base.start).days
+    if days < 0:
+        return ngettext("starts {n} day early", "starts {n} days early", -days).format(n=-days)
+    if days > 0:
+        return ngettext("starts {n} day late", "starts {n} days late", days).format(n=days)
+    return ""
 
 
 def included(route: Route, people: int) -> tuple[str, ...]:
@@ -409,7 +422,7 @@ def window_dots(
         dots.append(
             WindowDot(
                 id=window_id,
-                dates=i18n.date_range(ranking.window.start, ranking.window.end),
+                dates=i18n.date_range(ranking.best.window.start, ranking.best.window.end),
                 total=i18n.money(total),
                 delta=delta,
                 delta_good=good,

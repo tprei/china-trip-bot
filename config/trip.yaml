@@ -25,6 +25,8 @@ windows:  # days on the ground in China, first to last
 flex:
   outbound_days_before: 2   # leave Sat or Sun, land by the first day
   return_days_after: 2
+  shift_days: 1             # the whole trip can also start and end a day earlier or later
+  weekday_return_eur: 100   # per person: a return leaving China Mon-Thu ranks as if it cost this much more
 
 china_airports:   # mainland only; the city each airport serves
   PEK: beijing

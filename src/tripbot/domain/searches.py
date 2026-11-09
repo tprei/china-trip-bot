@@ -103,12 +103,11 @@ def plan_tonight(
 def _dates(space: SearchSpace, direction: str) -> list[date]:
     found: set[date] = set()
     for window in space.windows:
-        dates = (
-            window.outbound_dates(space.flex)
-            if direction == "outbound"
-            else (window.return_dates(space.flex))
-        )
-        found.update(dates)
+        for variant in window.variants(space.flex):
+            if direction == "outbound":
+                found.update(variant.outbound_dates(space.flex))
+            else:
+                found.update(variant.return_dates(space.flex))
     return sorted(found)
 
 

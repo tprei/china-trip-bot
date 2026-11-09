@@ -1,5 +1,5 @@
 from dataclasses import replace
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from factories import eur, offer
@@ -129,3 +129,63 @@ def test_no_shared_city_means_no_combo(config: TripConfig, flights_only: Ranking
     result = rank_window(config.windows[2], offers, config.route.stops, flights_only)
     assert result.combos == ()
     assert result.best is None and result.fairest is None
+
+
+def test_the_trip_slides_a_day_when_that_is_cheaper(
+    config: TripConfig, flights_only: RankingInputs
+) -> None:
+    window = config.window("B")
+    assert window is not None and window.start == date(2027, 8, 30)
+    friday = datetime(
+        2027, 8, 27, 9, 0
+    )  # only a trip starting Sun 29 Aug can leave home this early
+    offers = everyone("PEK", {"thiago": 400, "lon": 400, "sao": 800})
+    offers += [
+        offer(group, "outbound", [home, "PEK"], friday, eur(200)) for group, home in HOME.items()
+    ]
+    result = rank_window(window, offers, config.route.stops, flights_only)
+
+    assert result.window == window
+    assert result.best is not None
+    assert (result.best.window.start, result.best.window.end) == (
+        date(2027, 8, 29),
+        date(2027, 9, 11),
+    )
+    assert all(choice.outbound.depart == friday for choice in result.best.choices)
+    pairs = [pair(combo.entry, combo.exit) for combo in result.combos]
+    assert len(pairs) == len(set(pairs))
+
+
+def test_a_slide_that_overcharges_one_group_keeps_the_configured_dates(
+    config: TripConfig, flights_only: RankingInputs
+) -> None:
+    window = config.window("B")
+    assert window is not None
+    monday, friday = datetime(2027, 8, 30, 9, 0), datetime(2027, 8, 27, 9, 0)
+    offers = [offer(group, "return", ["PEK", home], BACK, eur(400)) for group, home in HOME.items()]
+    # A day earlier saves São Paulo €600 each but costs Thiago €300 more (+43%).
+    prices = {"thiago": (300, 600), "lon": (400, 400), "sao": (800, 200)}
+    for group, (configured, earlier) in prices.items():
+        offers.append(offer(group, "outbound", [HOME[group], "PEK"], monday, eur(configured)))
+        offers.append(offer(group, "outbound", [HOME[group], "PEK"], friday, eur(earlier)))
+    result = rank_window(window, offers, config.route.stops, flights_only)
+
+    assert result.best is not None and result.best.window == window
+    assert result.best.total_eur == eur(700 + 800 * 2 + 1200 * 2)
+
+
+@pytest.mark.parametrize(("saving", "weekday", "penalty"), [(80, 6, 0), (150, 0, 100)])
+def test_a_weekday_return_must_save_more_than_the_weekend_preference(
+    config: TripConfig, flights_only: RankingInputs, saving: int, weekday: int, penalty: int
+) -> None:
+    monday = datetime(2027, 9, 13, 12, 0)  # BACK is Sun 12 Sep
+    offers = everyone("PEK", {"thiago": 400, "lon": 400, "sao": 800})
+    offers.append(offer("thiago", "return", ["PEK", "DUB"], monday, eur(400 - saving)))
+    result = rank_window(config.windows[2], offers, config.route.stops, flights_only)
+
+    assert result.best is not None
+    thiago = result.best.choice("thiago")
+    assert thiago is not None and thiago.inbound.depart.weekday() == weekday
+    paid = 400 + 400 - (saving if weekday == 0 else 0) + (400 + 400) * 2 + (800 + 800) * 2
+    assert result.best.total_eur == eur(paid)
+    assert result.best.score_eur == eur(paid + penalty)
