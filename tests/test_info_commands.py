@@ -45,7 +45,7 @@ def test_flights_lists_a_groups_options_in_its_currency(
 def test_cities_and_people(chat: tuple[BotDeps, FakeMessenger]) -> None:
     assert "Entry × exit · window B" in ask(chat, "/cities b")
     assert "5 people" in ask(chat, "/people")
-    assert "serpapi · 54/54" in ask(chat, "/sources")
+    assert "serpapi · 90/90" in ask(chat, "/sources")
 
 
 def test_about_walks_the_route_in_order_and_finds_cities_by_name(

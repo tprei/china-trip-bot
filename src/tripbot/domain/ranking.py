@@ -11,6 +11,8 @@ from tripbot.domain.money import Money, Rates
 from tripbot.domain.routes import PlannerInputs, Route, plan_route
 from tripbot.domain.trip import Flex, Group, Window
 
+WEEKEND = frozenset({4, 5, 6})  # Friday, Saturday, Sunday, as `date.weekday()` numbers them
+
 
 @dataclass(frozen=True)
 class GroupChoice:
@@ -76,7 +78,35 @@ class RankingInputs:
 def rank_window(
     window: Window, offers: Sequence[Offer], stops: Sequence[str], inputs: RankingInputs
 ) -> WindowRanking:
-    """Every entry × exit city pair that all groups can reach, best score first."""
+    """Every entry × exit city pair all groups can reach on some slide of the window, best first.
+
+    Each combo carries the slid window it was priced on; the ranking keeps the configured one.
+    A slid combo is fair when no group pays much more than its best option on the configured
+    dates or on that slide, so the margin can add plans but never takes the configured one away.
+    """
+    slides = {
+        variant: _drafts(variant, offers, stops, inputs) for variant in window.variants(inputs.flex)
+    }
+    configured = slides[window]
+    combos = [
+        combo
+        for variant, drafts in slides.items()
+        for combo in _combos(variant, drafts, _own_best(configured + drafts), inputs)
+    ]
+    ordered = sorted(
+        combos,
+        key=lambda combo: (combo.score_eur.minor, abs((combo.window.start - window.start).days)),
+    )
+    within = [combo for combo in ordered if combo.within_rule]
+    best = within[0] if within else None
+    fairest = min(within, key=lambda c: (c.worst_overshoot_pct, c.score_eur.minor), default=None)
+    return WindowRanking(window=window, combos=_one_per_pair(ordered), best=best, fairest=fairest)
+
+
+def _drafts(
+    window: Window, offers: Sequence[Offer], stops: Sequence[str], inputs: RankingInputs
+) -> list[_Draft]:
+    """Each city pair every group can fly on these dates, with its route and everyone's flights."""
     outbound = {
         g.id: _cheapest_by_city(_outbound(offers, g, window, inputs), inputs, "destination")
         for g in inputs.groups
@@ -88,19 +118,28 @@ def rank_window(
     entries = _common_cities([outbound[g.id] for g in inputs.groups])
     exits = _common_cities([inbound[g.id] for g in inputs.groups])
 
-    drafts: list[tuple[str, str, Route]] = []
+    drafts: list[_Draft] = []
     for entry in sorted(entries):
         for exit in sorted(exits):
             route = plan_route(entry, exit, stops, window, inputs.planner)
-            if route is not None:
-                drafts.append((entry, exit, route))
+            if route is None:
+                continue
+            picks = []
+            for group in inputs.groups:
+                out, back = outbound[group.id][entry], inbound[group.id][exit]
+                fare = inputs.rates.to_eur(out.price) + inputs.rates.to_eur(back.price)
+                minutes = out.total_minutes + back.total_minutes
+                picks.append(_Pick(group, out, back, fare, fare + route.fare_eur, minutes))
+            drafts.append(_Draft(entry, exit, route, tuple(picks)))
+    return drafts
 
-    combos = _with_fairness(window, drafts, outbound, inbound, inputs)
-    ordered = tuple(sorted(combos, key=lambda combo: combo.score_eur.minor))
-    within = [combo for combo in ordered if combo.within_rule]
-    best = within[0] if within else None
-    fairest = min(within, key=lambda c: (c.worst_overshoot_pct, c.score_eur.minor), default=None)
-    return WindowRanking(window=window, combos=ordered, best=best, fairest=fairest)
+
+def _one_per_pair(ordered: Sequence[Combo]) -> tuple[Combo, ...]:
+    """Each entry × exit pair once, at its best slide: within the fairness rule when one is."""
+    kept: dict[tuple[str, str], int] = {}
+    for index, combo in sorted(enumerate(ordered), key=lambda item: not item[1].within_rule):
+        kept.setdefault((combo.entry, combo.exit), index)
+    return tuple(ordered[index] for index in sorted(kept.values()))
 
 
 def _outbound(
@@ -149,7 +188,15 @@ def _cheapest_by_city(offers: list[Offer], inputs: RankingInputs, end: str) -> d
 
 
 def _offer_key(offer: Offer, inputs: RankingInputs) -> tuple[int, int]:
-    return (inputs.rates.to_eur(offer.price).minor, offer.total_minutes)
+    price = inputs.rates.to_eur(offer.price) + _weekday_penalty(offer, inputs)
+    return (price.minor, offer.total_minutes)
+
+
+def _weekday_penalty(offer: Offer, inputs: RankingInputs) -> Money:
+    """Per person: a return leaving China Monday to Thursday ranks as if it cost this much more."""
+    if offer.direction == "return" and offer.depart.weekday() not in WEEKEND:
+        return Money.of(inputs.flex.weekday_return_eur, "EUR")
+    return Money.zero("EUR")
 
 
 def _common_cities(per_group: list[dict[str, Offer]]) -> set[str]:
@@ -171,35 +218,40 @@ class _Pick:
     minutes: int
 
 
-def _with_fairness(
-    window: Window,
-    drafts: list[tuple[str, str, Route]],
-    outbound: dict[str, dict[str, Offer]],
-    inbound: dict[str, dict[str, Offer]],
-    inputs: RankingInputs,
-) -> list[Combo]:
-    picked: list[tuple[str, str, Route, list[_Pick]]] = []
-    for entry, exit, route in drafts:
-        picks = []
-        for group in inputs.groups:
-            out, back = outbound[group.id][entry], inbound[group.id][exit]
-            fare = inputs.rates.to_eur(out.price) + inputs.rates.to_eur(back.price)
-            minutes = out.total_minutes + back.total_minutes
-            picks.append(_Pick(group, out, back, fare, fare + route.fare_eur, minutes))
-        picked.append((entry, exit, route, picks))
+@dataclass(frozen=True)
+class _Draft:
+    entry: str
+    exit: str
+    route: Route
+    picks: tuple[_Pick, ...]
 
+
+def _own_best(drafts: Sequence[_Draft]) -> dict[str, _Pick]:
+    """Each group's cheapest door-to-door pick among these drafts: what fairness compares to."""
     own_best: dict[str, _Pick] = {}
-    for _, _, _, picks in picked:
-        for pick in picks:
+    for draft in drafts:
+        for pick in draft.picks:
             current = own_best.get(pick.group.id)
             if current is None or pick.door < current.door:
                 own_best[pick.group.id] = pick
+    return own_best
 
+
+def _combos(
+    window: Window, drafts: Sequence[_Draft], own_best: dict[str, _Pick], inputs: RankingInputs
+) -> list[Combo]:
     people = sum(group.headcount for group in inputs.groups)
     combos = []
-    for entry, exit, route, picks in picked:
-        choices = tuple(_choice(pick, own_best[pick.group.id]) for pick in picks)
+    for draft in drafts:
+        choices = tuple(_choice(pick, own_best[pick.group.id]) for pick in draft.picks)
         flights = sum((choice.flights_total_eur for choice in choices), Money.zero("EUR"))
+        weekdays = sum(
+            (
+                _weekday_penalty(pick.inbound, inputs).times(pick.group.headcount)
+                for pick in draft.picks
+            ),
+            Money.zero("EUR"),
+        )
         within = all(
             choice.price_overshoot_pct <= inputs.fairness.max_price_overshoot_pct
             and choice.time_overshoot_minutes <= inputs.fairness.max_time_overshoot_minutes
@@ -208,13 +260,13 @@ def _with_fairness(
         combos.append(
             Combo(
                 window=window,
-                entry=entry,
-                exit=exit,
-                route=route,
+                entry=draft.entry,
+                exit=draft.exit,
+                route=draft.route,
                 choices=choices,
                 flights_eur=flights,
-                internal_eur=route.fare_eur.times(people),
-                score_eur=flights + route.score_eur.times(people),
+                internal_eur=draft.route.fare_eur.times(people),
+                score_eur=flights + draft.route.score_eur.times(people) + weekdays,
                 within_rule=within,
             )
         )

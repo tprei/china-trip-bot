@@ -95,21 +95,23 @@ def search_space(config: TripConfig, reference: Reference) -> SearchSpace:
 def window_offers(
     config: TripConfig, rankings: Rankings, group: Group, direction: str, window: Window
 ) -> list[Offer]:
-    """One group's offers from its own home for a window and direction, cheapest first."""
+    """One group's offers from its own home on any slide of a window, cheapest first."""
     home = config.origin_of(group).airports
+    variants = window.variants(config.flex)
     if direction == "outbound":
-        dates = set(window.outbound_dates(config.flex))
         chosen = [
             o
             for o in rankings.offers
             if o.group_id == group.id
             and o.direction == "outbound"
             and o.origin in home
-            and o.depart.date() in dates
-            and o.arrive.date() <= window.start
+            and any(
+                o.depart.date() in v.outbound_dates(config.flex) and o.arrive.date() <= v.start
+                for v in variants
+            )
         ]
     else:
-        dates = set(window.return_dates(config.flex))
+        dates = {day for v in variants for day in v.return_dates(config.flex)}
         chosen = [
             o
             for o in rankings.offers

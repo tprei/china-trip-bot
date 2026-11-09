@@ -1,5 +1,6 @@
 import os
 import struct
+from dataclasses import replace
 from datetime import date, datetime
 from itertools import pairwise
 
@@ -61,7 +62,8 @@ def test_summary_view_shows_every_group_and_currency(
     assert view.window_days == "14 days"
     assert sum(span.nights for span in view.days) == 13
     assert all(before.leave == after.arrive for before, after in pairwise(view.days))
-    assert (view.days[0].arrive, view.days[-1].leave) == ("8/30", "9/12")
+    ends = (i18n.numeric_day(best.window.start), i18n.numeric_day(best.window.end))
+    assert (view.days[0].arrive, view.days[-1].leave) == ends
     legs = best.route.legs
     flights = 5 * sum(1 for leg in legs if leg.option.mode == "flight")
     trains = 5 * (len(legs) - flights // 5)
@@ -72,6 +74,24 @@ def test_summary_view_shows_every_group_and_currency(
     codes = [line.origin for group in view.groups for line in (group.outbound, group.inbound)]
     assert set(codes) <= {airport.code for airport in view.airports}
     assert next(a.name for a in view.airports if a.code == "MAD") == "Madri"
+
+
+@pytest.mark.parametrize(
+    ("days", "label"), [(-1, "starts 1 day early"), (0, ""), (1, "starts 1 day late")]
+)
+def test_summary_shows_the_dates_the_plan_slid_to(
+    config: TripConfig, reference: Reference, world: World, days: int, label: str
+) -> None:
+    _, report = world
+    ranking = report.rankings.main["B"]
+    assert ranking.best is not None
+    moved = replace(ranking.best, window=ranking.window.shifted(days))
+    main = {**report.rankings.main, "B": replace(ranking, best=moved)}
+    inputs = summary_inputs(config, reference, report, "B")
+    view = views.build_summary(replace(inputs, rankings=replace(report.rankings, main=main)))
+    assert view is not None
+    assert view.window_dates == i18n.date_range(moved.window.start, moved.window.end)
+    assert view.window_shift == label
 
 
 def test_flight_line_lists_stops_in_order_with_waits(

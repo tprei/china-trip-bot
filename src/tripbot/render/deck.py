@@ -130,7 +130,8 @@ class Deck:
         ranking = self.rankings.main.get(window_id)
         if ranking is None or ranking.best is None:
             return None
-        view = build_banner(ranking.best, self.names, self.config.windows)
+        planned = [r.best.window if r.best else r.window for r in self.rankings.main.values()]
+        view = build_banner(ranking.best, self.names, planned)
         return self.renderer.png(render_html("banner.html.j2", view=view))
 
     def history_card(self, window_id: str) -> bytes | None:

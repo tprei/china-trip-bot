@@ -63,7 +63,10 @@ class BannerView:
 
 
 def build_banner(best: Combo, names: Names, windows: Sequence[Window]) -> BannerView:
-    """Stays and the legs between them in travel order; legs after the last stay lead home."""
+    """Stays and the legs between them in travel order; legs after the last stay lead home.
+
+    `windows` carry the dates each window's own best plan uses, as the summary shows them.
+    """
     window = best.window
     route = best.route
     steps: list[BannerStay | BannerLeg] = []

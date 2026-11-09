@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 18:17+0000\n"
+"POT-Creation-Date: 2026-11-09 12:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -227,6 +227,10 @@ msgstr "O nome da cidade de origem tem de 1 a 40 caracteres."
 msgid "A name is one word of letters, up to 20, like Ana."
 msgstr "Nome é uma palavra só, de letras, até 20, como Ana."
 
+#, python-brace-format
+msgid "A return leaving China Monday to Thursday counts {amount} more per person in the ranking, not in the total."
+msgstr "Uma volta saindo da China de segunda a quinta conta {amount} a mais por pessoa na classificação, não no total."
+
 msgid "A window is one letter, like D."
 msgstr "Janela é uma letra só, como D."
 
@@ -344,6 +348,12 @@ msgstr "Caiu {pct}% esta semana"
 #, python-brace-format
 msgid "Down {percent}{suffix} since the last summary"
 msgstr "Caiu {percent}{suffix} desde o último resumo"
+
+#, python-brace-format
+msgid "Each window can also start {n} day earlier or later."
+msgid_plural "Each window can also start {n} days earlier or later."
+msgstr[0] "Cada janela também pode começar {n} dia antes ou depois."
+msgstr[1] "Cada janela também pode começar {n} dias antes ou depois."
 
 msgid "Entry × exit"
 msgstr "Chegada × saída"
@@ -985,6 +995,18 @@ msgstr "afazeres do grupo"
 msgid "sleeper"
 msgstr "trem-leito"
 
+#, python-brace-format
+msgid "starts {n} day early"
+msgid_plural "starts {n} days early"
+msgstr[0] "começa {n} dia antes"
+msgstr[1] "começa {n} dias antes"
+
+#, python-brace-format
+msgid "starts {n} day late"
+msgid_plural "starts {n} days late"
+msgstr[0] "começa {n} dia depois"
+msgstr[1] "começa {n} dias depois"
+
 msgid "the command list"
 msgstr "lista de comandos"
 
@@ -1211,4 +1233,10 @@ msgstr "{wait} de espera"
 #, python-brace-format
 msgid "{window} no complete combo"
 msgstr "{window} sem combinação completa"
+
+#, python-brace-format
+msgid "±{n} day"
+msgid_plural "±{n} days"
+msgstr[0] "±{n} dia"
+msgstr[1] "±{n} dias"
 

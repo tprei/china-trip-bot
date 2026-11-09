@@ -301,8 +301,10 @@ def compare_alternatives(
         if best is None:
             rows.append(CompareRow(label, _("no complete combo"), "—", None, False, 0, False))
             continue
-        order = " → ".join(names.city(city) for city in best.route.order)
-        row = _row(label, order, best, base, totals)
+        sub = " → ".join(names.city(city) for city in best.route.order)
+        if main.best is not None and best.window != main.best.window:
+            sub += " · " + i18n.date_range(best.window.start, best.window.end)
+        row = _row(label, sub, best, base, totals)
         rows.append(row if index else replace(row, delta=None, highlight=True))
     return CompareView(
         kicker=_("Other plans · window {window}").format(window=main.window.id),
