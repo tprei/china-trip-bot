@@ -16,6 +16,10 @@
 # - Chengdu, checked 2026-11-21: Beijing West–Chengdu East G trains 7h30, ¥784+
 #   (chinafortravelers.com, Aug 2026); Chengdu East–Yangshuo D1813 5h51 / D1822 7h35,
 #   ¥426–473 (travelchinaguide.com, Aug 2025); the PEK–TFU fare is an estimate
+# - Chongqing, checked 2026-11-21: Chengdu East–Chongqing G trains 1h02–1h20, ¥85–237
+#   (chinafortravelers.com, china-travel.org); Chongqing West–Yangshuo G2929 4h32, ¥329–341,
+#   back 4h30–5h30 (travelchinaguide.com, Aug 2025); Beijing West–Chongqing G 6h52, ¥825+
+#   (readysetchina.com, Jun 2026); the CKG–PEK fare is an estimate
 
 # Average speed per mode for the card legend. High-speed: Beijing–Shanghai G trains,
 # 1,318 km in about 4h40. Sleepers: D trains on the 1,463 km conventional line in about
@@ -74,6 +78,29 @@ legs:
     both_ways: true
     options:
       - {mode: train, name: Trem D, minutes: 360, fare: {CNY: "450"}, estimate: true}
+
+  - from: chengdu
+    to: chongqing
+    both_ways: true
+    options:
+      - {mode: train, name: Trem rápido G, minutes: 75, fare: {CNY: "100"}, estimate: true}
+
+  - from: chongqing
+    to: yangshuo
+    options:
+      - {mode: train, name: G2929, minutes: 272, fare: {CNY: "335"}}
+
+  - from: yangshuo
+    to: chongqing
+    options:
+      - {mode: train, name: Trem rápido G, minutes: 300, fare: {CNY: "335"}, estimate: true}
+
+  - from: beijing
+    to: chongqing
+    both_ways: true
+    options:
+      - {mode: train, name: Trem rápido G, minutes: 412, fare: {CNY: "825"}}
+      - {mode: flight, name: PEK ↔ CKG, minutes: 170, overhead_minutes: 180, fare: {EUR: "130"}, estimate: true}
 
   - from: shanghai
     to: yangshuo
