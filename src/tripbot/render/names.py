@@ -33,8 +33,12 @@ class Names:
         )
 
     def alternative(self, alternative: Alternative) -> str:
-        """`Without Zhangjiajie`."""
-        return _("Without {city}").format(city=self.city(alternative.drop))
+        """`Without Zhangjiajie`, or `Chengdu instead of Shanghai`."""
+        if alternative.add is None:
+            return _("Without {city}").format(city=self.city(alternative.drop))
+        return _("{city} instead of {stop}").format(
+            city=self.city(alternative.add), stop=self.city(alternative.drop)
+        )
 
     def airport_city(self, airport: str) -> str:
         """`PEK` → Beijing, `LHR` → London; unknown airports keep their code."""

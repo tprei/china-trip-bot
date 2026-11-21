@@ -308,7 +308,7 @@ def compare_alternatives(
         rows.append(row if index else replace(row, delta=None, highlight=True))
     return CompareView(
         kicker=_("Other plans · window {window}").format(window=main.window.id),
-        title=_("Main plan vs. dropping a city"),
+        title=_("Main plan vs. other routes"),
         rows=tuple(rows),
     )
 

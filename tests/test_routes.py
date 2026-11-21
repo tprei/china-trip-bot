@@ -2,7 +2,7 @@ from dataclasses import replace
 from datetime import date
 
 from tripbot.config import TripConfig
-from tripbot.domain.routes import PlannerInputs, Route, plan_route, stops_without
+from tripbot.domain.routes import PlannerInputs, Route, plan_route
 from tripbot.domain.trip import Window
 
 
@@ -59,7 +59,7 @@ def test_d919_only_runs_friday_to_monday(inputs: PlannerInputs) -> None:
 def test_unlisted_city_pairs_use_the_fallback_flight(
     config: TripConfig, inputs: PlannerInputs
 ) -> None:
-    route = plan_route("chengdu", "beijing", ("beijing",), config.windows[0], inputs)
+    route = plan_route("wuhan", "beijing", ("beijing",), config.windows[0], inputs)
     assert route is not None
     assert route.legs[0].option == inputs.legs.fallback_flight
 
@@ -80,7 +80,3 @@ def test_september_nights_in_the_south_cost_less_weather(inputs: PlannerInputs) 
     )
     assert august is not None and september is not None
     assert september.weather_eur < august.weather_eur
-
-
-def test_alternatives_drop_one_stop(config: TripConfig) -> None:
-    assert stops_without(config.route.stops, "shanghai") == ("beijing", "zhangjiajie", "yangshuo")

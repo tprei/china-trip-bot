@@ -195,7 +195,7 @@ def windows_command(context: BotContext, request: Request) -> Reply:
 @command(
     gettext_noop("/other"),
     gettext_noop("/other [window]"),
-    gettext_noop("the plan without one of its cities"),
+    gettext_noop("the plan without one of its cities, or with one swapped"),
 )
 def other_command(context: BotContext, request: Request) -> Reply:
     window = context.window_arg(request.args)

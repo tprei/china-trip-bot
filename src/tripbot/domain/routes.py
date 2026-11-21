@@ -91,10 +91,6 @@ def plan_route(
     return best
 
 
-def stops_without(stops: Sequence[str], dropped: str) -> tuple[str, ...]:
-    return tuple(stop for stop in stops if stop != dropped)
-
-
 def _plan_order(
     entry: str, exit: str, order: tuple[str, ...], window: Window, inputs: PlannerInputs
 ) -> Route | None:

@@ -50,14 +50,16 @@ def test_other_plans_open_to_their_own_flights_and_route(
             "Without Xangai",
             "Without Zhangjiajie",
             "Without Yangshuo",
+            "Chengdu instead of Xangai",
         ]
-        for plan in panel.other_plans:
+        for plan, alternative in zip(panel.other_plans, config.route.alternatives, strict=True):
             assert plan.route is not None and plan.route.plan_label == plan.row.label
             stays = {step.title for step in plan.route.steps if step.kind == "stay"}
-            assert plan.row.label.removeprefix("Without ") not in stays
+            assert deck.names.city(alternative.drop) not in stays
+            assert alternative.add is None or deck.names.city(alternative.add) in stays
             assert [group.name for group in plan.groups] == [g.name for g in config.groups]
     html = publish(deck, NOW, tmp_path / "site").read_text(encoding="utf-8")
-    assert html.count('<details class="plan">') == 4 * len(view.panels)
+    assert html.count('<details class="plan">') == len(config.route.alternatives) * len(view.panels)
 
 
 def test_site_is_one_self_contained_page(config: TripConfig, deck: Deck, tmp_path: Path) -> None:

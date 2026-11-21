@@ -51,11 +51,20 @@ def test_a_person_belongs_to_one_group_and_window_ids_are_unique() -> None:
         parse_config(raw)
 
 
-def test_other_plans_drop_each_stop_in_turn(config: TripConfig) -> None:
-    assert [alt.drop for alt in config.route.alternatives] == list(config.route.stops)
+def test_other_plans_drop_each_stop_then_swap_in_a_city(config: TripConfig) -> None:
+    alternatives = config.route.alternatives
+    dropped = [(f"no-{stop}", stop, None) for stop in config.route.stops]
+    swap = ("chengdu-for-shanghai", "shanghai", "chengdu")
+    assert [(alt.id, alt.drop, alt.add) for alt in alternatives] == [*dropped, swap]
+    swapped = alternatives[-1]
+    assert swapped.stops(config.route.stops) == ("beijing", "chengdu", "zhangjiajie", "yangshuo")
+    assert swapped.nights(config.route.nights)["chengdu"] == config.route.nights["shanghai"]
     raw = raw_config()
     raw["route"]["stops"] = ["beijing"]
     assert parse_config(raw).route.alternatives == ()
+    raw["route"]["stops"] = ["beijing", "shanghai", "chengdu"]
+    raw["route"]["nights"]["chengdu"] = 2
+    assert all(alt.add is None for alt in parse_config(raw).route.alternatives)
 
 
 def test_a_route_needs_a_stop() -> None:

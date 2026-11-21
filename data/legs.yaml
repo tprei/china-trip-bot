@@ -13,6 +13,9 @@
 # - Day trains: chinavigators.com, mychina.guide (12306 data, Sep 2026), travelchinaguide.com
 # - Zhangjiajie flights: Trip.com snapshot for 20 Aug 2027 (one-way, 1 adult, USD)
 # - Train numbers change in late Dec 2026; times and routes stay (Xinhua, 16 Oct 2026)
+# - Chengdu, checked 2026-11-21: Beijing West–Chengdu East G trains 7h30, ¥784+
+#   (chinafortravelers.com, Aug 2026); Chengdu East–Yangshuo D1813 5h51 / D1822 7h35,
+#   ¥426–473 (travelchinaguide.com, Aug 2025); the PEK–TFU fare is an estimate
 
 # Average speed per mode for the card legend. High-speed: Beijing–Shanghai G trains,
 # 1,318 km in about 4h40. Sleepers: D trains on the 1,463 km conventional line in about
@@ -58,6 +61,19 @@ legs:
       - {mode: sleeper, name: D920, depart: "19:56", arrive: "07:09", minutes: 718, fare: {CNY: "1966.5"}, runs: [fri, sat, sun, mon], cabin: leito macio de 4 camas, estimate: true}
       - {mode: train, name: Trem rápido G, minutes: 523, fare: {CNY: "989"}}
       - {mode: flight, name: KWL → PEK, minutes: 190, overhead_minutes: 210, fare: {EUR: "130"}, estimate: true}
+
+  - from: beijing
+    to: chengdu
+    both_ways: true
+    options:
+      - {mode: train, name: Trem rápido G, minutes: 450, fare: {CNY: "784"}}
+      - {mode: flight, name: PEK ↔ TFU, minutes: 170, overhead_minutes: 180, fare: {EUR: "130"}, estimate: true}
+
+  - from: chengdu
+    to: yangshuo
+    both_ways: true
+    options:
+      - {mode: train, name: Trem D, minutes: 360, fare: {CNY: "450"}, estimate: true}
 
   - from: shanghai
     to: yangshuo

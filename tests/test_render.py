@@ -194,6 +194,7 @@ def test_compare_alternatives_marks_the_main_plan(
         "Without Xangai",
         "Without Zhangjiajie",
         "Without Yangshuo",
+        "Chengdu instead of Xangai",
     ]
     assert view.rows[0].highlight and view.rows[0].delta is None
 

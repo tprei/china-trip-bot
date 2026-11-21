@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  tripbot\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-09 12:34+0000\n"
+"POT-Creation-Date: 2026-11-21 01:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_BR\n"
@@ -457,8 +457,8 @@ msgstr "Chegada tarde: {moment} · reserve hotel"
 msgid "Main plan"
 msgstr "Plano principal"
 
-msgid "Main plan vs. dropping a city"
-msgstr "Plano principal vs. tirar uma cidade"
+msgid "Main plan vs. other routes"
+msgstr "Plano principal vs. outros roteiros"
 
 msgid "Multiple bookings / tickets · protection unverified"
 msgstr "Várias reservas e bilhetes · proteção não verificada"
@@ -1010,8 +1010,8 @@ msgstr[1] "começa {n} dias depois"
 msgid "the command list"
 msgstr "lista de comandos"
 
-msgid "the plan without one of its cities"
-msgstr "o plano sem uma das cidades"
+msgid "the plan without one of its cities, or with one swapped"
+msgstr "o plano sem uma das cidades, ou com uma trocada"
 
 msgid "the route on a map of China"
 msgstr "o roteiro no mapa da China"
@@ -1061,6 +1061,10 @@ msgstr "quem voa de onde"
 
 msgid "who, from where, when and which cities; how to change it"
 msgstr "quem, de onde, quando e quais cidades; como mudar"
+
+#, python-brace-format
+msgid "{city} instead of {stop}"
+msgstr "{city} no lugar de {stop}"
 
 #, python-brace-format
 msgid "{command} to go back."
