@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
 from tripbot.config import TripConfig
 from tripbot.domain.filters import passing
 from tripbot.domain.flights import Offer
 from tripbot.domain.money import Rates
-from tripbot.domain.ranking import WindowRanking, rank_window
-from tripbot.domain.routes import stops_without
+from tripbot.domain.ranking import RankingInputs, WindowRanking, rank_window
 from tripbot.domain.searches import Focus, SearchSpace
 from tripbot.domain.trip import Group, Window
 from tripbot.reference import Reference, ranking_inputs
@@ -55,11 +55,18 @@ def rank_all(
         for window in config.windows:
             alternatives[window.id] = {
                 alt.id: rank_window(
-                    window, offers, stops_without(config.route.stops, alt.drop), inputs
+                    window,
+                    offers,
+                    alt.stops(config.route.stops),
+                    _with_nights(inputs, alt.nights(config.route.nights)),
                 )
                 for alt in config.route.alternatives
             }
     return Rankings(main=main, alternatives=alternatives, rates=rates, offers=tuple(offers))
+
+
+def _with_nights(inputs: RankingInputs, nights: Mapping[str, int]) -> RankingInputs:
+    return replace(inputs, planner=replace(inputs.planner, nights=nights))
 
 
 def load_rankings(

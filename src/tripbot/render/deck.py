@@ -152,7 +152,7 @@ class Deck:
         return self.renderer.png(render_html("compare.html.j2", view=view))
 
     def alternatives(self, window_id: str) -> dict[str, tuple[str, WindowRanking]]:
-        """Each /other plan ranked for the window, labelled `Without <city>`."""
+        """Each /other plan ranked for the window, labelled by the city it drops or swaps."""
         ranked = self.rankings.alternatives.get(window_id, {})
         names = self.names
         return {

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
@@ -37,16 +38,29 @@ class Fairness:
 
 @dataclass(frozen=True)
 class Alternative:
-    """The main plan without one of its stops, for /other."""
+    """The main plan without one of its stops, or with another city in that stop's place."""
 
     id: str
     drop: str
+    add: str | None = None
+
+    def stops(self, stops: Sequence[str]) -> tuple[str, ...]:
+        if self.add is None:
+            return tuple(stop for stop in stops if stop != self.drop)
+        return tuple(self.add if stop == self.drop else stop for stop in stops)
+
+    def nights(self, nights: Mapping[str, int]) -> dict[str, int]:
+        """The swapped-in city stays as many nights as the stop it replaces."""
+        if self.add is None:
+            return dict(nights)
+        return {**nights, self.add: nights[self.drop]}
 
 
 @dataclass(frozen=True)
 class RouteSettings:
     stops: tuple[str, ...]
     nights: dict[str, int]
+    swaps: dict[str, str]  # stop -> city /other also prices in its place
     value_of_time_eur_per_hour: int
     weather_eur_per_risk_night: int
     prefer_sleepers_eur: int
@@ -54,9 +68,18 @@ class RouteSettings:
 
     @property
     def alternatives(self) -> tuple[Alternative, ...]:
-        if len(self.stops) < 2:
-            return ()
-        return tuple(Alternative(id=f"no-{stop}", drop=stop) for stop in self.stops)
+        """Each stop dropped in turn, then each swap whose stop is in the plan and city isn't."""
+        dropped = (
+            [Alternative(id=f"no-{stop}", drop=stop) for stop in self.stops]
+            if len(self.stops) > 1
+            else []
+        )
+        swapped = [
+            Alternative(id=f"{city}-for-{stop}", drop=stop, add=city)
+            for stop, city in self.swaps.items()
+            if stop in self.stops and city not in self.stops
+        ]
+        return tuple(dropped + swapped)
 
     def alternative(self, alternative_id: str) -> Alternative | None:
         return next((alt for alt in self.alternatives if alt.id == alternative_id), None)
@@ -161,6 +184,7 @@ def parse_config(raw: dict[str, Any]) -> TripConfig:
     route = RouteSettings(
         stops=plan.stops,
         nights=dict(plan.nights),
+        swaps={str(stop): str(city) for stop, city in route_raw["swaps"].items()},
         value_of_time_eur_per_hour=int(route_raw["value_of_time_eur_per_hour"]),
         weather_eur_per_risk_night=int(route_raw["weather_eur_per_risk_night"]),
         prefer_sleepers_eur=int(route_raw["prefer_sleepers_eur"]),

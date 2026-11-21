@@ -56,6 +56,7 @@ fairness:
 route:
   stops: [beijing, shanghai, zhangjiajie, yangshuo]   # /other drops one at a time
   nights: {beijing: 4, shanghai: 2, zhangjiajie: 2, yangshuo: 3}
+  swaps: {shanghai: chengdu}          # /other also prices this city in that stop's place, same nights
   value_of_time_eur_per_hour: 20      # daytime hours spent moving
   weather_eur_per_risk_night: 15      # per person-night at full risk
   prefer_sleepers_eur: 40             # comfort: a sleeper beats a similar day leg
